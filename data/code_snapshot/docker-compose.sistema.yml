@@ -1,0 +1,17 @@
+services:
+  sistema:
+    build:
+      context: .
+      dockerfile: Dockerfile.sistema
+    ports:
+      - "8770:8770"
+    env_file:
+      - .env
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      NEXUS_BIND_HOST: ${NEXUS_BIND_HOST:-0.0.0.0}
+      INTEGRACAO_GATEWAY_HOST: ${INTEGRACAO_GATEWAY_HOST:-0.0.0.0}
+      GATEWAY_MOCK_FALLBACK: ${GATEWAY_MOCK_FALLBACK:-false}
+    restart: unless-stopped

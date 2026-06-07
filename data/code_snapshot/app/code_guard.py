@@ -56,8 +56,11 @@ SNAPSHOT_EXTRA_PATHS = (
     "requirements.txt",
     "INICIAR_VPS.bat",
     "Dockerfile",
+    "Dockerfile.sistema",
     "docker-compose.yml",
-    ".dockerignore",
+    "docker-compose.sistema.yml",
+    ".env.motor.example",
+    ".env.sistema.example",
     "app/middleware/trusted_host.py",
 )
 
