@@ -1,0 +1,16 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      HEALTHCHECK_HOST: ${HEALTHCHECK_HOST:-api.transporteexecutivo.com}
+      BASE_URL: ${BASE_URL}
+      APP_ENV: ${APP_ENV:-production}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+    restart: unless-stopped

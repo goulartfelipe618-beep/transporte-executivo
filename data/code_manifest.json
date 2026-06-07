@@ -1,9 +1,15 @@
 {
-  "saved_at": "2026-06-06T21:54:19.831245",
+  "saved_at": "2026-06-07T00:28:05.712428",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "f42fdfec4fd22273d1de2a777b814814ad01974b47791a118afb7ffec88f1796",
       "marker": "Versao Mais Nova Obrigatoria"
+    },
+    ".dockerignore": {
+      "sha256": "7275dc731ea26824df9d6c0a56a83bab4386101f6bd3d5d0444857f67684c7ea"
+    },
+    "Dockerfile": {
+      "sha256": "9f0e14c81e0499a4fd46ce7d726df46c5f3cc95cb82970dc86af10b9d43077d8"
     },
     "INICIAR_VPS.bat": {
       "sha256": "8ee4622b90f2ebb28b52e824a951a25c7688456548711be377cc41f7ce041a1a"
@@ -17,7 +23,7 @@
       "marker": "bind_host"
     },
     "app/code_guard.py": {
-      "sha256": "0e2a53f796d5c4461053470e68d8a6f500c9054a504e5c8147431586b3e53a26",
+      "sha256": "7fc76ee0c51bc5839fa6b58626c124c408f669da44fad42609ee642153d11db6",
       "marker": "ensure_code_integrity"
     },
     "app/company_portal.py": {
@@ -51,6 +57,9 @@
     "app/main_window.py": {
       "sha256": "1b67c9adb258c62872f2925d0f26a09347cd4cacf47f6104663469da68428c6b",
       "marker": "APP_BUILD"
+    },
+    "app/middleware/trusted_host.py": {
+      "sha256": "9e86cb67d2bc60ffd8596c5c68d04dda3b35bbe892dd2e1c52c2b571cb349d79"
     },
     "app/pages.py": {
       "sha256": "e4d34034fd384a3ef0138afaf92d638cb9c91bd7368b6300aed97d7b8b7e8e9c",
@@ -132,8 +141,11 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "fc61aefb720f5542d4250730c18ce90612472c157e462f66e15513ee4fc5c95c",
+      "sha256": "8d857b744c6df9d26da8d2c8a1d47e0e37555072c533a8be58d2e38bd5d96e35",
       "marker": "APP_BUILD"
+    },
+    "docker-compose.yml": {
+      "sha256": "645791b90e4c7d6d8cf47569cd11314e92863411134c25cac00b8f9c968f62a6"
     },
     "main.py": {
       "sha256": "4baf92f199eed66ec35590e57b71142013fa50b85da59b392efc4cee2586db13",

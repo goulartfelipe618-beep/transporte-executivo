@@ -55,6 +55,10 @@ SNAPSHOT_EXTRA_PATHS = (
     "scripts/run_production_server.py",
     "requirements.txt",
     "INICIAR_VPS.bat",
+    "Dockerfile",
+    "docker-compose.yml",
+    ".dockerignore",
+    "app/middleware/trusted_host.py",
 )
 
 
