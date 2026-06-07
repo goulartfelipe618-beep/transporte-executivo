@@ -4,16 +4,24 @@ Dois apps **separados** no mesmo repositório GitHub.
 
 ---
 
-## Método A — App + Dockerfile.sistema (se o painel aceitar)
+## Método A — App (funciona mesmo se EasyPanel ignorar Dockerfile.sistema)
 
 | Campo | Valor |
 |-------|-------|
 | Tipo | **App** |
 | Fonte | GitHub `transporte-executivo` / `main` |
-| Construção | **Dockerfile** |
-| Arquivo | **`Dockerfile.sistema`** (tente também `./Dockerfile.sistema`) |
+| Construção | **Dockerfile** (`Dockerfile` ou `Dockerfile.sistema`) |
 | Domínio → Porta | **8770** |
-| Env | `.env.sistema.example` |
+
+### Variável OBRIGATÓRIA (aba Ambiente / Environment)
+
+```env
+NEXUS_DEPLOY_TARGET=sistema
+```
+
+Sem isso o container sobe o **Motor** (`uvicorn`) e dá erro de `SECRET_KEY`.
+
+Demais variáveis: ver `.env.sistema.example`.
 
 **Implantar** → botão verde **Implantar** (Rebuild). Restart não basta.
 

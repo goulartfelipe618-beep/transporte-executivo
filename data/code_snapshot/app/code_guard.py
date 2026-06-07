@@ -53,6 +53,7 @@ SNAPSHOT_EXTRA_PATHS = (
     "app/partner_network_gateway.py",
     "scripts/validate_supabase_production.py",
     "scripts/run_production_server.py",
+    "scripts/docker_entrypoint.py",
     "requirements.txt",
     "INICIAR_VPS.bat",
     "Dockerfile",

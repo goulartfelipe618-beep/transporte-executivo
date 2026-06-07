@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-07T01:19:13.647116",
+  "saved_at": "2026-06-07T01:20:56.488447",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "f42fdfec4fd22273d1de2a777b814814ad01974b47791a118afb7ffec88f1796",
@@ -9,16 +9,16 @@
       "sha256": "2e57cceb52a65cea09679e30394b4421acb4781be423a6b34be9b8eff5d8cc23"
     },
     ".env.sistema.example": {
-      "sha256": "a75108292f77cb7e332f0582723bffba960ba06f1a7a2d1eae7f1cde18cac1f1"
+      "sha256": "9cd2c460370116c22843b27f9304ae404eb3f79d80a7fe66e45b65e114201822"
     },
     "DEPLOY_EASYPANEL.md": {
-      "sha256": "74a045a0db78ca37aabd3bc0be2531c6a6c3d307118bf243be263508fe5df1c2"
+      "sha256": "85d9b570e857ab9df80b83ef1fee97bda36a2323521cbd078c52a090a836e940"
     },
     "Dockerfile": {
-      "sha256": "1ec6ec3a0729902c120962d464881ba24c18dacce697be877f0e13195cfa5f8b"
+      "sha256": "4ecbcfabb1ede93ec26dbd038a256ae5d604ab0bfdc5b42c8a3bd81d047fa128"
     },
     "Dockerfile.sistema": {
-      "sha256": "ed53f45fcb58e0d8ec523d16da1e389c9f111b507bbb35c82d5b402b0b81c4ea"
+      "sha256": "c811f5eda62e9f5d9d338ab0a18a2dfc6a0727667ea0a89ef3ec6e2628cf1068"
     },
     "INICIAR_VPS.bat": {
       "sha256": "8ee4622b90f2ebb28b52e824a951a25c7688456548711be377cc41f7ce041a1a"
@@ -32,7 +32,7 @@
       "marker": "bind_host"
     },
     "app/code_guard.py": {
-      "sha256": "dc4251845b57356f27297c0652b80b03ef4476dbbb1749284f4b0e6f06aa2f0e",
+      "sha256": "8fd1474485f76cd355a623c2bd49f2d712c84856930178f58fe0f452e73b4e50",
       "marker": "ensure_code_integrity"
     },
     "app/company_portal.py": {
@@ -150,11 +150,11 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "a1e6364867be1c356541210294df109a65b07b16ace4408b041a6f603ca442d2",
+      "sha256": "6ea22826f11cc3ce8a07e17099af1047938297bf3cff81c6fb3243a4db018a10",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {
-      "sha256": "f90f45c9bec13566d5f22c9b24f43946043f44a3bd040c19fdcf98ca4d03c714"
+      "sha256": "c8efd250f3f1565d7479a6b2480080a0682778119d641f9bb2a09cc407bff767"
     },
     "docker-compose.yml": {
       "sha256": "645791b90e4c7d6d8cf47569cd11314e92863411134c25cac00b8f9c968f62a6"
@@ -165,6 +165,9 @@
     },
     "requirements.txt": {
       "sha256": "cb407437fdcf6a41d99ee6e34c9cb337e26d2cdcf1f536dbcd7de3d3cfc62ca7"
+    },
+    "scripts/docker_entrypoint.py": {
+      "sha256": "262210ce571d210d8fde9dc32e04cb4593a715c127fd65839e34202523f79509"
     },
     "scripts/run_production_server.py": {
       "sha256": "48af6afe18622daec695a87456f24fc90f47e945f78e02e2510ef384a6124c19"

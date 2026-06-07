@@ -8,6 +8,7 @@ services:
     env_file:
       - .env
     environment:
+      NEXUS_DEPLOY_TARGET: sistema
       APP_ENV: ${APP_ENV:-production}
       SUPABASE_URL: ${SUPABASE_URL}
       SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
