@@ -13,6 +13,7 @@ from .components import (
 )
 from .address_po_field import add_po_address_field, collect_address_values
 from .portal_auth import active_portal_drivers, find_driver_by_name
+from .reservation_numbers import next_reservation_number, next_reservation_numbers
 from .reservation_pdf import default_pdf_filename, generate_reservation_pdf
 from .table_ui import grid_table_cell, grid_table_header, render_action_buttons, table_scroll_host
 from .theme import COLORS, styled_button
@@ -769,21 +770,6 @@ def save_new_reservation(app, window, fields, po_controls=None):
             "Conta(s) registrada(s) automaticamente:\n\n" + "\n".join(payable_lines) + "\n\nVeja em Financeiro > Contas a pagar.",
             parent=app,
         )
-
-
-def next_reservation_number(app):
-    return next_reservation_numbers(app, 1)[0]
-
-
-def next_reservation_numbers(app, count=1):
-    numbers = []
-    for item in app.reservations:
-        try:
-            numbers.append(int(str(item.get("numero", "")).replace("#", "")))
-        except (ValueError, AttributeError):
-            pass
-    start = max(numbers, default=1000) + 1
-    return [f"#{start + offset}" for offset in range(count)]
 
 
 def view_reservation(app, reservation):

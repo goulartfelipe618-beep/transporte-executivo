@@ -17,15 +17,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt \
-    && mv /usr/local/bin/uvicorn /usr/local/bin/_uvicorn_motor
-
-COPY scripts/uvicorn_wrapper.sh /usr/local/bin/uvicorn
-RUN chmod +x /usr/local/bin/uvicorn
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . .
 
-RUN echo "sistema-master-8770" > /app/.nexus_build_target
+RUN mv /usr/local/bin/uvicorn /usr/local/bin/_uvicorn_motor \
+    && cp scripts/uvicorn_wrapper.sh /usr/local/bin/uvicorn \
+    && sed -i 's/\r$//' /usr/local/bin/uvicorn \
+    && chmod 755 /usr/local/bin/uvicorn \
+    && echo "sistema-master-8770" > /app/.nexus_build_target
 
 RUN adduser --disabled-password --gecos "" appuser && chown -R appuser:appuser /app
 USER appuser

@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-07T01:24:24.790224",
+  "saved_at": "2026-06-07T10:29:10.599496",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "f42fdfec4fd22273d1de2a777b814814ad01974b47791a118afb7ffec88f1796",
@@ -15,16 +15,16 @@
       "sha256": "85d9b570e857ab9df80b83ef1fee97bda36a2323521cbd078c52a090a836e940"
     },
     "Dockerfile": {
-      "sha256": "ea0f0da6d344567bee9e5f3aab37b454e319c3ddb597ce85ebfe2a8b91e66dcb"
+      "sha256": "c7bcd3babf67699275c8b5b23cd9628cb99ac57a766e9a3166e7a0109ef5d867"
     },
     "Dockerfile.sistema": {
-      "sha256": "c5c3e29a4d193b8f0c8e5de4efe4bf7d94052b729f32d02777bad064b3aebf3e"
+      "sha256": "35081cc9c31e7ebacc6ff4e6693c47b45f024c75a6069b4a64c5aaae0aeac76d"
     },
     "INICIAR_VPS.bat": {
       "sha256": "8ee4622b90f2ebb28b52e824a951a25c7688456548711be377cc41f7ce041a1a"
     },
     "app/automations.py": {
-      "sha256": "3d012a1e87f3d60d17edddbeef0af15025c738213b9de6d6276eb7bad9a007ae",
+      "sha256": "3cc938078efd5ae16158679f68a35e59428df55463d42a7cb06a8ce5236b5444",
       "marker": "AUTOMACAO SOLICITACAO PARA SER MOTORISTA"
     },
     "app/bind_host.py": {
@@ -32,7 +32,7 @@
       "marker": "bind_host"
     },
     "app/code_guard.py": {
-      "sha256": "60a392b49f18711f9152316dcd4c148d3f1c07c9f4de2a078d4e5107bc9e6427",
+      "sha256": "2a2c6674b8edaf4e6551db2f5486cdbe388d49d8a40c9ffbe1e8ab644d13e2ce",
       "marker": "ensure_code_integrity"
     },
     "app/company_portal.py": {
@@ -78,7 +78,7 @@
       "sha256": "9faf35d7cb6b434240ecf8eb62d34ded081ffeb9c46c86fb7e44cd9157629ef6"
     },
     "app/partner_network_reservations.py": {
-      "sha256": "387836a1d7f304ab3568c766f3a7974f180d7afe74e58c57fd39dd27018a8d5f",
+      "sha256": "dcfeea7786adc7ff61785cb91ff360994a15e8cf8c79335a8c969bd687558cb9",
       "marker": "register_network_reservation"
     },
     "app/partner_network_vehicles.py": {
@@ -121,8 +121,11 @@
       "sha256": "effdf73ae562616649fcfaab189d2ac30c0145c13929e6bc2ad3ecae77ca38f6",
       "marker": "persist_state"
     },
+    "app/reservation_numbers.py": {
+      "sha256": "b5962d50ffa4fc87d8a27aac4fb5c3d0183550bd16de510857b74b2d1bef6ded"
+    },
     "app/reservations.py": {
-      "sha256": "89e7ffde143868b278abeb35ba8ad26d6c1c894642af7bbd40f4b6d3f3b13be7",
+      "sha256": "ac3269f3d336bcee743782eb93ac81f5b754e9765c92749a3caae6587a1ebb3d",
       "marker": "download_reservation"
     },
     "app/settings_store.py": {
@@ -150,7 +153,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "6d96a77277e2e5fa496841477ce6358c416f61beb53954f88eb3b199da1ea2b3",
+      "sha256": "1451a9c55b87cb71fd141927e82a832ef8136870a009220d70480eafde038087",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {
@@ -167,13 +170,13 @@
       "sha256": "cb407437fdcf6a41d99ee6e34c9cb337e26d2cdcf1f536dbcd7de3d3cfc62ca7"
     },
     "scripts/docker_entrypoint.py": {
-      "sha256": "0c8e0d7e88656802e61000a14a76a4dc3627b1623c52d2cf7cf60131671ceb01"
+      "sha256": "b077dc0069f06c3f299728c559ac7586891d0221199f00c93c46d921f33fc5e0"
     },
     "scripts/run_production_server.py": {
       "sha256": "48af6afe18622daec695a87456f24fc90f47e945f78e02e2510ef384a6124c19"
     },
     "scripts/uvicorn_wrapper.sh": {
-      "sha256": "fe089fbab68b0ec28850f3c8b62b5884fa74eaac7ea52353f5ab0d9effb38a73"
+      "sha256": "943ee0224be9d6220d28abfd5a006b60e49d956661bedc307f5ece37b1b979b8"
     },
     "scripts/validate_supabase_production.py": {
       "sha256": "6016beee0f5fffa3e19f01e49478d70929975d1c617e5ea16d1c427e4d156bf1"

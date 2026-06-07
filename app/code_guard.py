@@ -50,6 +50,7 @@ SNAPSHOT_EXTRA_PATHS = (
     "app/repository/supabase_repository.py",
     "app/repository/app_repository.py",
     "app/partner_network_reservations.py",
+    "app/reservation_numbers.py",
     "app/partner_network_gateway.py",
     "scripts/validate_supabase_production.py",
     "scripts/run_production_server.py",

@@ -6,7 +6,7 @@ from datetime import datetime
 
 from .partner_network import calc_commission, find_contributor, find_partner, sync_partner_state
 from .platform import log_event, next_record_id
-from .reservations import next_reservation_number
+from .reservation_numbers import next_reservation_number
 
 SOURCE, FLOW = "network", "express"
 

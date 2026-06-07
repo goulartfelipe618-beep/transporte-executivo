@@ -6,6 +6,9 @@ _sistema_mode() {
   case "${NEXUS_DEPLOY_TARGET:-}" in
     [Ss][Ii][Ss][Tt][Ee][Mm][Aa]|sistema) return 0 ;;
   esac
+  case "${SERVICE_NAME:-}" in
+    *sistema*) return 0 ;;
+  esac
   case "${PRIMARY_DOMAIN:-}${EASYPANEL_DOMAIN:-}" in
     *api.transporteexecutivo.com*) return 0 ;;
   esac
@@ -13,7 +16,7 @@ _sistema_mode() {
 }
 
 if _sistema_mode; then
-  echo "[Nexus] uvicorn_wrapper -> Sistema Master (NEXUS_DEPLOY_TARGET=${NEXUS_DEPLOY_TARGET:-})"
+  echo "[Nexus] uvicorn_wrapper -> Sistema Master (target=${NEXUS_DEPLOY_TARGET:-} service=${SERVICE_NAME:-})"
   exec python /app/scripts/run_production_server.py
 fi
 

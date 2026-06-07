@@ -6,22 +6,28 @@ from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
-import tkinter as tk
-from tkinter import messagebox, ttk
-
-from .components import resolve_widget_value, setup_placeholder
-from .table_ui import render_action_buttons
-from .theme import COLORS, FONTS, styled_button
+from .platform_contract import AUTOMATION_WEBHOOK_PORT
 
 AUTOMATION_TYPES = {
     "transfer_request": "AUTOMACAO SOLICITACAO DE TRANSFER",
     "driver_request": "AUTOMACAO SOLICITACAO PARA SER MOTORISTA",
 }
-from .platform_contract import AUTOMATION_WEBHOOK_PORT
 
 AUTOMATION_PORT = AUTOMATION_WEBHOOK_PORT
 AUTOMATIONS_FILE = os.path.join("data", "automations.json")
 TOKEN_BYTES = 24
+
+
+def _lazy_ui():
+    """Imports Tkinter apenas para a UI desktop (nao usado no runtime headless)."""
+    import tkinter as tk
+    from tkinter import messagebox, ttk
+
+    from .components import resolve_widget_value, setup_placeholder
+    from .table_ui import render_action_buttons
+    from .theme import COLORS, FONTS, styled_button
+
+    return tk, messagebox, ttk, resolve_widget_value, setup_placeholder, render_action_buttons, COLORS, FONTS, styled_button
 
 
 def automation_url(token):
@@ -214,6 +220,8 @@ def start_automation_webhook_server(app):
 
 
 def render_automations(parent, app):
+    tk, messagebox, ttk, resolve_widget_value, setup_placeholder, render_action_buttons, COLORS, FONTS, styled_button = _lazy_ui()
+
     ensure_automations_loaded(app)
     start_automation_webhook_server(app)
     parent.configure(bg=COLORS["bg"])
@@ -316,6 +324,7 @@ def render_automations(parent, app):
 
 
 def selected_automation(app, tree):
+    _tk, messagebox, *_ = _lazy_ui()
     selected = tree.selection()
     if not selected:
         messagebox.showwarning("Automações", "Selecione uma automação.", parent=app)
@@ -324,6 +333,7 @@ def selected_automation(app, tree):
 
 
 def copy_automation_url(app, tree):
+    _tk, messagebox, *_ = _lazy_ui()
     item = selected_automation(app, tree)
     if not item:
         return
@@ -334,6 +344,7 @@ def copy_automation_url(app, tree):
 
 
 def configure_domain(app, tree):
+    tk, messagebox, _ttk, resolve_widget_value, setup_placeholder, _rab, COLORS, _FONTS, styled_button = _lazy_ui()
     item = selected_automation(app, tree)
     if not item:
         return
@@ -392,6 +403,7 @@ def toggle_automation(app, tree):
 
 
 def delete_automation(app, tree):
+    _tk, messagebox, *_ = _lazy_ui()
     item = selected_automation(app, tree)
     if item and messagebox.askyesno("Excluir webhook", f"Excluir {item.get('nome')}?", parent=app):
         app.automations.remove(item)
@@ -400,6 +412,7 @@ def delete_automation(app, tree):
 
 
 def show_tests(app, tree):
+    tk, _messagebox, ttk, _rwv, _sp, _rab, COLORS, _FONTS, _styled = _lazy_ui()
     item = selected_automation(app, tree)
     if not item:
         return
@@ -424,6 +437,7 @@ def show_tests(app, tree):
 
 
 def open_new_automation_modal(app):
+    tk, messagebox, ttk, resolve_widget_value, setup_placeholder, _rab, COLORS, _FONTS, styled_button = _lazy_ui()
     win = tk.Toplevel(app)
     win.title("Nova Automação")
     win.geometry("520x330")

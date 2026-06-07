@@ -20,6 +20,9 @@ def _is_sistema_mode() -> bool:
     target = os.environ.get("NEXUS_DEPLOY_TARGET", "").strip().lower()
     if target == "sistema":
         return True
+    service = os.environ.get("SERVICE_NAME", "").strip().lower()
+    if "sistema" in service:
+        return True
     domain = (
         os.environ.get("PRIMARY_DOMAIN", "")
         + os.environ.get("EASYPANEL_DOMAIN", "")
