@@ -13,6 +13,8 @@ def _purge_pycache():
 
 
 if __name__ == "__main__":
+    print("[Nexus] === SISTEMA MASTER (headless) — porta 8770 ===")
+    print("[Nexus] Se este log mostrar uvicorn, apague Comando/Argumentos no EasyPanel.")
     _purge_pycache()
     try:
         from app.code_guard import ensure_code_integrity

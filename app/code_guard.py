@@ -61,6 +61,7 @@ SNAPSHOT_EXTRA_PATHS = (
     "docker-compose.sistema.yml",
     ".env.motor.example",
     ".env.sistema.example",
+    "DEPLOY_EASYPANEL.md",
     "app/middleware/trusted_host.py",
 )
 

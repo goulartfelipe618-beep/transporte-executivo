@@ -6,7 +6,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     NEXUS_BIND_HOST=0.0.0.0 \
-    INTEGRACAO_GATEWAY_HOST=0.0.0.0
+    INTEGRACAO_GATEWAY_HOST=0.0.0.0 \
+    NEXUS_DEPLOY_TARGET=sistema
+
+LABEL org.nexus.deploy="sistema-master" \
+      org.nexus.port="8770"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev gcc \
@@ -17,6 +21,8 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . .
 
+RUN echo "sistema-master-8770" > /app/.nexus_build_target
+
 RUN adduser --disabled-password --gecos "" appuser && chown -R appuser:appuser /app
 USER appuser
 
@@ -25,4 +31,6 @@ EXPOSE 8770
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8770/api/v1/public/statistics')" || exit 1
 
-CMD ["python", "scripts/run_production_server.py"]
+# ENTRYPOINT evita que EasyPanel sobrescreva só o CMD; se ainda aparecer uvicorn,
+# apague Comando/Argumentos em Implantar > Configuracoes de deploy.
+ENTRYPOINT ["python", "scripts/run_production_server.py"]
