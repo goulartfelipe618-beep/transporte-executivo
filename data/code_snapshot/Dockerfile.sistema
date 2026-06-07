@@ -17,7 +17,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt \
+    && mv /usr/local/bin/uvicorn /usr/local/bin/_uvicorn_motor
+
+COPY scripts/uvicorn_wrapper.sh /usr/local/bin/uvicorn
+RUN chmod +x /usr/local/bin/uvicorn
 
 COPY . .
 

@@ -16,12 +16,24 @@ def _run_motor():
     )
 
 
-def main():
+def _is_sistema_mode() -> bool:
     target = os.environ.get("NEXUS_DEPLOY_TARGET", "").strip().lower()
-    print(f"[Nexus] docker_entrypoint NEXUS_DEPLOY_TARGET={target or 'motor'}")
     if target == "sistema":
+        return True
+    domain = (
+        os.environ.get("PRIMARY_DOMAIN", "")
+        + os.environ.get("EASYPANEL_DOMAIN", "")
+    )
+    return "api.transporteexecutivo.com" in domain
+
+
+def main():
+    if _is_sistema_mode():
+        target = os.environ.get("NEXUS_DEPLOY_TARGET", "").strip().lower() or "api-domain"
+        print(f"[Nexus] docker_entrypoint modo sistema ({target})")
         print("[Nexus] Iniciando Sistema Master (headless) porta 8770")
         _run_sistema()
+    print("[Nexus] docker_entrypoint modo motor")
     print("[Nexus] Iniciando Motor de Reservas (uvicorn)")
     _run_motor()
 
