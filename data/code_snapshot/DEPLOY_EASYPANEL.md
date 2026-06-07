@@ -2,72 +2,100 @@
 
 Dois apps **separados** no mesmo repositório GitHub.
 
-## App 1 — Sistema Master (`api.transporteexecutivo.com`)
+---
+
+## Método A — App + Dockerfile.sistema (se o painel aceitar)
 
 | Campo | Valor |
 |-------|-------|
-| Fonte | GitHub `transporte-executivo` / branch `main` |
+| Tipo | **App** |
+| Fonte | GitHub `transporte-executivo` / `main` |
 | Construção | **Dockerfile** |
-| Arquivo Dockerfile | **`Dockerfile.sistema`** |
-| Domínio → Porta proxy | **8770** |
-| Variáveis | Ver `.env.sistema.example` |
+| Arquivo | **`Dockerfile.sistema`** (tente também `./Dockerfile.sistema`) |
+| Domínio → Porta | **8770** |
+| Env | `.env.sistema.example` |
 
-### CRÍTICO — Configurações de deploy
+**Implantar** → botão verde **Implantar** (Rebuild). Restart não basta.
 
-Em **Implantar** → **Configurações de deploy** (Deploy settings):
+> Nem toda versão do EasyPanel mostra campos "Comando" / "Argumentos". Se não existir, ignore — use o Método B.
 
-| Campo | Valor |
-|-------|-------|
-| **Comando** (Command) | **vazio** |
-| **Argumentos** (Arguments) | **vazio** |
+---
 
-Se houver `uvicorn` ou `app.main:app` nesses campos, o EasyPanel **ignora** o `Dockerfile.sistema` e você verá:
+## Método B — Compose (recomendado se continuar uvicorn)
 
-```text
-/usr/local/bin/uvicorn
-ValidationError: secret_key / jwt_secret_key / csrf_secret_key
+Mais confiável: o compose **força** `Dockerfile.sistema` no build.
+
+1. **+ Serviço** → escolha **Compose** (não App)
+2. Repositório: `goulartfelipe618-beep/transporte-executivo` / `main`
+3. Arquivo compose: **`docker-compose.sistema.yml`**
+4. Serviço alvo do domínio: **`sistema`**
+5. Domínio `api.transporteexecutivo.com` → porta **8770**
+6. Variáveis de ambiente (aba Env):
+
+```env
+APP_ENV=production
+SUPABASE_URL=...
+SUPABASE_ANON_KEY=...
+NEXUS_BIND_HOST=0.0.0.0
+INTEGRACAO_GATEWAY_HOST=0.0.0.0
+GATEWAY_MOCK_FALLBACK=false
 ```
 
-Após alterar: **Salvar** → **Implantar (Rebuild)**.
+7. **Salvar** → **Implantar**
 
-### Log correto (Sistema)
+---
+
+## App Motor (`engine.transporteexecutivo.com`)
+
+| Campo | Valor |
+|-------|-------|
+| Tipo | App |
+| Dockerfile | **`Dockerfile`** |
+| Porta domínio | **8000** |
+| Env | `.env.motor.example` |
+
+---
+
+## Como saber se a build certa subiu
+
+### Log de RUNTIME — certo (Sistema)
 
 ```text
-[Nexus] === SISTEMA MASTER (headless) ===
-[Nexus] Runtime producao build ...
+[Nexus] === SISTEMA MASTER (headless) — porta 8770 ===
 [Nexus] Servicos ativos.
 ```
 
-### Teste
+### Log de RUNTIME — errado (ainda Motor)
+
+```text
+/usr/local/bin/uvicorn
+secret_key Field required
+```
+
+### Teste HTTP
 
 ```text
 https://api.transporteexecutivo.com/api/v1/public/statistics
 ```
 
-Deve retornar JSON (KPIs de cobertura).
+JSON = Sistema ok. Landing "Iniciar reserva" = Motor no domínio errado.
 
----
+### Console do container (opcional)
 
-## App 2 — Motor de Reservas (`engine.transporteexecutivo.com`)
+Dentro do app, aba **Console** → Launcher:
 
-| Campo | Valor |
-|-------|-------|
-| Arquivo Dockerfile | **`Dockerfile`** |
-| Domínio → Porta proxy | **8000** |
-| Variáveis | Ver `.env.motor.example` (inclui SECRET_KEY, JWT_*, CSRF_*, DATABASE_URL) |
-
-Comando/Argumentos: vazio (usa `uvicorn` do Dockerfile) **ou** deixe o padrão do Motor.
-
-### Teste
-
-```text
-https://engine.transporteexecutivo.com/health
+```bash
+cat /app/.nexus_build_target
 ```
 
+Deve imprimir: `sistema-master-8770`. Se o arquivo não existir, a imagem errada foi buildada.
+
 ---
 
-## Build — como confirmar qual imagem subiu
+## Subir a build (passo a passo)
 
-No log de **build** do app Sistema, a imagem deve expor porta **8770**, não 8000.
-
-No log de **runtime**, a primeira linha deve mencionar `SISTEMA MASTER`, nunca `uvicorn`.
+1. `git push` no PC (código no GitHub)
+2. EasyPanel → abrir o serviço
+3. Conferir Dockerfile **ou** compose (acima)
+4. Clicar **Implantar** (não só Reiniciar)
+5. Abrir **Logs** e esperar `SISTEMA MASTER`

@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-07T01:15:10.406617",
+  "saved_at": "2026-06-07T01:19:13.647116",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "f42fdfec4fd22273d1de2a777b814814ad01974b47791a118afb7ffec88f1796",
@@ -12,7 +12,7 @@
       "sha256": "a75108292f77cb7e332f0582723bffba960ba06f1a7a2d1eae7f1cde18cac1f1"
     },
     "DEPLOY_EASYPANEL.md": {
-      "sha256": "e9175fd5bd71e0a451c3ef823ae7f1caca59817e9357e05964b1a47ce1b7b7fe"
+      "sha256": "74a045a0db78ca37aabd3bc0be2531c6a6c3d307118bf243be263508fe5df1c2"
     },
     "Dockerfile": {
       "sha256": "1ec6ec3a0729902c120962d464881ba24c18dacce697be877f0e13195cfa5f8b"
