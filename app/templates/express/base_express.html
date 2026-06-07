@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+{% set colors = branding if branding is defined else (network.colors if network else {}) %}
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="{{ colors.primary or '#0D1B2A' }}">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>{% block title %}Reserve seu transporte{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/express.css?v=4">
+  <style>:root{--brand-primary:{{ colors.primary or '#0D1B2A' }};--brand-accent:{{ colors.accent or '#D4AF37' }};--brand-bg:{{ colors.background or '#F8F9FA' }};}</style>
+  {% block head %}{% endblock %}
+</head>
+<body class="express-body">
+  <div class="express-shell">
+    <div class="express-lang-bar" role="group" aria-label="Language">
+      <span class="express-lang-label" data-i18n="lang_label">Idioma</span>
+      <div class="express-lang-buttons">
+        <button type="button" class="lang-btn active" data-lang="pt" aria-pressed="true">🇧🇷 PT</button>
+        <button type="button" class="lang-btn" data-lang="es" aria-pressed="false">🇪🇸 ES</button>
+        <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">🇺🇸 EN</button>
+      </div>
+    </div>
+    <header class="express-top express-top-compact">
+      {% if network and network.logo_url %}
+      <img src="{{ network.logo_url }}" alt="{{ network.name }}" class="express-logo-partner">
+      {% elif network %}
+      <span class="express-name-partner">{{ network.name }}</span>
+      {% endif %}
+    </header>
+    {% include "partials/timeline_express.html" %}
+    <main class="express-main">{% block content %}{% endblock %}</main>
+  </div>
+  <script src="/static/js/config.js"></script>
+  <script src="/static/js/express-i18n.js?v=4"></script>
+  <script src="/static/js/express.js?v=4" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

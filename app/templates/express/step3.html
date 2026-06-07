@@ -1,0 +1,56 @@
+{% extends "express/base_express.html" %}
+{% block title %}Confirme sua solicitação{% endblock %}
+{% block content %}
+<section class="express-step express-step-form">
+  <h1 class="express-title" data-i18n="title_step3">Confirme sua solicitação</h1>
+
+  <div class="summary-card summary-compact">
+    <div class="summary-highlight">
+      <span class="summary-label" data-i18n="summary_total">Total estimado</span>
+      <strong class="summary-price">R$ {{ '%.2f'|format(reservation.total_amount or 0) }}</strong>
+    </div>
+    <div class="summary-row">
+      <span data-i18n="summary_route">Trajeto ida</span>
+      <strong>{{ reservation.origin }} → {{ reservation.destination }}</strong>
+    </div>
+    <div class="summary-row">
+      <span data-i18n="summary_when">Quando (ida)</span>
+      <strong>{{ reservation.trip_date }} · {{ reservation.trip_time }}</strong>
+    </div>
+    {% if reservation.trip_type == 'round_trip' and reservation.return_origin %}
+    <div class="summary-row">
+      <span data-i18n="summary_return">Trajeto volta</span>
+      <strong>{{ reservation.return_origin }} → {{ reservation.origin }}</strong>
+    </div>
+    <div class="summary-row">
+      <span data-i18n="summary_return_when">Quando (volta)</span>
+      <strong>{{ reservation.return_date }} · {{ reservation.return_time }}</strong>
+    </div>
+    {% endif %}
+    <div class="summary-row">
+      <span data-i18n="summary_vehicle">Veículo</span>
+      <strong>{{ reservation.vehicle_name }}</strong>
+    </div>
+    <div class="summary-row">
+      <span data-i18n="summary_contact">Contato</span>
+      <strong>{{ passenger_name }} · {{ passenger_whatsapp }}</strong>
+    </div>
+  </div>
+
+  <div class="express-info express-info-pay express-info-inline">
+    <strong data-i18n="pay_title">Pagamento</strong>
+    <p data-i18n="pay_reminder">Pagamento apenas ao descer do veículo.</p>
+  </div>
+
+  <form id="express-form-step3" class="express-form" data-reservation-id="{{ reservation_id }}">
+    <label class="lgpd-check">
+      <input type="checkbox" id="lgpd_accepted" required>
+      <span data-i18n="lgpd">Aceito o uso dos meus dados conforme a LGPD.</span>
+    </label>
+    <div class="express-sticky-cta">
+      <button type="submit" class="btn-primary btn-block" data-i18n="btn_confirm">CONFIRMAR SOLICITAÇÃO</button>
+      <p class="express-error hidden" id="form-error" role="alert"></p>
+    </div>
+  </form>
+</section>
+{% endblock %}

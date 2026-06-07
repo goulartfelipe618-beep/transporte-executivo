@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Painel do Parceiro{% endblock %}
+{% block content %}
+<section class="dashboard">
+  <h2>Reservas indicadas</h2>
+  <div id="stats" class="stats-grid"></div>
+  <div id="reservations-list"></div>
+  <p><a href="/partner/login">Sair / Login</a></p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+const token = localStorage.getItem('partner_token');
+if (!token) window.location.href = '/partner/login';
+async function load() {
+  const headers = { Authorization: 'Bearer ' + token };
+  const stats = await fetch('/api/partner/dashboard', { headers }).then(r => r.json());
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-card"><span>Reservas</span><strong>${stats.total_reservations}</strong></div>
+    <div class="stat-card"><span>Vendido</span><strong>R$ ${stats.total_sold}</strong></div>
+    <div class="stat-card"><span>Comissões</span><strong>R$ ${stats.total_commissions}</strong></div>
+    <div class="stat-card"><span>Pendentes</span><strong>R$ ${stats.pending_commissions}</strong></div>`;
+  const res = await fetch('/api/partner/reservations', { headers }).then(r => r.json());
+  document.getElementById('reservations-list').innerHTML = '<table class="data-table"><tr><th>Código</th><th>Status</th><th>Total</th></tr>' +
+    res.items.map(i => `<tr><td>${i.code}</td><td>${i.status}</td><td>${i.total_amount || '-'}</td></tr>`).join('') + '</table>';
+}
+load();
+</script>
+{% endblock %}

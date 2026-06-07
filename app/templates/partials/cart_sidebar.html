@@ -1,0 +1,28 @@
+<aside class="cart-sidebar" id="booking-cart">
+  <h3>Meu Carrinho</h3>
+  {% if reservation %}
+  <div class="cart-item"><strong>Trajeto</strong><br>{{ reservation.origin }}</div>
+  <div class="cart-item">→ {{ reservation.destination }}</div>
+  <div class="cart-item"><strong>Data</strong> {{ reservation.trip_date }} às {{ reservation.trip_time }}</div>
+  {% if reservation.return_trip and reservation.return_date %}
+  <div class="cart-item"><strong>Volta</strong> {{ reservation.return_date }} {% if reservation.return_time %}{{ reservation.return_time }}{% endif %}</div>
+  {% endif %}
+  {% if reservation.trip_type == 'hourly' and reservation.hourly_hours %}
+  <div class="cart-item"><strong>Serviço</strong> {{ reservation.hourly_hours }}h em {{ reservation.city or reservation.origin }}</div>
+  {% endif %}
+  {% if reservation.vehicle_name %}
+  <div class="cart-item"><strong>Veículo</strong> {{ reservation.vehicle_category or reservation.vehicle_name }}</div>
+  {% if reservation.vehicle_brand %}<div class="cart-item">{{ reservation.vehicle_brand }} {{ reservation.vehicle_model or '' }}</div>{% endif %}
+  {% endif %}
+  {% if reservation.distance_km %}
+  <div class="cart-item"><strong>Distância est.</strong> {{ reservation.distance_km }} km · ~{{ reservation.duration_minutes }} min</div>
+  {% endif %}
+  {% if reservation.total_amount %}
+  <div class="cart-total">Total: R$ {{ '%.2f'|format(reservation.total_amount) }}</div>
+  {% else %}
+  <p class="cart-empty">Selecione um veículo na lista ao lado.</p>
+  {% endif %}
+  {% else %}
+  <p class="cart-empty">Preencha a busca para iniciar sua reserva.</p>
+  {% endif %}
+</aside>

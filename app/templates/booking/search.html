@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Buscar viagem — Nexus Transfer{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="booking-layout has-sidebar">
+    <div class="booking-main">
+      <div class="card">
+        <h2 class="card-title">Tipo da viagem</h2>
+        <div class="trip-type-group" role="tablist">
+          <button type="button" class="trip-type-btn active" data-trip="one_way" aria-selected="true">
+            <span class="icon">→</span>
+            Somente Ida
+          </button>
+          <button type="button" class="trip-type-btn" data-trip="round_trip">
+            <span class="icon">⇄</span>
+            Ida e Volta
+          </button>
+          <button type="button" class="trip-type-btn" data-trip="hourly">
+            <span class="icon">⏱</span>
+            Serviço por Hora
+          </button>
+        </div>
+
+        <form id="search-form" class="search-form" novalidate>
+          <!-- Somente ida -->
+          <div id="panel-one_way" class="trip-form-panel active">
+            <p class="form-section-title">Trajeto — somente ida</p>
+            <div class="form-row autocomplete-wrap">
+              <label for="origin">Origem</label>
+              <input type="text" id="origin" name="origin" placeholder="Aeroporto, hotel, endereço..." autocomplete="off" data-autocomplete>
+              <div class="autocomplete-list" id="origin-list"></div>
+            </div>
+            <div class="form-row autocomplete-wrap">
+              <label for="destination">Destino</label>
+              <input type="text" id="destination" name="destination" placeholder="Hotel, evento, empresa..." autocomplete="off" data-autocomplete>
+              <div class="autocomplete-list" id="destination-list"></div>
+            </div>
+            <div class="form-grid form-grid-2">
+              <div class="form-row"><label for="trip_date_ow">Data</label><input type="date" id="trip_date_ow" name="trip_date"></div>
+              <div class="form-row"><label for="trip_time_ow">Horário</label><input type="time" id="trip_time_ow" name="trip_time"></div>
+            </div>
+          </div>
+
+          <!-- Ida e volta -->
+          <div id="panel-round_trip" class="trip-form-panel">
+            <p class="form-section-title">Trajeto — ida e volta</p>
+            <div class="form-row autocomplete-wrap">
+              <label for="origin_rt">Origem</label>
+              <input type="text" id="origin_rt" name="origin_rt" placeholder="Ponto de partida" data-autocomplete>
+              <div class="autocomplete-list"></div>
+            </div>
+            <div class="form-row autocomplete-wrap">
+              <label for="destination_rt">Destino</label>
+              <input type="text" id="destination_rt" name="destination_rt" placeholder="Destino principal" data-autocomplete>
+              <div class="autocomplete-list"></div>
+            </div>
+            <div class="form-grid form-grid-2">
+              <div class="form-row"><label>Data da ida</label><input type="date" id="trip_date_rt" name="trip_date_rt"></div>
+              <div class="form-row"><label>Horário da ida</label><input type="time" id="trip_time_rt" name="trip_time_rt"></div>
+            </div>
+            <div class="form-grid form-grid-2">
+              <div class="form-row"><label>Data da volta</label><input type="date" id="return_date" name="return_date"></div>
+              <div class="form-row"><label>Horário da volta</label><input type="time" id="return_time" name="return_time"></div>
+            </div>
+          </div>
+
+          <!-- Por hora -->
+          <div id="panel-hourly" class="trip-form-panel">
+            <p class="form-section-title">Serviço por hora — veículo à disposição</p>
+            <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:1rem;">Ideal para reuniões, eventos e compromissos corporativos no mesmo dia.</p>
+            <div class="form-row autocomplete-wrap">
+              <label for="city">Cidade</label>
+              <input type="text" id="city" name="city" placeholder="Ex.: São Paulo, Rio de Janeiro">
+              <div class="autocomplete-list"></div>
+            </div>
+            <div class="form-grid form-grid-2">
+              <div class="form-row"><label>Data</label><input type="date" id="trip_date_h" name="trip_date_h"></div>
+              <div class="form-row"><label>Horário inicial</label><input type="time" id="trip_time_h" name="trip_time_h"></div>
+            </div>
+            <div class="form-row">
+              <label>Quantidade de horas</label>
+              <div class="hour-chips" id="hour-chips">
+                {% for h in [4, 6, 8, 10, 12] %}
+                <button type="button" class="hour-chip {% if h == 4 %}active{% endif %}" data-hours="{{ h }}">{{ h }}h</button>
+                {% endfor %}
+              </div>
+              <input type="hidden" id="hourly_hours" name="hourly_hours" value="4">
+            </div>
+          </div>
+
+          <p class="form-section-title">Passageiros e bagagens</p>
+          <div class="form-grid form-grid-2">
+            <div class="form-row"><label for="passengers">Passageiros</label><input type="number" id="passengers" name="passengers" min="1" max="50" value="1"></div>
+            <div class="form-row"><label for="luggage">Bagagens</label><input type="number" id="luggage" name="luggage" min="0" max="50" value="0"></div>
+          </div>
+          <div class="form-row">
+            <label for="notes">Observações</label>
+            <textarea id="notes" name="notes" rows="2" placeholder="Voo, preferências, ponto de encontro..."></textarea>
+          </div>
+
+          <div id="route-estimate" class="route-estimate hidden">
+            <span>📍 Distância estimada: <strong id="est-distance">—</strong></span>
+            <span>⏱ Duração estimada: <strong id="est-duration">—</strong></span>
+          </div>
+          <div id="route-map" class="hidden"></div>
+
+          <button type="submit" class="btn btn-primary btn-lg btn-block" id="btn-search">Buscar Veículos</button>
+        </form>
+      </div>
+    </div>
+    <div>{% include "partials/cart_sidebar.html" %}</div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>document.addEventListener('DOMContentLoaded', () => NexusBooking?.initSearch());</script>
+{% endblock %}

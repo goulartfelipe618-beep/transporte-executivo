@@ -1,0 +1,14 @@
+---
+description: Evita regressao para versoes antigas do Nexus Transfer
+alwaysApply: true
+---
+
+# Versao Mais Nova Obrigatoria
+
+- Nunca restaure, copie ou sobrescreva arquivos do app com versoes antigas.
+- Antes de alterar, confira a versao atual em `app/version.py`, `app/main_window.py`, `app/code_guard.py` e `data/code_manifest.json`.
+- Toda mudanca deve preservar o que ja foi implementado: Financeiro, Agenda, Metricas, Motoristas, Clientes, Configuracoes, Automacoes, portal do motorista e protecao por snapshot.
+- Ao editar codigo, atualize a versao/snapshot com `save_code_snapshot()` depois que a validacao passar.
+- Sempre valide com `python -m py_compile` nos arquivos Python alterados e importe `TransferSystemApp`.
+- Ao finalizar alteracao de comportamento visual ou de fluxo, reinicie/reabra pelo `INICIAR.bat` ou pelo fluxo equivalente, sem perder `data/app_state.json`, `data/automations.json` e `data/settings.json`.
+- Se arquivos forem revertidos ou corrompidos, restaure a versao mais nova de `data/code_snapshot/` antes de fazer qualquer nova alteracao.

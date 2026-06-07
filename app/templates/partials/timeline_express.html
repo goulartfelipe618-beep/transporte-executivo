@@ -1,0 +1,7 @@
+{% if step is defined %}
+<nav class="express-timeline" aria-label="Etapas">
+  <div class="express-timeline-item {% if step >= 1 %}active{% endif %}{% if step > 1 %}done{% endif %}"><span class="dot">1</span><span class="label">Viagem</span></div>
+  <div class="express-timeline-item {% if step >= 2 %}active{% endif %}{% if step > 2 %}done{% endif %}"><span class="dot">2</span><span class="label">Veículo</span></div>
+  <div class="express-timeline-item {% if step >= 3 %}active{% endif %}{% if step > 3 %}done{% endif %}"><span class="dot">3</span><span class="label">Confirmar</span></div>
+</nav>
+{% endif %}

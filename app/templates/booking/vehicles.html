@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Escolha o veículo — Nexus Transfer{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="booking-layout has-sidebar">
+    <div class="booking-main">
+      <div class="results-header">
+        <h2>Veículos disponíveis</h2>
+        <p class="results-count">{{ vehicle_count }} opção(ões) para seu trajeto executivo</p>
+      </div>
+
+      <div class="route-estimate">
+        <span>📍 <strong>{{ reservation.origin }}</strong> → <strong>{{ reservation.destination }}</strong></span>
+        {% if reservation.distance_km %}
+        <span>· {{ reservation.distance_km }} km · ~{{ reservation.duration_minutes }} min</span>
+        {% endif %}
+      </div>
+      <div id="route-map" data-origin="{{ reservation.origin }}" data-destination="{{ reservation.destination }}"></div>
+
+      <div class="vehicle-list">
+        {% for v in vehicles %}
+        <article class="vehicle-card-premium">
+          <div class="vehicle-card-image">
+            <img src="{{ v.image_url or '/static/images/vehicles/suv.svg' }}" alt="{{ v.name }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <span class="placeholder-icon" style="display:none">🚗</span>
+          </div>
+          <div class="vehicle-card-body">
+            <span class="vehicle-category-tag">{{ v.category or v.name }}</span>
+            <h3>{{ v.name }}</h3>
+            <p class="vehicle-model-line">{{ v.brand or '' }} {{ v.model or '' }}</p>
+            <div class="vehicle-specs">
+              <span>👤 Até {{ v.passengers }} passageiros</span>
+              <span>🧳 Até {{ v.luggage }} bagagens</span>
+            </div>
+            {% if v.benefits %}
+            <ul class="benefits-list">
+              {% for b in v.benefits %}<li>{{ b }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+          </div>
+          <div class="vehicle-card-price">
+            <span class="price-label">A partir de</span>
+            <span class="price-value">R$ {{ '%.2f'|format(v.price) }}</span>
+            <span class="price-note">+ taxas · valor final no resumo</span>
+            <button type="button" class="btn btn-select select-vehicle"
+              data-reservation="{{ reservation.id }}"
+              data-category="{{ v.category }}"
+              data-name="{{ v.name }}"
+              data-brand="{{ v.brand or '' }}"
+              data-model="{{ v.model or '' }}"
+              data-price="{{ v.price }}"
+              data-image="{{ v.image_url or '' }}"
+              data-benefits="{{ (v.benefits or [])|join('|') }}">Selecionar</button>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+    {% include "partials/cart_sidebar.html" %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    NexusBooking?.initVehicleSelect('{{ reservation.id }}');
+    NexusBooking?.initRouteMap();
+  });
+</script>
+{% endblock %}

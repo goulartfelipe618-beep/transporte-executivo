@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Painel do Parceiro — Login{% endblock %}
+{% block content %}
+<section class="auth-card card">
+  <h2>Painel do Parceiro</h2>
+  <form id="partner-login">
+    <div class="form-row"><label>E-mail</label><input type="email" name="email" required></div>
+    <div class="form-row"><label>Senha</label><input type="password" name="password" required></div>
+    <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+  </form>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('partner-login').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const res = await fetch('/api/partner/auth/login', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') }),
+  });
+  if (res.ok) {
+    const data = await res.json();
+    localStorage.setItem('partner_token', data.access_token);
+    window.location.href = '/partner';
+  } else alert('Login inválido');
+});
+</script>
+{% endblock %}

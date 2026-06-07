@@ -1,0 +1,20 @@
+{% set steps = [
+  (1, 'Busca'),
+  (2, 'Veículos'),
+  (3, 'Passageiro'),
+  (4, 'Resumo'),
+  (5, 'Pagamento'),
+  (6, 'Confirmação')
+] %}
+<nav class="booking-timeline" aria-label="Etapas da reserva">
+  <div class="container">
+    <div class="timeline-steps">
+      {% for num, label in steps %}
+      <div class="timeline-step {% if step == num %}active{% elif step > num %}done{% endif %}">
+        <div class="timeline-dot">{% if step > num %}✓{% else %}{{ num }}{% endif %}</div>
+        <span class="timeline-label">{{ label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</nav>

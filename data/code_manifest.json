@@ -1,0 +1,152 @@
+{
+  "saved_at": "2026-06-06T21:54:19.831245",
+  "files": {
+    ".cursor/rules/version-integrity.mdc": {
+      "sha256": "f42fdfec4fd22273d1de2a777b814814ad01974b47791a118afb7ffec88f1796",
+      "marker": "Versao Mais Nova Obrigatoria"
+    },
+    "INICIAR_VPS.bat": {
+      "sha256": "8ee4622b90f2ebb28b52e824a951a25c7688456548711be377cc41f7ce041a1a"
+    },
+    "app/automations.py": {
+      "sha256": "3d012a1e87f3d60d17edddbeef0af15025c738213b9de6d6276eb7bad9a007ae",
+      "marker": "AUTOMACAO SOLICITACAO PARA SER MOTORISTA"
+    },
+    "app/bind_host.py": {
+      "sha256": "036b9d743bc9d6c2463db284557a1f0998d32d09c9cff69ce925814cf805c9e5",
+      "marker": "bind_host"
+    },
+    "app/code_guard.py": {
+      "sha256": "0e2a53f796d5c4461053470e68d8a6f500c9054a504e5c8147431586b3e53a26",
+      "marker": "ensure_code_integrity"
+    },
+    "app/company_portal.py": {
+      "sha256": "7e376a072188068ada02705c7db590879b3e1911aa40c3b4e85ec51ab5a7bc4c",
+      "marker": "start_company_portal_server"
+    },
+    "app/components.py": {
+      "sha256": "2770f3f07c69862f8c34ed3fab00612b23a48af3c0efa9c899f132cecadeab2d",
+      "marker": "setup_placeholder"
+    },
+    "app/coverage_ui.py": {
+      "sha256": "c85a327832d7dccfa0416de22b2687d81454f111503cb2ee9604b64b36338195",
+      "marker": "render_abrangencia"
+    },
+    "app/data.py": {
+      "sha256": "b43b09dccdb204b6f298e769bf6d2a8919f74cf8b10eeecb2c7583b395c6018b",
+      "marker": "INITIAL_RESERVATIONS = []"
+    },
+    "app/full_features.py": {
+      "sha256": "acbe43b6232776b7926cb2a06b36cdd100bbc1d13f6ae220b8264b57a25bed92",
+      "marker": "render_settings"
+    },
+    "app/geography.py": {
+      "sha256": "d4d15b2b519fba320433c500c57a4fc91442a36e7b2c3a22e8c440f45e962ae9",
+      "marker": "operational_points"
+    },
+    "app/ibge.py": {
+      "sha256": "47f7e6e4ac7021ff0ee1cae7596997e324c9491133ca4bc1d766cbb94bc5b0d6",
+      "marker": "get_states"
+    },
+    "app/main_window.py": {
+      "sha256": "1b67c9adb258c62872f2925d0f26a09347cd4cacf47f6104663469da68428c6b",
+      "marker": "APP_BUILD"
+    },
+    "app/pages.py": {
+      "sha256": "e4d34034fd384a3ef0138afaf92d638cb9c91bd7368b6300aed97d7b8b7e8e9c",
+      "marker": "render_finance"
+    },
+    "app/partner_network_gateway.py": {
+      "sha256": "9faf35d7cb6b434240ecf8eb62d34ded081ffeb9c46c86fb7e44cd9157629ef6"
+    },
+    "app/partner_network_reservations.py": {
+      "sha256": "387836a1d7f304ab3568c766f3a7974f180d7afe74e58c57fd39dd27018a8d5f",
+      "marker": "register_network_reservation"
+    },
+    "app/partner_network_vehicles.py": {
+      "sha256": "f43de248fff25a6d97b7774947bae9466d37fd05d90981c4ccad91e6e414c286",
+      "marker": "network_vehicles_for_partner"
+    },
+    "app/portal_auth.py": {
+      "sha256": "90f22bf8d0b54dcd2bc4cde03adcd1e039849672046a0ee8755111ec5ef4371d",
+      "marker": "ensure_portal_security"
+    },
+    "app/portal_server.py": {
+      "sha256": "d0c992b44158f9b8a4434199d1ffb4172a74d524c213aa90b9b1501678a9ae69",
+      "marker": "start_driver_portal_server"
+    },
+    "app/pricing_engine.py": {
+      "sha256": "e4338a60e4f9f148afd6bae41c08cf87ba3b41abec4a82edff0d1c8c1b3ff0b0",
+      "marker": "list_pricing_sources"
+    },
+    "app/production_runtime.py": {
+      "sha256": "a32010b214b1d8daf27f1796834dca28f54df4ea2971b8bf3c0b1c45c76646a2",
+      "marker": "bootstrap_production_services"
+    },
+    "app/repository/app_repository.py": {
+      "sha256": "364a430b93d4eb6322ab35b63389d0399d47c1e675ea1af66b5305f0cc5ec1e3"
+    },
+    "app/repository/supabase_client.py": {
+      "sha256": "b91486bcf53f443b19d0503b421295ce722b2b3c53d9290b5b9e12e2afa8c076"
+    },
+    "app/repository/supabase_config.py": {
+      "sha256": "094e2e8149e91b605a7ffc352e0c2f1226b9c476ca5b1c3bfe6c0eec29ac8188"
+    },
+    "app/repository/supabase_mappers.py": {
+      "sha256": "06c781afd707e71151e03b5c45e1d6241919c68aad9c65ff038e47ea00119aed",
+      "marker": "TO_ROW"
+    },
+    "app/repository/supabase_repository.py": {
+      "sha256": "911c6c11fbd235f900e8735928d3044046b4954b16e96c88693bb3ed25d752a9"
+    },
+    "app/repository/supabase_store.py": {
+      "sha256": "effdf73ae562616649fcfaab189d2ac30c0145c13929e6bc2ad3ecae77ca38f6",
+      "marker": "persist_state"
+    },
+    "app/reservations.py": {
+      "sha256": "89e7ffde143868b278abeb35ba8ad26d6c1c894642af7bbd40f4b6d3f3b13be7",
+      "marker": "download_reservation"
+    },
+    "app/settings_store.py": {
+      "sha256": "e7e563d4361ecf7c9afe7d451ec1c5a54ef59bd7767217913ba2b3f591e4b15e",
+      "marker": "DEFAULT_SETTINGS"
+    },
+    "app/sidebar.py": {
+      "sha256": "5b845aaa60fdca46343bd31e9ee288977ee863474e869ff8635950e9269a3297",
+      "marker": "FINANCEIRO"
+    },
+    "app/storage.py": {
+      "sha256": "5af4f8b127f8da64f98a7fe632966e4ad4d806f8fd79538da7df010a76e75171",
+      "marker": "load_state"
+    },
+    "app/theme.py": {
+      "sha256": "bfc2ab53386c0d214926b85e2e0a762801c7a67649f2c0b1ccf3fd5116f5cc57",
+      "marker": "styled_button"
+    },
+    "app/utils.py": {
+      "sha256": "203c3f71a08ff8a004d5f6d35d562c3b0718b0646dd0366cf3930a08131fa89b",
+      "marker": "reopen_window"
+    },
+    "app/vehicles_model.py": {
+      "sha256": "b46fea0cf13b1e2a52eb395acbd60011d2b2a189173ba3dbc3a7b49eb63e0630",
+      "marker": "VEHICLE_TYPES"
+    },
+    "app/version.py": {
+      "sha256": "fc61aefb720f5542d4250730c18ce90612472c157e462f66e15513ee4fc5c95c",
+      "marker": "APP_BUILD"
+    },
+    "main.py": {
+      "sha256": "4baf92f199eed66ec35590e57b71142013fa50b85da59b392efc4cee2586db13",
+      "marker": "code_guard"
+    },
+    "requirements.txt": {
+      "sha256": "cb407437fdcf6a41d99ee6e34c9cb337e26d2cdcf1f536dbcd7de3d3cfc62ca7"
+    },
+    "scripts/run_production_server.py": {
+      "sha256": "a652cad996a55381f6cbdadfe5ac394eb2ef5cb2adb6833c22edc4d47a64ec83"
+    },
+    "scripts/validate_supabase_production.py": {
+      "sha256": "6016beee0f5fffa3e19f01e49478d70929975d1c617e5ea16d1c427e4d156bf1"
+    }
+  }
+}

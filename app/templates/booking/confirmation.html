@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Reserva confirmada — {{ reservation.code }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="card confirmation-page" style="margin:2rem auto;max-width:640px">
+    <div class="success-badge">✓</div>
+    <p class="status-pill">Confirmada</p>
+    <h2 style="color:var(--navy);margin:1rem 0 0.5rem">Reserva confirmada com sucesso!</h2>
+    <p class="reservation-code">{{ reservation.code }}</p>
+
+    <div class="qr-wrap">
+      <img src="/booking/{{ reservation.id }}/qr" alt="QR Code da reserva {{ reservation.code }}">
+    </div>
+
+    <div class="detail-grid">
+      <dl style="display:grid;grid-template-columns:auto 1fr;gap:0.25rem 1rem">
+        <dt>Veículo</dt><dd>{{ reservation.vehicle_category }} — {{ reservation.vehicle_brand or '' }} {{ reservation.vehicle_model or '' }}</dd>
+        <dt>Trajeto</dt><dd>{{ reservation.origin }} → {{ reservation.destination }}</dd>
+        <dt>Data</dt><dd>{{ reservation.trip_date }} às {{ reservation.trip_time }}</dd>
+        <dt>Total pago</dt><dd>R$ {{ '%.2f'|format(reservation.total_amount or 0) }}</dd>
+        <dt>Motorista</dt><dd id="driver-status">A definir — você será notificado</dd>
+        <dt>Suporte 24h</dt><dd>0800 000 0000 · WhatsApp suporte</dd>
+      </dl>
+    </div>
+
+    <div class="confirm-actions">
+      <a href="/booking/{{ reservation.id }}/pdf" class="btn btn-primary">Baixar PDF</a>
+      <button type="button" class="btn btn-outline" id="btn-email">Enviar por E-mail</button>
+      <button type="button" class="btn btn-outline" id="btn-whatsapp">Enviar por WhatsApp</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => NexusBooking?.initConfirmation('{{ reservation.code }}'));
+</script>
+{% endblock %}

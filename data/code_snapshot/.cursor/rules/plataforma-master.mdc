@@ -1,0 +1,62 @@
+---
+description: Visao global e arquitetura do painel master Nexus Transfer
+alwaysApply: true
+---
+
+# Centro Operacional Master — Diretriz Permanente
+
+Antes de qualquer alteracao, releia esta regra e valide alinhamento com a visao global.
+
+## O que este sistema e
+
+- E o **CENTRO OPERACIONAL MASTER** da plataforma nacional.
+- **Nao e**: site publico, area corporativa, portal do motorista, produto final.
+
+## Objetivo da empresa
+
+Maior rede nacional de transporte executivo corporativo do Brasil, com motoristas/veiculos parceiros, empresas contratantes, cobertura nacional e distribuicao inteligente de reservas.
+
+## Fluxo arquitetural definitivo
+
+```
+Site publico -> Captacao (empresas, motoristas, solicitacoes) -> Integracoes
+-> Painel Admin Master -> Empresas -> Usuarios corporativos -> Reservas
+-> Motoristas -> Operacao Nacional -> Financeiro
+```
+
+## Modulos existentes (nao remover, nao simplificar, nao duplicar)
+
+- Abrangencia Nacional (IBGE + pontos operacionais)
+- Motoristas, Empresas (Clientes), Veiculos, Reservas, Financeiro, Agenda, Metricas
+- Configuracoes, Automacoes, portal do motorista
+- Entrada Site: leads de empresas, leads de motoristas, solicitacoes de transporte
+- Integracoes (arquitetura), Log de eventos, Painel Executivo
+
+## Regras obrigatorias
+
+- Nunca remover funcionalidades, substituir por versoes simplificadas ou criar modulos paralelos quando ja existir equivalente.
+- Sempre reutilizar estruturas existentes; analisar arquitetura atual antes de implementar; trabalhar sobre a versao mais recente.
+- Nunca placeholders, telas temporarias ou exemplos ficticios.
+- Nao iniciar Django, PostgreSQL ou migracao tecnologica sem solicitacao explicita.
+
+## Integracoes futuras
+
+Preparar arquitetura para receber dados do site (leads, solicitacoes, webhooks, APIs). **Nao implementar integracoes reais** sem solicitacao explicita.
+
+## Modelagem de dominio
+
+**Empresa vs Usuario corporativo** — fluxo correto:
+1. Cadastrar empresa -> 2. Homologar -> 3. Liberar acesso -> 4. Criar usuarios -> 5. Definir permissoes.
+Empresa e usuario da empresa sao entidades distintas.
+
+**Motoristas** — evoluir cobertura, categorias, disponibilidade, historico, avaliacoes e performance sem duplicar dados.
+
+**Reservas** — considerar cadeia: Empresa -> Solicitacao -> Reserva -> Motorista -> Execucao -> Financeiro.
+
+## Autoavaliacao obrigatoria (duas rodadas)
+
+Ao concluir implementacao: revisar arquitetura, relacionamentos, persistencia, compatibilidade, modulos impactados e duplicacoes; melhorar pontos encontrados; executar segunda revisao completa.
+
+## Relatorio obrigatorio ao finalizar
+
+Informar: arquivos alterados, impactos, funcionalidades preservadas, melhorias realizadas e proximos passos recomendados.

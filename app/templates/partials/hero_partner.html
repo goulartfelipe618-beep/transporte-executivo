@@ -1,0 +1,19 @@
+<section class="booking-hero">
+  <div class="container">
+    <div class="booking-hero-logos">
+      {% if partner and partner.logo_url %}
+      <img src="{{ partner.logo_url }}" alt="{{ partner.name }}" class="partner-logo-header">
+      <span class="brand-divider" aria-hidden="true"></span>
+      {% elif partner %}
+      <span class="partner-name-header">{{ partner.name }}</span>
+      <span class="brand-divider" aria-hidden="true"></span>
+      {% endif %}
+      <a href="/" class="brand">
+        <img src="/static/images/nexus-logo.svg" alt="" width="100" height="28">
+        <span class="brand-text">Nexus Transfer</span>
+      </a>
+    </div>
+    <h1>{% if partner %}Reserve com {{ partner.name }}{% else %}Reserve seu transfer executivo{% endif %}</h1>
+    <p>Transporte com segurança, conforto e motoristas profissionais — transfers, eventos, city tours e corporativo.</p>
+  </div>
+</section>

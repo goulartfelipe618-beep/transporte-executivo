@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Painel Administrativo{% endblock %}
+{% block content %}
+<section class="dashboard">
+  <h2>Administração Nexus Transfer</h2>
+  <nav class="admin-nav">
+    <a href="#partners">Parceiros</a>
+    <a href="#reservations">Reservas</a>
+    <a href="#commissions">Comissões</a>
+    <a href="#logs">Logs</a>
+  </nav>
+  <div id="admin-stats" class="stats-grid"></div>
+  <div id="admin-content"></div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+const token = localStorage.getItem('admin_token');
+if (!token) window.location.href = '/admin/login';
+const h = () => ({ Authorization: 'Bearer ' + token });
+(async () => {
+  const d = await fetch('/api/admin/dashboard', { headers: h() }).then(r => r.json());
+  document.getElementById('admin-stats').innerHTML = `
+    <div class="stat-card">Parceiros: ${d.partners}</div>
+    <div class="stat-card">Reservas: ${d.reservations}</div>
+    <div class="stat-card">Comissões: R$ ${d.commissions_total}</div>`;
+})();
+</script>
+{% endblock %}

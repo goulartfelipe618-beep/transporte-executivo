@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Pagamento — Nexus Transfer{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="booking-layout has-sidebar">
+    <div class="booking-main">
+      <div class="card">
+        <h2 class="card-title">Forma de pagamento</h2>
+        <p style="color:var(--text-muted);margin-bottom:1.25rem;">Escolha como deseja concluir sua reserva de transporte executivo.</p>
+
+        <div class="payment-methods" id="payment-methods">
+          <label class="payment-option selected">
+            <input type="radio" name="pay_method" value="pix" checked>
+            <div>
+              <strong>PIX</strong>
+              <p style="font-size:0.85rem;color:var(--text-muted);margin:0">Aprovação imediata · QR Code na confirmação</p>
+            </div>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="pay_method" value="card_mp">
+            <div>
+              <strong>Cartão de crédito</strong>
+              <p style="font-size:0.85rem;color:var(--text-muted);margin:0">Mercado Pago · parcelamento disponível</p>
+            </div>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="pay_method" value="card_stripe">
+            <div>
+              <strong>Cartão internacional</strong>
+              <p style="font-size:0.85rem;color:var(--text-muted);margin:0">Stripe · Visa, Mastercard, Amex</p>
+            </div>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="pay_method" value="corporate">
+            <div>
+              <strong>Faturamento corporativo</strong>
+              <p style="font-size:0.85rem;color:var(--text-muted);margin:0">Sujeito à autorização prévia da empresa</p>
+            </div>
+          </label>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-lg btn-block" id="btn-pay" style="margin-top:1.5rem">
+          Confirmar pagamento
+        </button>
+        <p style="font-size:0.8rem;color:var(--text-muted);text-align:center;margin-top:1rem;">
+          Pagamento simulado em ambiente de demonstração. Em produção, redirecionamento ao gateway.
+        </p>
+      </div>
+    </div>
+    {% include "partials/cart_sidebar.html" %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => NexusBooking?.initPayment('{{ reservation.id }}'));
+</script>
+{% endblock %}

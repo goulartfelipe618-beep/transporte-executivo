@@ -1,0 +1,211 @@
+---
+description: Contrato oficial v1.0.0 — APIs, webhooks, DTOs Django, entidades, SEO
+alwaysApply: true
+---
+
+# PLATFORM CONTRACT v1.0.0
+
+**Espelho Python Sistema:** `app/platform_contract.py`  
+**Espelho Python Website:** `core/integrations/platform_contract.py`  
+**DTOs Website:** `core/public_dtos.py` · **Mappers:** `core/integrations/mappers.py` · **Gateway:** `core/integrations/api_gateway.py`  
+**Alias:** `ARQUITETURA_OFICIAL_DA_PLATAFORMA.mdc`
+
+> Nenhuma IA inventa endpoints, webhooks, payloads ou slugs fora deste documento.
+
+---
+
+## 1. Autoridade e sync
+
+Sistema Master (Tkinter) = fonte oficial. Website Django = consumidor. **Sistema > Website.**  
+Proibido: Website acessar banco/arquivos do Sistema.  
+Sync: Sistema persiste → POST outbound webhook → Website invalida cache/sitemap → Website GET public.
+
+---
+
+## 2. APIs v1 (unica convencao — paths EN)
+
+Base gateway Sistema: `INTEGRACAO_API_BASE_URL` (ex.: `https://api.nexustransfer.com.br`)
+
+### 2.1 Public (Website consome — Sistema expoe)
+
+| Metodo | Path | DTO Website |
+|--------|------|-------------|
+| GET | `/api/v1/public/statistics` | `CoverageSummary` |
+| GET | `/api/v1/public/locations/states` | `PublicLocation[]` |
+| GET | `/api/v1/public/locations/cities` | `PublicLocation[]` |
+| GET | `/api/v1/public/locations/airports` | `PublicLocation[]` |
+| GET | `/api/v1/public/locations/hotels` | `PublicLocation[]` |
+| GET | `/api/v1/public/locations/events` | `PublicLocation[]` |
+| GET | `/api/v1/public/locations/partners` | `PublicLocation[]` |
+| GET | `/api/v1/public/locations/hubs` | `PublicLocation[]` |
+| GET | `/api/v1/public/locations/support-points` | `PublicLocation[]` |
+| GET | `/api/v1/public/locations/{website_slug}` | `PublicLocation` |
+| GET | `/api/v1/public/locations` | agregado opcional (gateway) |
+| GET | `/api/v1/public/vehicles` | `PublicVehicle[]` |
+| POST | `/api/v1/public/sync/locations` | sync fila |
+| POST | `/api/v1/public/sync/statistics` | sync KPIs |
+
+**Nao existe em v1.0.0:** `/api/v1/public/coverage/summary` — usar `/statistics`.
+
+### 2.2 Inbound (Website → Sistema)
+
+| Path | event | Aliases legados Website |
+|------|-------|-------------------------|
+| POST `/api/v1/webhooks/inbound/company.lead` | `company.lead` | `company-leads` |
+| POST `/api/v1/webhooks/inbound/driver.application` | `driver.application` | `driver-leads` |
+| POST `/api/v1/webhooks/inbound/reservation.request` | `reservation.request` | — |
+
+### 2.3 Outbound (Sistema → Website)
+
+Sistema emite para: `POST {WEBSITE}/api/v1/webhooks/outbound/` (`core/views_webhooks.py`)
+
+Eventos: `location.created`, `location.updated`, `location.deleted`, `vehicle.created`, `vehicle.updated`, `driver.created`, `driver.updated`, `company.created`, `company.updated`, `lead.created`.  
+`reservation.*` — nunca altera conteudo publico do site.
+
+### 2.4 Private (portais legado)
+
+8765 `/api/driver/*` · 8766 `/api/company/*` → migrar para `/api/v1/private/*`
+
+### 2.5 Deprecados
+
+`/estatisticas`, `/inbound/motoristas/cadastro`, `/api/inbound/company-leads`, `/api/outbound/coverage`, `/coverage/summary`
+
+---
+
+## 3. Mapeamento Django ↔ Contrato
+
+| DTO | API | Models Django (fallback local) |
+|-----|-----|--------------------------------|
+| `CoverageSummary` | GET `/statistics` | `EstatisticasCobertura` |
+| `PublicLocation` | GET `/locations/{level}` ou slug | `Estado`, `Cidade`, `Aeroporto`, `Hotel`, `EventoLocal` |
+| `PublicVehicle` | GET `/vehicles` | `CategoriaVeiculo` |
+
+**WebsiteSyncFields (ORM):** `id_admin`, `website_slug`, `website_path` — espelham IDs e SEO do Sistema. Website **nao gera slugs** quando `id_admin` presente.
+
+**Schema.org:** `{% schema_place public_location "Airport" %}` (Hotel, EventVenue) via `seo_tags.py` / `landing_seo.html`.
+
+---
+
+## 4. Espelhos Python (obrigatorio em paralelo)
+
+Sistema: `app/platform_contract.py` · Website: `core/integrations/platform_contract.py`
+
+Constantes canonicas nomeadas (nao montar paths manualmente):
+
+- `CONTRACT_VERSION`, `API_PUBLIC_STATISTICS`
+- `API_INBOUND_COMPANY_LEAD`, `API_INBOUND_DRIVER_APPLICATION`, `API_INBOUND_RESERVATION_REQUEST`
+- `INBOUND_API_PATHS` / `inbound_api_path(event)` — mapa evento → path
+- `INBOUND_EVENT_*` — eventos oficiais (`company.lead`, `driver.application`, `reservation.request`)
+
+**Proibido** em codigo novo: paths deprecados (secao 2.5), aliases `company-leads`/`driver-leads` em views, chaves de sync com rotulos PT como URL (`estatisticas` → usar `statistics`).
+
+### Alinhamento bilateral confirmado (v1.0.0)
+
+| Constante | Master | Website |
+|-----------|--------|---------|
+| `CONTRACT_VERSION` | 1.0.0 | 1.0.0 |
+| `API_PUBLIC_STATISTICS` | `/api/v1/public/statistics` | identico |
+| `API_INBOUND_*` | 3 paths oficiais | identico |
+
+Website: `manage.py check` OK · assert 4 constantes OK · zero ocorrencias de paths legados.
+
+---
+
+## 5. Rotas Website (Nexus)
+
+| Rota | name | Funcao |
+|------|------|--------|
+| `/cobertura-nacional/` | `cobertura_nacional` | Indice + KPIs |
+| `/cobertura/` | `cobertura_index` | Redirect → cobertura nacional |
+| `/aeroportos/` | `aeroportos_index` | Lista airport |
+| `/hoteis/` | `hoteis_index` | Lista hotel |
+| `/frota/` | `frota_index` | Catalogo veiculos |
+| `/veiculos/` | `veiculos_index` | Legado (mesmo catalogo) |
+| `/<website_slug>/` | `public_location_slug` | Resolve slug → redirect `website_path` canonico |
+
+Paths SEO legados mantidos: `transporte-executivo-*`, `transporte-aeroporto-*`.
+
+View contrato: `localidade_detail` (`cobertura/urls.py`).
+
+---
+
+## 6. Variaveis de ambiente (Website)
+
+```env
+INTEGRACAO_API_ENABLED=True
+INTEGRACAO_API_BASE_URL=https://seu-sistema/api
+INTEGRACAO_WEBHOOK_ENABLED=True
+INTEGRACAO_WEBHOOK_URL=https://seu-sistema
+INTEGRACAO_WEBHOOK_SECRET=seu-segredo
+```
+
+Sistema (futuro gateway): `GATEWAY_PORT`, `WEBHOOK_OUTBOUND_URL`, `WEBHOOK_SECRET`.
+
+---
+
+## 7. Entidades (15) — resumo
+
+`company`, `company.user`, `cost_center`, `driver`, `vehicle`, `reservation`, `reservation.request`, `company.lead`, `driver.application`, `state`, `city`, `operational_point` (+ tipos Aeroporto/Hotel/Parceiro como ponto).
+
+IDs: `emp-`, `usr-`, `cc-`, `clead-`, `dlead-`, `treq-`, `op-`, `htl-`, `apt-`, `net-`.
+
+---
+
+## 8. Payloads publicos
+
+### CoverageSummary (`/statistics`)
+
+`contract_version`, `companies_active`, `companies_total`, `drivers_homologated`, `states_covered`, `cities_covered`, `operational_points_total`, `operational_points_by_type`, `vehicles_published`
+
+### PublicLocation
+
+`id`, `entity_type`, `nome`, `tipo`, `estado_uf`, `cidade_nome`, `endereco`, `website_slug`, `website_path`, `portal_publicado`
+
+### PublicVehicle
+
+`id`, `categoria`, `capacidade`, `bagagens`, `aplicacao`, `marca`, `modelo`, `foto`
+
+### Inbound restrito
+
+`company.lead`, `driver.application` (sem CNH/fotos — sigiloso local), `reservation.request`
+
+Modo localizacao: `manual` | `network` (alias `rede` no Sistema).
+
+---
+
+## 9. Seguranca
+
+| Nivel | Exemplos |
+|-------|----------|
+| publico | listagens, KPIs, fichas SEO |
+| restrito | leads inbound em transito |
+| interno | reservas, financeiro |
+| sigiloso | CPF, CNH, documentos, app_state.json |
+
+---
+
+## 10. Responsabilidades por projeto
+
+### Sistema Master (implementar gateway)
+
+- [ ] GET `/statistics`, `/locations/{level}`, `/vehicles`
+- [ ] POST inbound nos 3 paths oficiais
+- [ ] Emitir outbound para Website em `location.*` / `vehicle.*`
+- [ ] Garantir `website_slug` + `website_path` em todo ponto publicado (`operational_network.enrich_operational_point`)
+
+### Website Django (implementado)
+
+- DTOs + mappers + api_gateway
+- Rotas SEO + outbound receiver + sitemap invalidation
+- Leads via `registrar_submissao()` → eventos oficiais
+- Migracoes: `cobertura.0002`, `veiculos.0004`
+
+---
+
+## 11. Evolucao
+
+1. Alterar este arquivo → bump `CONTRACT_VERSION`  
+2. Espelhar nos dois `platform_contract.py`  
+3. Copiar paths literalmente (nao parafrasear)
+
+Build Sistema alvo: `2026.06.17`. Snapshot: `data/code_snapshot/`.

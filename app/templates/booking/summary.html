@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Resumo da reserva — Nexus Transfer{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="booking-layout has-sidebar">
+    <div class="booking-main">
+      <div class="card">
+        <h2 class="card-title">Resumo da viagem</h2>
+
+        <div class="summary-block">
+          <h4>Serviço</h4>
+          {% if reservation.trip_type == 'hourly' %}
+          <div class="summary-row"><span>Tipo</span><span>Serviço por hora ({{ reservation.hourly_hours }}h)</span></div>
+          <div class="summary-row"><span>Cidade</span><span>{{ reservation.city or reservation.origin }}</span></div>
+          {% else %}
+          <div class="summary-row"><span>Origem</span><span>{{ reservation.origin }}</span></div>
+          <div class="summary-row"><span>Destino</span><span>{{ reservation.destination }}</span></div>
+          {% endif %}
+          <div class="summary-row"><span>Data / Horário</span><span>{{ reservation.trip_date }} às {{ reservation.trip_time }}</span></div>
+          {% if reservation.return_trip and reservation.return_date %}
+          <div class="summary-row"><span>Volta</span><span>{{ reservation.return_date }} {{ reservation.return_time or '' }}</span></div>
+          {% endif %}
+          <div class="summary-row"><span>Passageiros</span><span>{{ reservation.passengers }} · {{ reservation.luggage }} bagagem(ns)</span></div>
+        </div>
+
+        <div class="summary-block">
+          <h4>Veículo</h4>
+          <div class="summary-row"><span>Categoria</span><span>{{ reservation.vehicle_category or reservation.vehicle_name }}</span></div>
+          {% if reservation.vehicle_brand %}
+          <div class="summary-row"><span>Modelo</span><span>{{ reservation.vehicle_brand }} {{ reservation.vehicle_model or '' }}</span></div>
+          {% endif %}
+        </div>
+
+        {% if partner %}
+        <div class="summary-block">
+          <h4>Indicação</h4>
+          <div class="summary-row"><span>Parceiro</span><span>{{ partner.name }}</span></div>
+        </div>
+        {% endif %}
+
+        <div class="summary-block">
+          <h4>Valores</h4>
+          <div class="summary-row"><span>Subtotal</span><span>R$ {{ '%.2f'|format(reservation.subtotal or 0) }}</span></div>
+          <div class="summary-row"><span>Taxas</span><span>R$ {{ '%.2f'|format(reservation.taxes_amount or 0) }}</span></div>
+          <div class="summary-row total"><span>Total</span><span>R$ {{ '%.2f'|format(reservation.total_amount or 0) }}</span></div>
+        </div>
+
+        <a href="/booking/{{ reservation.id }}/payment" class="btn btn-primary btn-lg btn-block">Ir para pagamento</a>
+      </div>
+    </div>
+    {% include "partials/cart_sidebar.html" %}
+  </div>
+</div>
+{% endblock %}

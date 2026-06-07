@@ -1,0 +1,111 @@
+{% extends "express/base_express.html" %}
+{% block title %}Reserve seu transfer{% endblock %}
+{% block content %}
+<section class="express-step express-step-form">
+  <div class="express-info express-info-how">
+    <strong data-i18n="how_title">Como funciona</strong>
+    <p data-i18n="how_body">1) Informe seu trajeto · 2) Escolha o veículo · 3) Confirme. Você recebe o número da solicitação na hora.</p>
+  </div>
+  <div class="express-info express-info-pay">
+    <strong data-i18n="pay_title">Pagamento</strong>
+    <p data-i18n="pay_body">O valor é pago somente na hora de descer do veículo — dinheiro, cartão ou PIX, conforme disponível com o motorista.</p>
+  </div>
+
+  <h1 class="express-title" data-i18n="title_step1">Para onde você vai?</h1>
+  <p class="express-lead" data-i18n="lead_step1">Leva menos de 1 minuto. Sem cadastro.</p>
+
+  <form id="express-form-step1" class="express-form" novalidate
+    data-slug="{{ slug or '' }}"
+    data-codigo="{{ codigo or '' }}"
+    data-is-hotel="{{ '1' if is_hotel else '0' }}"
+    data-default-origin="{{ default_origin or '' }}"
+    data-contributor-ref="{{ contributor_ref or '' }}">
+
+    <div class="trip-pills" role="tablist">
+      <button type="button" class="pill active" data-trip="one_way" role="tab" data-i18n="trip_one_way">Ida</button>
+      <button type="button" class="pill" data-trip="round_trip" role="tab" data-i18n="trip_round">Ida e Volta</button>
+      <button type="button" class="pill" data-trip="hourly" role="tab" data-i18n="trip_hourly">Por Hora</button>
+    </div>
+    <input type="hidden" name="trip_type" id="trip_type" value="one_way">
+
+    <fieldset class="field-group">
+      <legend class="field-group-title" data-i18n="section_outbound">Ida</legend>
+      <div class="field">
+        <label for="origin" data-i18n="origin">Origem</label>
+        <input type="text" id="origin" name="origin" required autocomplete="off"
+          value="{{ default_origin if is_hotel else '' }}"
+          {% if is_hotel %}readonly class="readonly"{% endif %}
+          data-i18n-placeholder="placeholder_origin" placeholder="Endereço de partida">
+      </div>
+      <div class="field" id="field-destination">
+        <label for="destination" data-i18n="destination">Destino</label>
+        <input type="text" id="destination" name="destination" required autocomplete="off"
+          data-i18n-placeholder="placeholder_dest" placeholder="Para onde você vai?"
+          {% if is_hotel %}autofocus{% endif %}>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="trip_date" data-i18n="date">Data</label>
+          <input type="date" id="trip_date" name="trip_date" required>
+        </div>
+        <div class="field">
+          <label for="trip_time" data-i18n="time">Hora</label>
+          <input type="time" id="trip_time" name="trip_time" required>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="field-group hidden" id="return-fields">
+      <legend class="field-group-title" data-i18n="section_return">Volta</legend>
+      <div class="field">
+        <label for="return_origin" data-i18n="return_origin">De onde você será buscado na volta?</label>
+        <p class="field-hint" data-i18n="return_origin_hint">Normalmente o mesmo local para onde você foi na ida (ex.: aeroporto).</p>
+        <input type="text" id="return_origin" name="return_origin" autocomplete="off"
+          data-i18n-placeholder="placeholder_dest" placeholder="Para onde você vai?">
+      </div>
+      <div class="field">
+        <label for="return_destination" data-i18n="return_destination">Destino da volta</label>
+        <p class="field-hint" data-i18n="return_destination_hint">Sempre o mesmo ponto de partida da ida.</p>
+        <input type="text" id="return_destination" name="return_destination" readonly class="readonly" tabindex="-1">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="return_date" data-i18n="return_date">Data da volta</label>
+          <input type="date" id="return_date" name="return_date">
+        </div>
+        <div class="field">
+          <label for="return_time" data-i18n="return_time">Hora da volta</label>
+          <input type="time" id="return_time" name="return_time">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="field-group hidden" id="hourly-fields">
+      <div class="field">
+        <label for="hourly_hours" data-i18n="hourly_hours">Quantas horas?</label>
+        <p class="field-hint" data-i18n="hourly_hint">Veículo à disposição com motorista.</p>
+        <input type="number" id="hourly_hours" name="hourly_hours" min="1" max="24" value="4">
+      </div>
+    </fieldset>
+
+    <fieldset class="field-group">
+      <legend class="field-group-title" data-i18n="your_data">Seus dados</legend>
+      <div class="field">
+        <label for="passenger_name" data-i18n="name">Nome completo</label>
+        <input type="text" id="passenger_name" name="passenger_name" required autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="passenger_whatsapp" data-i18n="whatsapp">WhatsApp</label>
+        <input type="tel" id="passenger_whatsapp" name="passenger_whatsapp" required inputmode="tel" autocomplete="tel">
+      </div>
+    </fieldset>
+
+    <div class="express-sticky-cta">
+      <button type="submit" class="btn-primary btn-block" id="btn-step1" data-i18n="btn_vehicles">
+        VER OPÇÕES DISPONÍVEIS
+      </button>
+      <p class="express-error hidden" id="form-error" role="alert"></p>
+    </div>
+  </form>
+</section>
+{% endblock %}

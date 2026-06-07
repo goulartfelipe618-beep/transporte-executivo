@@ -1,0 +1,23 @@
+{% extends "express/base_express.html" %}
+{% block title %}Solicitação enviada{% endblock %}
+{% block content %}
+<section class="express-step express-done">
+  <div class="done-icon" aria-hidden="true">✓</div>
+  <h1 class="express-title" data-i18n="title_done">Solicitação enviada!</h1>
+  <p class="express-lead" data-i18n="done_lead">Guarde seu número:</p>
+  <p class="done-code">{{ reservation.code }}</p>
+
+  <div class="express-info express-info-pay express-info-inline">
+    <strong data-i18n="pay_title">Pagamento</strong>
+    <p data-i18n="pay_body">O valor é pago somente na hora de descer do veículo — dinheiro, cartão ou PIX, conforme disponível com o motorista.</p>
+  </div>
+
+  {% if whatsapp_url %}
+  <a href="{{ whatsapp_url }}" class="btn-whatsapp btn-block" target="_blank" rel="noopener" data-i18n="done_whatsapp">Falar no WhatsApp</a>
+  {% endif %}
+
+  {% if slug and codigo %}
+  <a href="/{{ slug }}/{{ codigo }}" class="btn-link" data-i18n="done_new">Nova solicitação</a>
+  {% endif %}
+</section>
+{% endblock %}
