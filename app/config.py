@@ -1,28 +1,47 @@
 """Application configuration."""
 
+import os
 from functools import lru_cache
+from pathlib import Path
 from typing import List
 
-from pydantic import Field, field_validator
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_ENV_FILE = ".env" if Path(".env").is_file() else None
+
+
+def _read_env_database_url() -> str:
+    for key in ("DATABASE_URL", "database_url"):
+        value = os.environ.get(key, "").strip()
+        if value:
+            return value
+    return ""
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=_ENV_FILE,
         env_file_encoding="utf-8",
         extra="ignore",
+        env_ignore_empty=True,
+        populate_by_name=True,
     )
 
     app_name: str = "Motor de Reservas Nexus Transfer"
     app_env: str = "development"
     debug: bool = False
     secret_key: str = Field(..., min_length=32)
-    base_url: str = "https://engine.transporteexecutivo.com"
-    allowed_hosts: str = "localhost,127.0.0.1"
+    base_url: str = "https://api.transporteexecutivo.com"
+    allowed_hosts: str = "api.transporteexecutivo.com"
+    healthcheck_host: str = "api.transporteexecutivo.com"
 
-    database_url: str
-    redis_url: str = "redis://localhost:6379/0"
+    database_url: str = Field(
+        default="",
+        validation_alias=AliasChoices("DATABASE_URL", "database_url"),
+    )
+
+    redis_url: str = ""
     redis_enabled: bool = False
 
     jwt_secret_key: str = Field(..., min_length=32)
@@ -36,7 +55,7 @@ class Settings(BaseSettings):
     master_api_key: str = ""
     master_api_timeout: int = 30
 
-    gateway_api_base_url: str = "http://127.0.0.1:8770"
+    gateway_api_base_url: str = "https://api.transporteexecutivo.com"
     gateway_api_key: str = ""
     gateway_api_timeout: int = 30
     gateway_mock_fallback: bool = False
@@ -59,7 +78,7 @@ class Settings(BaseSettings):
     login_max_attempts: int = 5
     login_lockout_minutes: int = 15
 
-    cors_origins: str = "http://localhost:8000"
+    cors_origins: str = "https://api.transporteexecutivo.com"
 
     @field_validator("allowed_hosts", "cors_origins", mode="before")
     @classmethod
@@ -81,4 +100,8 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    overrides = {}
+    database_url = _read_env_database_url()
+    if database_url:
+        overrides["database_url"] = database_url
+    return Settings(**overrides)

@@ -1,0 +1,9 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.git/
+data/code_snapshot/
+Projetos.zip
+*.log

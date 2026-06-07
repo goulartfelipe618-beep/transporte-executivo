@@ -4,7 +4,6 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -19,6 +18,7 @@ from app.api.v1 import router as api_v1_router
 from app.config import get_settings
 from app.middleware.access_log import AccessLogMiddleware
 from app.middleware.security_headers import SecurityHeadersMiddleware
+from app.middleware.trusted_host import ProductionHostMiddleware
 from app.web.booking import router as booking_web_router
 from app.web.express import router as express_web_router
 from app.web.panels import router as panels_router
@@ -38,7 +38,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.app_name,
     version="1.0.0",
-    description="Motor de Reservas Nexus Transfer - engine.transporteexecutivo.com",
+    description="Motor de Reservas Nexus Transfer - api.transporteexecutivo.com",
     docs_url="/api/docs" if settings.debug else None,
     redoc_url="/api/redoc" if settings.debug else None,
     lifespan=lifespan,
@@ -65,7 +65,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 if settings.is_production:
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts_list)
+    app.add_middleware(ProductionHostMiddleware, allowed_hosts=settings.allowed_hosts_list)
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
@@ -80,7 +80,11 @@ app.include_router(partner_entry_router)
 
 @app.get("/health")
 async def health():
-    return {"status": "healthy", "service": "motor-reservas-nexus"}
+    return {
+        "status": "healthy",
+        "service": "motor-reservas-nexus",
+        "database_configured": bool(settings.database_url.strip()),
+    }
 
 
 @app.get("/", response_class=HTMLResponse)

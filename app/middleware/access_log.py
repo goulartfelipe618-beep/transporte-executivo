@@ -8,7 +8,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from app.database import AsyncSessionLocal
 from app.models.audit import AccessLog
 
 
@@ -24,7 +23,9 @@ class AccessLogMiddleware(BaseHTTPMiddleware):
         duration_ms = int((time.perf_counter() - start) * 1000)
 
         try:
-            async with AsyncSessionLocal() as db:
+            from app.database import get_async_session_factory
+
+            async with get_async_session_factory()() as db:
                 log = AccessLog(
                     path=str(request.url.path)[:512],
                     method=request.method,
