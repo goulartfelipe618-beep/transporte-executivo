@@ -29,8 +29,12 @@ def _verify_sistema_bundle():
     if "from .admin_login import authenticate_admin" in sistema_src:
         print("[Nexus] ERRO: imagem desatualizada — sistema_web ainda importa admin_login (Tkinter).")
         sys.exit(1)
-    if "/vnc.html" not in sistema_src:
-        print("[Nexus] ERRO: sistema_web sem redirect /vnc.html — imagem antiga.")
+    if Path("/usr/share/novnc").exists():
+        print("[Nexus] ERRO: imagem contem noVNC — rebuild obrigatorio (Dockerfile.sistema atual).")
+        sys.exit(1)
+    stamp_file = Path("/app/.nexus_sistema_ui")
+    if not stamp_file.is_file() or stamp_file.read_text(encoding="utf-8").strip() != "web-only":
+        print("[Nexus] ERRO: .nexus_sistema_ui ausente — imagem anterior ao modo WEB-only.")
         sys.exit(1)
     build = _read_app_build()
     commit = os.environ.get("NEXUS_GIT_COMMIT", "").strip()
@@ -39,14 +43,12 @@ def _verify_sistema_bundle():
 
 
 def _run_sistema():
-    ui = os.environ.get("NEXUS_SISTEMA_UI", "web").strip().lower()
-    if ui == "vnc":
-        print("[Nexus] AVISO: NEXUS_SISTEMA_UI=vnc esta OBSOLETO — remova no EasyPanel.")
-        print("[Nexus] VNC foi desligado. Subindo painel WEB na porta 8772.")
+    if os.environ.get("NEXUS_SISTEMA_UI", "").strip().lower() == "vnc":
+        print("[Nexus] ERRO: NEXUS_SISTEMA_UI=vnc — APAGUE essa variavel no EasyPanel e rebuild.")
+        sys.exit(1)
     build = _read_app_build()
-    print(f"[Nexus] Painel WEB direto porta 8772 — build {build}")
-    print("[Nexus] Acesse: https://sistema.transporteexecutivo.com/")
-    print("[Nexus] NAO use /vnc.html — se aparecer noVNC, apague NEXUS_SISTEMA_UI=vnc e rebuild.")
+    print(f"[Nexus] Painel WEB porta 8772 — build {build} — VNC desativado")
+    print("[Nexus] https://sistema.transporteexecutivo.com/")
     os.execvp(sys.executable, [sys.executable, "scripts/run_production_server.py"])
 
 
