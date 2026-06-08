@@ -5,6 +5,7 @@ import json
 import secrets
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from .admin_auth import authenticate_admin
@@ -127,6 +128,32 @@ def _build_handler(app):
             token = self._cookies().get("sistema_token", "")
             admin = _get_session(token)
 
+            if path == "/api/deploy-info":
+                mode = "web"
+                try:
+                    stamp = Path("/app/.nexus_sistema_ui").read_text(encoding="utf-8").strip()
+                except OSError:
+                    stamp = "unknown"
+                body = json.dumps(
+                    {
+                        "ok": True,
+                        "service": "sistema_web",
+                        "mode": mode,
+                        "build": APP_BUILD,
+                        "stamp": stamp,
+                        "vnc_removed": True,
+                        "login_url": "/",
+                    },
+                    ensure_ascii=False,
+                ).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("X-Nexus-Deploy", f"web-{APP_BUILD}")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
+
             if path == "/api/health":
                 body = json.dumps({"ok": True, "service": "sistema_web", "build": APP_BUILD, "panel": True}).encode("utf-8")
                 self.send_response(200)
@@ -142,7 +169,14 @@ def _build_handler(app):
             if path in {"/", "", "/login"}:
                 if admin:
                     return self._redirect("/painel/abrangencia")
-                return self._html(200, _login_html())
+                body = _login_html().encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("X-Nexus-Deploy", f"web-{APP_BUILD}")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
 
             if path == "/dashboard":
                 if admin:
