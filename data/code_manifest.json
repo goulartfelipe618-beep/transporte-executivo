@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-07T10:29:10.599496",
+  "saved_at": "2026-06-08T03:10:11.807581",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "f42fdfec4fd22273d1de2a777b814814ad01974b47791a118afb7ffec88f1796",
@@ -9,19 +9,23 @@
       "sha256": "2e57cceb52a65cea09679e30394b4421acb4781be423a6b34be9b8eff5d8cc23"
     },
     ".env.sistema.example": {
-      "sha256": "9cd2c460370116c22843b27f9304ae404eb3f79d80a7fe66e45b65e114201822"
+      "sha256": "2fab5621d78a0c15198eac25b2a1cee4cd6d0f11abf56c418bf7db585bd799e5"
     },
     "DEPLOY_EASYPANEL.md": {
-      "sha256": "85d9b570e857ab9df80b83ef1fee97bda36a2323521cbd078c52a090a836e940"
+      "sha256": "1cbc795ea9214b7f5dd76583f0183d50bccde17adc74f33361648ff132ba926b"
     },
     "Dockerfile": {
       "sha256": "c7bcd3babf67699275c8b5b23cd9628cb99ac57a766e9a3166e7a0109ef5d867"
     },
     "Dockerfile.sistema": {
-      "sha256": "35081cc9c31e7ebacc6ff4e6693c47b45f024c75a6069b4a64c5aaae0aeac76d"
+      "sha256": "7b1ed29b7735fc1e9802c04bbaeead3139160555976eeb8e9f3ee23ce331c588"
     },
     "INICIAR_VPS.bat": {
       "sha256": "8ee4622b90f2ebb28b52e824a951a25c7688456548711be377cc41f7ce041a1a"
+    },
+    "app/admin_login.py": {
+      "sha256": "c0fee0dd3f9050b0cd2bb9d06f406b783bdf8b761c4d3339dc889b270c1c60f5",
+      "marker": "require_admin_login"
     },
     "app/automations.py": {
       "sha256": "3cc938078efd5ae16158679f68a35e59428df55463d42a7cb06a8ce5236b5444",
@@ -32,11 +36,11 @@
       "marker": "bind_host"
     },
     "app/code_guard.py": {
-      "sha256": "2a2c6674b8edaf4e6551db2f5486cdbe388d49d8a40c9ffbe1e8ab644d13e2ce",
+      "sha256": "db6f75c4ab53c5a174f1025b1c364c526a33179551d9828e651e11cb85a253df",
       "marker": "ensure_code_integrity"
     },
     "app/company_portal.py": {
-      "sha256": "7e376a072188068ada02705c7db590879b3e1911aa40c3b4e85ec51ab5a7bc4c",
+      "sha256": "372d973ea378ade20dfc77964d83dc22a86a450b2928e786fedb02b280bf7f63",
       "marker": "start_company_portal_server"
     },
     "app/components.py": {
@@ -52,7 +56,7 @@
       "marker": "INITIAL_RESERVATIONS = []"
     },
     "app/full_features.py": {
-      "sha256": "acbe43b6232776b7926cb2a06b36cdd100bbc1d13f6ae220b8264b57a25bed92",
+      "sha256": "34c97d0a1031173cdecfa321fb061d45aaede268664be3b3ab18d948960cc0cc",
       "marker": "render_settings"
     },
     "app/geography.py": {
@@ -64,7 +68,7 @@
       "marker": "get_states"
     },
     "app/main_window.py": {
-      "sha256": "1b67c9adb258c62872f2925d0f26a09347cd4cacf47f6104663469da68428c6b",
+      "sha256": "56b3b04836a3c83a89b3040c002e4c4c8bc9f7be5b30cfac3007197d89ea2691",
       "marker": "APP_BUILD"
     },
     "app/middleware/trusted_host.py": {
@@ -89,23 +93,31 @@
       "sha256": "90f22bf8d0b54dcd2bc4cde03adcd1e039849672046a0ee8755111ec5ef4371d",
       "marker": "ensure_portal_security"
     },
+    "app/portal_landing.py": {
+      "sha256": "973d674ce81deedd209f8856a2b12c2d429900003075372aa4c4690ce4708dbb",
+      "marker": "driver_portal_landing"
+    },
     "app/portal_server.py": {
-      "sha256": "d0c992b44158f9b8a4434199d1ffb4172a74d524c213aa90b9b1501678a9ae69",
+      "sha256": "aa8c578faf2be0f2e2788a05b3f2f75e849ecd112fead5315dbc37966c6897c0",
       "marker": "start_driver_portal_server"
+    },
+    "app/portal_urls.py": {
+      "sha256": "915b21def4c03581df9845c8f1aa592876e361632e55bdb479d78e7341f76f51",
+      "marker": "company_portal_link"
     },
     "app/pricing_engine.py": {
       "sha256": "e4338a60e4f9f148afd6bae41c08cf87ba3b41abec4a82edff0d1c8c1b3ff0b0",
       "marker": "list_pricing_sources"
     },
     "app/production_runtime.py": {
-      "sha256": "a32010b214b1d8daf27f1796834dca28f54df4ea2971b8bf3c0b1c45c76646a2",
+      "sha256": "1e98db5e9ca9ac9d489b83d5b9f04fff1d0dde6b33f2f666848392127424347f",
       "marker": "bootstrap_production_services"
     },
     "app/repository/app_repository.py": {
       "sha256": "364a430b93d4eb6322ab35b63389d0399d47c1e675ea1af66b5305f0cc5ec1e3"
     },
     "app/repository/supabase_client.py": {
-      "sha256": "b91486bcf53f443b19d0503b421295ce722b2b3c53d9290b5b9e12e2afa8c076"
+      "sha256": "585d6403ba22834f4bde451b9ec89ace39a324899fef3651b1d391cc68aa2952"
     },
     "app/repository/supabase_config.py": {
       "sha256": "094e2e8149e91b605a7ffc352e0c2f1226b9c476ca5b1c3bfe6c0eec29ac8188"
@@ -136,6 +148,10 @@
       "sha256": "5b845aaa60fdca46343bd31e9ee288977ee863474e869ff8635950e9269a3297",
       "marker": "FINANCEIRO"
     },
+    "app/sistema_web.py": {
+      "sha256": "5f798f4a3ca6ae4489c05ac41c7434a11a600d06aa72fab136c27871eeaddfec",
+      "marker": "start_sistema_web_server"
+    },
     "app/storage.py": {
       "sha256": "5af4f8b127f8da64f98a7fe632966e4ad4d806f8fd79538da7df010a76e75171",
       "marker": "load_state"
@@ -153,17 +169,17 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "1451a9c55b87cb71fd141927e82a832ef8136870a009220d70480eafde038087",
+      "sha256": "cc63e11804e27ecba617ee2dd850f0c131e41ade06aa27a690c600b77151d47e",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {
-      "sha256": "c8efd250f3f1565d7479a6b2480080a0682778119d641f9bb2a09cc407bff767"
+      "sha256": "7ff34661bbdf9f71f62f4c9c5177029d4356992249748dc13b3da9884694bb35"
     },
     "docker-compose.yml": {
       "sha256": "645791b90e4c7d6d8cf47569cd11314e92863411134c25cac00b8f9c968f62a6"
     },
     "main.py": {
-      "sha256": "4baf92f199eed66ec35590e57b71142013fa50b85da59b392efc4cee2586db13",
+      "sha256": "2b829bc435ca3649ffeda12280406120377ea7d01a3a474a5670e1c0f52922c2",
       "marker": "code_guard"
     },
     "requirements.txt": {

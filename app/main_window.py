@@ -1,5 +1,6 @@
 import tkinter as tk
 from datetime import datetime
+from tkinter import messagebox
 
 from .api_gateway import start_api_gateway_server
 from .automations import ensure_automations_loaded, render_automations, start_automation_webhook_server
@@ -33,8 +34,9 @@ from .version import APP_BUILD
 
 
 class TransferSystemApp(tk.Tk):
-    def __init__(self):
+    def __init__(self, admin_user=None):
         super().__init__()
+        self.admin_user = dict(admin_user or {})
         branding = apply_branding()
         self.brand_name = branding["nome_projeto"]
         self.title(f"{self.brand_name} - Build {APP_BUILD}")
@@ -71,6 +73,11 @@ class TransferSystemApp(tk.Tk):
     def save_state(self):
         self.repo.persist()
 
+    def logout_admin(self):
+        if messagebox.askyesno("Encerrar sessao", "Deseja sair do sistema administrativo?"):
+            self.save_state()
+            self.destroy()
+
     def _ensure_company_portals(self):
         base = company_portal_url(self)
         changed = False
@@ -79,7 +86,7 @@ class TransferSystemApp(tk.Tk):
                 continue
             if client.get("portal_key") and client.get("portal_link"):
                 continue
-            self.clients[index] = ensure_company_portal_structure(client, base, self.clients)
+            self.clients[index] = ensure_company_portal_structure(client, None, self.clients)
             changed = True
         if changed:
             self.save_state()
@@ -174,9 +181,13 @@ class TransferSystemApp(tk.Tk):
         badge_label(right, datetime.now().strftime("%d/%m/%Y"), tone="primary").pack(side="left", padx=(0, 12))
 
         user = tk.Frame(right, bg=COLORS["panel"])
-        user.pack(side="left")
-        tk.Label(user, text="Administrador", bg=COLORS["panel"], fg=COLORS["text"], font=("Segoe UI Semibold", 9)).pack(anchor="e")
-        tk.Label(user, text="Central Operacional", bg=COLORS["panel"], fg=COLORS["muted"], font=FONTS["tiny"]).pack(anchor="e")
+        user.pack(side="left", padx=(0, 10))
+        admin_name = self.admin_user.get("nome") or "Administrador"
+        admin_email = self.admin_user.get("email") or "Central Operacional"
+        tk.Label(user, text=admin_name, bg=COLORS["panel"], fg=COLORS["text"], font=("Segoe UI Semibold", 9)).pack(anchor="e")
+        tk.Label(user, text=admin_email, bg=COLORS["panel"], fg=COLORS["muted"], font=FONTS["tiny"]).pack(anchor="e")
+
+        styled_button(right, "Sair", style="outline_danger", size="sm", command=self.logout_admin).pack(side="left")
 
         tk.Frame(self.main, bg=COLORS["line"], height=1).pack(fill="x")
 

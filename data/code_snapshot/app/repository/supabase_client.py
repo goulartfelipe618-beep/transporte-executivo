@@ -102,3 +102,15 @@ def delete_rows(table, filters):
 
 def count_rows(table, filters=None):
     return len(select_all(table, filters=filters))
+
+
+def call_rpc(function_name, payload=None):
+    if not is_configured():
+        return None
+    rows = _request("POST", f"{_base()}/rpc/{function_name}", payload or {})
+    if not rows:
+        return None
+    result = rows[0]
+    if isinstance(result, dict):
+        return result
+    return result

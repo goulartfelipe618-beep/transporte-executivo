@@ -3,6 +3,7 @@ import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, unquote, urlparse
 
+from .portal_landing import driver_portal_landing
 from .portal_auth import (
     USER_TYPE_DRIVER,
     activation_token_valid,
@@ -85,6 +86,14 @@ def _build_handler(app):
         def do_GET(self):
             parsed = urlparse(self.path)
             path = parsed.path
+            if path in {"", "/"}:
+                body = driver_portal_landing().encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
             if path.startswith("/driver/"):
                 slug = unquote(path.split("/driver/", 1)[1]).strip("/").split("?")[0]
                 driver = _find_driver(app, slug)

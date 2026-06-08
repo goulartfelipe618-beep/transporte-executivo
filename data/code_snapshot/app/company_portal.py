@@ -13,8 +13,10 @@ from .company_model import (
     company_reservations,
     company_transport_requests,
     find_company,
+    find_company_by_path,
     find_company_user,
 )
+from .portal_landing import company_portal_landing
 from .company_portal_gateway import (
     gateway_airports,
     gateway_coverage,
@@ -262,23 +264,37 @@ def _build_handler(app):
         def _require_permission(self, user, action):
             return company_can(user.get("perfil"), action)
 
+        def _serve_portal(self, company):
+            if not company:
+                self.send_response(404)
+                self.end_headers()
+                return
+            slug = company_key(company)
+            name = company.get("razao_social") or company.get("nome_fantasia") or "Empresa"
+            body = render_company_portal_page(slug, name).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
         def do_GET(self):
             path = urlparse(self.path).path
-            if path.startswith("/empresa/"):
-                slug = unquote(path.split("/empresa/", 1)[1]).strip("/").split("/")[0]
-                company = find_company(app, slug)
-                if not company:
-                    self.send_response(404)
-                    self.end_headers()
-                    return
-                name = company.get("razao_social") or company.get("nome_fantasia") or "Empresa"
-                body = render_company_portal_page(slug, name).encode("utf-8")
+            if path in {"", "/"}:
+                body = company_portal_landing().encode("utf-8")
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.send_header("Content-Length", str(len(body)))
                 self.end_headers()
                 self.wfile.write(body)
                 return
+            if path.startswith("/empresa/"):
+                slug = unquote(path.split("/empresa/", 1)[1]).strip("/").split("/")[0]
+                return self._serve_portal(find_company(app, slug))
+            clean = unquote(path).strip("/")
+            parts = [part for part in clean.split("/") if part]
+            if len(parts) == 2 and parts[0].lower().startswith("emp-"):
+                return self._serve_portal(find_company_by_path(app, parts[0], parts[1]))
             self._json(404, {"error": "not_found"})
 
         def do_POST(self):

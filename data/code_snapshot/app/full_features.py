@@ -430,7 +430,7 @@ def render_clients(parent, app):
     title_box = tk.Frame(header, bg=COLORS["bg"])
     title_box.pack(side="left", fill="x", expand=True)
     tk.Label(title_box, text="Empresas Corporativas", bg=COLORS["bg"], fg=COLORS["text"], font=("Segoe UI Semibold", 18)).pack(anchor="w")
-    tk.Label(title_box, text="Cadastro master de empresas contratantes com portal exclusivo e usuarios corporativos.", bg=COLORS["bg"], fg=COLORS["muted"], font=FONTS["small"]).pack(anchor="w", pady=(2, 0))
+    tk.Label(title_box, text="Cadastro de empresas clientes — gera link em business.transporteexecutivo.com.", bg=COLORS["bg"], fg=COLORS["muted"], font=FONTS["small"]).pack(anchor="w", pady=(2, 0))
     styled_button(header, "+ Cadastrar empresa", style="success", command=lambda: open_client_type_modal(app)).pack(side="right")
 
     search = tk.Entry(parent, bg=COLORS["panel"], fg=COLORS["text"], relief="solid", bd=1, font=("Segoe UI", 9))
@@ -508,7 +508,7 @@ def copy_company_portal_link(app, client):
         messagebox.showwarning("Portal", "Portal disponivel apenas para empresas PJ.", parent=app)
         return
     base = company_portal_url(app)
-    client.update(ensure_company_portal_structure(client, base, app.clients))
+    client.update(ensure_company_portal_structure(client, None, app.clients))
     app.save_state()
     link = client.get("portal_link", "")
     if not link:
@@ -595,10 +595,9 @@ def _build_company_form(parent, fields, client):
 
     portal_box = tk.Frame(parent, bg=COLORS["panel_alt"], highlightthickness=1, highlightbackground="#D3DAE3")
     portal_box.pack(fill="x", padx=14, pady=10)
-    tk.Label(portal_box, text="Portal da Empresa", bg=COLORS["panel_alt"], font=("Segoe UI Semibold", 10)).pack(anchor="w", padx=10, pady=8)
-    tk.Label(portal_box, text=f"Link: {c.get('portal_link', 'Gerado automaticamente ao salvar')}", bg=COLORS["panel_alt"], fg=COLORS["muted"], font=("Segoe UI", 9), wraplength=680, justify="left").pack(anchor="w", padx=10)
-    fields["_existing_users"] = list(c.get("usuarios") or [])
-    users_block(parent, fields, c)
+    tk.Label(portal_box, text="Portal da Empresa (business.transporteexecutivo.com)", bg=COLORS["panel_alt"], font=("Segoe UI Semibold", 10)).pack(anchor="w", padx=10, pady=8)
+    tk.Label(portal_box, text=f"Link de login: {c.get('portal_link', 'Gerado automaticamente ao salvar')}", bg=COLORS["panel_alt"], fg=COLORS["muted"], font=("Segoe UI", 9), wraplength=680, justify="left").pack(anchor="w", padx=10, pady=(0, 8))
+    tk.Label(portal_box, text="Colaboradores com comissao propria sao cadastrados no menu REDE.", bg=COLORS["panel_alt"], fg=COLORS["muted"], font=("Segoe UI", 8), wraplength=680, justify="left").pack(anchor="w", padx=10, pady=(0, 8))
 
 
 def users_block(parent, fields, client):
@@ -732,22 +731,7 @@ def save_client_form(app, window, fields, client=None, client_type="fisica"):
         values["enderecos"] = enderecos
     if client_type == "juridica":
         values["nome"] = values.get("nome_fantasia") or values.get("razao_social")
-        if fields.get("_company_users") is not None:
-            values["usuarios"] = fields["_company_users"]
-        base = company_portal_url(app)
-        values = ensure_company_portal_structure(values, base, app.clients)
-        if fields.get("_company_users") is not None:
-            company_id = values.get("id")
-            prepared_users = []
-            for user in fields["_company_users"]:
-                item = dict(user)
-                senha = item.get("senha", "")
-                if senha and not is_password_hash(senha):
-                    item["senha"] = prepare_password_field(senha)
-                prepared_users.append(normalize_company_user(item, company_id))
-            values["usuarios"] = prepared_users
-            if not values["usuarios"] and values.get("email"):
-                values = ensure_company_portal_structure(values, base, app.clients)
+        values = ensure_company_portal_structure(values, None, app.clients)
     if client:
         client.update(values)
     else:
@@ -758,7 +742,7 @@ def save_client_form(app, window, fields, client=None, client_type="fisica"):
     if client_type == "juridica" and values.get("portal_link"):
         messagebox.showinfo(
             "Portal da Empresa",
-            f"Portal criado/atualizado.\n\n{values.get('portal_link', '')}\n\nUsuarios corporativos podem acessar com email e senha.",
+            f"Portal criado/atualizado.\n\n{values.get('portal_link', '')}\n\nAcesso com e-mail corporativo e senha no portal business.",
             parent=app,
         )
 
