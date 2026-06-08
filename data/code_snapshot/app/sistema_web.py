@@ -31,29 +31,48 @@ def _revoke_session(token):
     _SESSIONS.pop(str(token or "").strip(), None)
 
 
-def _login_html(error=""):
-    err = f'<p class="error">{error}</p>' if error else ""
-    body = f"""<div class="card" style="max-width:460px;margin:48px auto;background:#fff;border-radius:16px;padding:24px">
+def _login_html(error="", *, email=""):
+    err = (
+        f'<div class="error-box">{error}</div>'
+        if error
+        else ""
+    )
+    email_value = email.replace('"', "&quot;")
+    return f"""<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Acesso Administrativo</title>
+<style>
+:root{{--sidebar:#1a2332;--panel:#fff;--primary:#2563eb;--primary-soft:#dbeafe;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;--danger:#dc2626;--danger-soft:#fef2f2}}
+*{{box-sizing:border-box}}body{{margin:0;min-height:100vh;font-family:Segoe UI,system-ui,sans-serif;background:var(--sidebar);display:flex;align-items:center;justify-content:center;padding:24px}}
+.card{{width:100%;max-width:460px;background:var(--panel);border-radius:12px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.35)}}
+.accent{{height:6px;background:var(--primary)}}
+.body{{padding:28px}}
+.logo{{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:8px;background:var(--primary-soft);color:var(--primary);font-weight:700;font-size:1.1rem;margin-bottom:14px}}
+h1{{margin:0 0 6px;font-size:1.35rem;color:var(--text)}}
+.sub{{margin:0 0 22px;color:var(--muted);font-size:.92rem;line-height:1.45}}
+label{{display:block;font-size:.82rem;font-weight:600;margin:12px 0 6px;color:var(--text)}}
+input{{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-size:.95rem}}
+input:focus{{outline:2px solid #93c5fd;border-color:var(--primary)}}
+button{{width:100%;margin-top:18px;padding:12px;border:0;border-radius:8px;background:var(--primary);color:#fff;font-weight:600;font-size:.95rem;cursor:pointer}}
+button:hover{{filter:brightness(1.05)}}
+.foot{{margin-top:16px;color:var(--muted);font-size:.75rem}}
+.error-box{{margin:12px 0 0;padding:10px 12px;border-radius:8px;background:var(--danger-soft);color:var(--danger);font-size:.84rem}}
+</style></head><body>
+<div class="card"><div class="accent"></div><div class="body">
+<div class="logo">NT</div>
 <h1>Central Operacional Master</h1>
-<p class="muted">Painel web completo — mesmo login do desktop.</p>
+<p class="sub">Identifique-se para acessar o painel administrativo.</p>
 <form method="post" action="/login">
-<label>E-mail administrativo</label><input name="email" type="email" required autocomplete="username"/>
-<label>Senha</label><input name="password" type="password" required autocomplete="current-password"/>
+<label>E-mail administrativo</label>
+<input name="email" type="email" required autocomplete="username" value="{email_value}"/>
+<label>Senha</label>
+<input name="password" type="password" required autocomplete="current-password"/>
 {err}
 <button type="submit">Entrar no sistema</button>
 </form>
-<p class="muted" style="margin-top:14px">Build {APP_BUILD}</p>
-</div>"""
-    return f"""<!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Login — Sistema Master</title>
-<style>
-body{{margin:0;font-family:Segoe UI,system-ui,sans-serif;background:linear-gradient(160deg,#0f172a,#1e293b);min-height:100vh}}
-.muted{{color:#64748b;font-size:.9rem}}label{{display:block;font-weight:600;margin:12px 0 6px}}
-input{{width:100%;padding:11px;border:1px solid #e2e8f0;border-radius:10px;box-sizing:border-box}}
-button{{margin-top:16px;padding:11px 16px;border:0;border-radius:10px;background:#2563eb;color:#fff;font-weight:600;cursor:pointer;width:100%}}
-.error{{color:#dc2626;font-size:.85rem;margin-top:10px}}
-</style></head><body>{body}</body></html>"""
+<p class="foot">Acesso validado no Supabase (master_admins).</p>
+</div></div>
+</body></html>"""
 
 
 def _render_panel(app, admin, module_key):
@@ -117,7 +136,10 @@ def _build_handler(app):
                 self.wfile.write(body)
                 return
 
-            if path in {"/", ""}:
+            if path in {"/vnc.html", "/vnc_lite.html", "/vnc_auto.html"}:
+                return self._redirect("/")
+
+            if path in {"/", "", "/login"}:
                 if admin:
                     return self._redirect("/painel/abrangencia")
                 return self._html(200, _login_html())
@@ -142,7 +164,7 @@ def _build_handler(app):
 
         def do_HEAD(self):
             path = urlparse(self.path).path.rstrip("/") or "/"
-            if path in {"/", ""}:
+            if path in {"/", "", "/login"}:
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.end_headers()
@@ -165,7 +187,13 @@ def _build_handler(app):
                 form = self._read_form()
                 admin, error = authenticate_admin(form.get("email"), form.get("password"))
                 if not admin:
-                    return self._html(401, _login_html(error or "Login invalido."))
+                    return self._html(
+                        401,
+                        _login_html(
+                            error or "E-mail ou senha invalidos.",
+                            email=form.get("email", ""),
+                        ),
+                    )
                 token = _new_session(admin)
                 return self._redirect("/painel/abrangencia", token=token)
             if path == "/logout":
