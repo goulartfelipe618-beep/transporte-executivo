@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-08T03:10:11.807581",
+  "saved_at": "2026-06-08T03:26:15.832055",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "f42fdfec4fd22273d1de2a777b814814ad01974b47791a118afb7ffec88f1796",
@@ -40,7 +40,7 @@
       "marker": "ensure_code_integrity"
     },
     "app/company_portal.py": {
-      "sha256": "372d973ea378ade20dfc77964d83dc22a86a450b2928e786fedb02b280bf7f63",
+      "sha256": "fec82446f6c4cf4c429a4f7e20bd1bb6892178f385f3e022db1cc50d6222b05d",
       "marker": "start_company_portal_server"
     },
     "app/components.py": {
@@ -98,7 +98,7 @@
       "marker": "driver_portal_landing"
     },
     "app/portal_server.py": {
-      "sha256": "aa8c578faf2be0f2e2788a05b3f2f75e849ecd112fead5315dbc37966c6897c0",
+      "sha256": "f47a1128a3cd126c7d27ab1151a360e3b008b72bf42b2703ec660d8beb329a24",
       "marker": "start_driver_portal_server"
     },
     "app/portal_urls.py": {
@@ -149,7 +149,7 @@
       "marker": "FINANCEIRO"
     },
     "app/sistema_web.py": {
-      "sha256": "5f798f4a3ca6ae4489c05ac41c7434a11a600d06aa72fab136c27871eeaddfec",
+      "sha256": "273394dddfee990a5343eae7740212089950c98dd4ec2040a28ff06605e59217",
       "marker": "start_sistema_web_server"
     },
     "app/storage.py": {
@@ -169,7 +169,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "cc63e11804e27ecba617ee2dd850f0c131e41ade06aa27a690c600b77151d47e",
+      "sha256": "cf4c4f304741da4865ef90f8a2e535ddd0ac99d9b7a50a6a19ca17c0761ba76b",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {

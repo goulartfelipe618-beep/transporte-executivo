@@ -158,6 +158,25 @@ def _build_handler(app):
             self.send_response(404)
             self.end_headers()
 
+        def do_HEAD(self):
+            path = urlparse(self.path).path
+            if path in {"", "/"}:
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                return
+            if path == "/dashboard":
+                self.send_response(200 if _get_session(self._cookies().get("sistema_token", "")) else 302)
+                self.end_headers()
+                return
+            if path == "/api/health":
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                return
+            self.send_response(404)
+            self.end_headers()
+
         def do_POST(self):
             path = urlparse(self.path).path
             if path == "/login":

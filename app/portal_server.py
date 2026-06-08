@@ -119,6 +119,22 @@ def _build_handler(app):
                 return
             self._json(404, {"error": "not_found"})
 
+        def do_HEAD(self):
+            parsed = urlparse(self.path)
+            path = parsed.path
+            if path in {"", "/"}:
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                return
+            if path.startswith("/driver/"):
+                slug = unquote(path.split("/driver/", 1)[1]).strip("/").split("?")[0]
+                self.send_response(200 if _find_driver(app, slug) else 404)
+                self.end_headers()
+                return
+            self.send_response(404)
+            self.end_headers()
+
         def do_POST(self):
             data = self._read_json()
             path = urlparse(self.path).path

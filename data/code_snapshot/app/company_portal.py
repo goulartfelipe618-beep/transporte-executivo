@@ -297,6 +297,28 @@ def _build_handler(app):
                 return self._serve_portal(find_company_by_path(app, parts[0], parts[1]))
             self._json(404, {"error": "not_found"})
 
+        def do_HEAD(self):
+            path = urlparse(self.path).path
+            if path in {"", "/"}:
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                return
+            if path.startswith("/empresa/"):
+                slug = unquote(path.split("/empresa/", 1)[1]).strip("/").split("/")[0]
+                self.send_response(200 if find_company(app, slug) else 404)
+                self.end_headers()
+                return
+            clean = unquote(path).strip("/")
+            parts = [part for part in clean.split("/") if part]
+            if len(parts) == 2 and parts[0].lower().startswith("emp-"):
+                company = find_company_by_path(app, parts[0], parts[1])
+                self.send_response(200 if company else 404)
+                self.end_headers()
+                return
+            self.send_response(404)
+            self.end_headers()
+
         def do_POST(self):
             data = self._read_json()
             path = urlparse(self.path).path
