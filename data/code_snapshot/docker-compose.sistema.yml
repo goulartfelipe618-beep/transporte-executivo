@@ -12,6 +12,7 @@ services:
       - .env
     environment:
       NEXUS_DEPLOY_TARGET: sistema
+      NEXUS_SISTEMA_UI: ${NEXUS_SISTEMA_UI:-vnc}
       APP_ENV: ${APP_ENV:-production}
       SUPABASE_URL: ${SUPABASE_URL}
       SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}

@@ -1,6 +1,7 @@
 """Runtime de producao sem Tkinter — motor de reservas + portais + gateway."""
 from __future__ import annotations
 
+import os
 import signal
 import sys
 import threading
@@ -40,7 +41,11 @@ def bootstrap_production_services(app):
     gateway_url = start_api_gateway_server(app)
     start_driver_portal_server(app)
     start_company_portal_server(app)
-    start_sistema_web_server(app)
+    skip_web = os.environ.get("NEXUS_SKIP_SISTEMA_WEB", "").strip().lower() in {"1", "true", "yes"}
+    if skip_web:
+        print("[Nexus] HTML 8772 desativado — painel Tkinter via noVNC")
+    else:
+        start_sistema_web_server(app)
     return gateway_url
 
 
@@ -52,7 +57,10 @@ def run_production_forever():
         print("[Nexus] ERRO: gateway nao iniciou. Verifique porta 8770.")
         sys.exit(1)
     print(f"[Nexus] API gateway: {gateway_url}")
-    print(f"[Nexus] Sistema web: {sistema_web_base()}")
+    if not os.environ.get("NEXUS_SKIP_SISTEMA_WEB", "").strip().lower() in {"1", "true", "yes"}:
+        print(f"[Nexus] Sistema web: {sistema_web_base()}")
+    else:
+        print(f"[Nexus] Sistema GUI: {sistema_web_base()} (noVNC /vnc.html)")
     print(f"[Nexus] Portal motorista: {driver_portal_base()}")
     print(f"[Nexus] Portal empresa: {company_portal_base()}")
     print(f"[Nexus] Motor rede (engine): {engine_base()}/{{slug}}/{{codigo}}")

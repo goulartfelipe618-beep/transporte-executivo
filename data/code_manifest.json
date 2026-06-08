@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-08T03:40:27.612588",
+  "saved_at": "2026-06-08T03:45:51.898824",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "f42fdfec4fd22273d1de2a777b814814ad01974b47791a118afb7ffec88f1796",
@@ -9,16 +9,16 @@
       "sha256": "2e57cceb52a65cea09679e30394b4421acb4781be423a6b34be9b8eff5d8cc23"
     },
     ".env.sistema.example": {
-      "sha256": "2fab5621d78a0c15198eac25b2a1cee4cd6d0f11abf56c418bf7db585bd799e5"
+      "sha256": "0b7e9b5ac067e3572144c094045136e8cec31801df4d1dafa0da8cc654410f01"
     },
     "DEPLOY_EASYPANEL.md": {
-      "sha256": "4a992e87f5d1721430b8b393a2ffb945fed639363f10c49e40995dd9c260d248"
+      "sha256": "6561ee0b4583b335837ec7dd0ff7a8cf53c5230d92d2aef7740c143113a8b056"
     },
     "Dockerfile": {
       "sha256": "c7bcd3babf67699275c8b5b23cd9628cb99ac57a766e9a3166e7a0109ef5d867"
     },
     "Dockerfile.sistema": {
-      "sha256": "95ac3efa323ab2d28e90390fde345f5d4e1ce85207f9fb1d99e5abb65bda9d3b"
+      "sha256": "692ec2cca47626536504d7ccadabc0742aaea5df58f91a8a56fabd15fc2a38d7"
     },
     "INICIAR_VPS.bat": {
       "sha256": "8ee4622b90f2ebb28b52e824a951a25c7688456548711be377cc41f7ce041a1a"
@@ -40,7 +40,7 @@
       "marker": "bind_host"
     },
     "app/code_guard.py": {
-      "sha256": "ba5c7d43ca69a26e83a609a3d0bc50657c9e974e9ad049810e53b49742e646db",
+      "sha256": "3796e90827f67c52fe26e4669504a5ffda981777b6bab4a421a13e074717ad29",
       "marker": "ensure_code_integrity"
     },
     "app/company_portal.py": {
@@ -114,7 +114,7 @@
       "marker": "list_pricing_sources"
     },
     "app/production_runtime.py": {
-      "sha256": "1e98db5e9ca9ac9d489b83d5b9f04fff1d0dde6b33f2f666848392127424347f",
+      "sha256": "d56e4b3aff84f0dbaafc696140fe377720b9cec8c373571e84c1591c7f7015d0",
       "marker": "bootstrap_production_services"
     },
     "app/repository/app_repository.py": {
@@ -181,11 +181,11 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "748b942243329eea478314ab0365300acda9904e0f67a2d903f74a19aec5e543",
+      "sha256": "6a387571cbf068bec2fd25a6b1ce7dcdcffaea4a2594a3a15e222a9cb5335e5d",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {
-      "sha256": "7ff34661bbdf9f71f62f4c9c5177029d4356992249748dc13b3da9884694bb35"
+      "sha256": "baa633902823db56399c4669262508e71e512b0db091e60fbb8d30d259c003e5"
     },
     "docker-compose.yml": {
       "sha256": "645791b90e4c7d6d8cf47569cd11314e92863411134c25cac00b8f9c968f62a6"
@@ -198,10 +198,13 @@
       "sha256": "cb407437fdcf6a41d99ee6e34c9cb337e26d2cdcf1f536dbcd7de3d3cfc62ca7"
     },
     "scripts/docker_entrypoint.py": {
-      "sha256": "f1d9157c64cb6f7cff7e02cbe956f1175e71f36547daaa84bf9051b1c80d62d4"
+      "sha256": "1a43682d305c9338ce7aef9cae07fa13097ec0b9b86fbbd0d87dddc2e34a8baf"
     },
     "scripts/run_production_server.py": {
       "sha256": "48af6afe18622daec695a87456f24fc90f47e945f78e02e2510ef384a6124c19"
+    },
+    "scripts/run_sistema_vnc.py": {
+      "sha256": "c87914dd0956de545081306ed10098167b5d518b2621b08419466101aa84bd70"
     },
     "scripts/uvicorn_wrapper.sh": {
       "sha256": "943ee0224be9d6220d28abfd5a006b60e49d956661bedc307f5ece37b1b979b8"

@@ -37,6 +37,11 @@ def _verify_sistema_bundle():
 
 
 def _run_sistema():
+    ui = os.environ.get("NEXUS_SISTEMA_UI", "vnc").strip().lower()
+    if ui == "vnc":
+        print("[Nexus] Painel Tkinter real via noVNC (porta 8772)")
+        os.execvp(sys.executable, [sys.executable, "scripts/run_sistema_vnc.py"])
+    print("[Nexus] Painel web HTML (porta 8772)")
     os.execvp(sys.executable, [sys.executable, "scripts/run_production_server.py"])
 
 
@@ -68,7 +73,6 @@ def main():
         target = os.environ.get("NEXUS_DEPLOY_TARGET", "").strip().lower() or "api-domain"
         print(f"[Nexus] docker_entrypoint modo sistema ({target})")
         _verify_sistema_bundle()
-        print("[Nexus] Iniciando Sistema Master (headless) porta 8770")
         _run_sistema()
     print("[Nexus] docker_entrypoint modo motor")
     print("[Nexus] Iniciando Motor de Reservas (uvicorn)")

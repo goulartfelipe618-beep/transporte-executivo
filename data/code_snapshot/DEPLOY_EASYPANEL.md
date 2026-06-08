@@ -4,55 +4,53 @@
 
 Compose: `docker-compose.sistema.yml` · Portas: **8770, 8772, 8765, 8766**
 
-| Dominio | Porta |
-|---------|-------|
-| `api.transporteexecutivo.com` | 8770 |
-| `sistema.transporteexecutivo.com` | 8772 |
-| `driver.transporteexecutivo.com` | 8765 |
-| `business.transporteexecutivo.com` | 8766 |
+| Dominio | Porta | O que abre |
+|---------|-------|------------|
+| `api.transporteexecutivo.com` | 8770 | API gateway |
+| `sistema.transporteexecutivo.com` | 8772 | **Painel Tkinter real** (noVNC) |
+| `driver.transporteexecutivo.com` | 8765 | Portal motorista |
+| `business.transporteexecutivo.com` | 8766 | Portal empresa |
 
-Env obrigatorio: `NEXUS_DEPLOY_TARGET=sistema`
+Env obrigatorio:
 
-Ver `.env.sistema.example` para URLs publicas.
+```
+NEXUS_DEPLOY_TARGET=sistema
+NEXUS_SISTEMA_UI=vnc
+```
+
+## Painel sistema.transporteexecutivo.com
+
+Com `NEXUS_SISTEMA_UI=vnc` (padrao), abre o **mesmo sistema desktop** no navegador:
+
+1. Acesse: `https://sistema.transporteexecutivo.com/vnc.html?autoconnect=1&resize=scale&reconnect=1`
+2. Aparece a tela de login **Central Operacional Master** (NT, Supabase)
+3. Apos login: **TRANSPORTE EXEC.** com sidebar, Abrangencia, Empresas, etc.
+
+Nao e copia HTML — e o Tkinter rodando no servidor via display virtual.
+
+Para voltar ao painel HTML simplificado: `NEXUS_SISTEMA_UI=web`
 
 ## Servico 2: Motor (`transporteexecutivo_com`)
 
 Dockerfile padrao · Porta **8000** · Dominio `engine.transporteexecutivo.com`
 
-## Rebuild obrigatorio (nao basta reiniciar)
+## Deploy
 
-Se o log mostrar `admin_login` + `libtk8.6.so`, a imagem esta **antiga**.
+1. EasyPanel → **Implantar** (rebuild) · branch `main` · `Dockerfile.sistema`
+2. Comando/Argumentos: **vazio**
+3. WebSocket habilitado no dominio `sistema.*` (Traefik/EasyPanel costuma fazer automatico)
 
-1. EasyPanel → servico `sistema_do_projeto` → **Implantar** (rebuild completo)
-2. Confirmar: repositorio GitHub, branch **`main`**, Dockerfile **`Dockerfile.sistema`**
-3. Comando/Argumentos customizados: **vazio**
-4. `NEXUS_DEPLOY_TARGET=sistema`
+## Log esperado
 
-## Validar na VPS
-
-```bash
-docker ps --format "table {{.Names}}\t{{.Status}}"
-
-# Troque pelo container mais novo
-docker exec NOME_CONTAINER head -12 /app/app/sistema_web.py
-docker exec NOME_CONTAINER test -f /app/app/admin_auth.py && echo admin_auth OK
-docker logs NOME_CONTAINER --tail 15
+```
+[Nexus] Painel Tkinter real via noVNC (porta 8772)
+[Nexus] GUI Tkinter disponivel em noVNC porta 8772
+[Nexus] Iniciando main.py (TransferSystemApp)...
 ```
 
-Linha 10 de `sistema_web.py` deve ser: `from .admin_auth import authenticate_admin`
-
-## Apos deploy
+## Validar
 
 ```bash
+curl -I https://sistema.transporteexecutivo.com/vnc.html
 curl https://api.transporteexecutivo.com/api/v1/public/statistics
-curl https://sistema.transporteexecutivo.com/api/health
-curl https://driver.transporteexecutivo.com/
-curl https://business.transporteexecutivo.com/
-```
-
-Log esperado:
-
-```
-[Nexus] Bundle sistema validado — build 2026.08.11
-[Nexus] Sistema web: https://sistema.transporteexecutivo.com
 ```

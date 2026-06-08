@@ -61,6 +61,7 @@ SNAPSHOT_EXTRA_PATHS = (
     "app/partner_network_gateway.py",
     "scripts/validate_supabase_production.py",
     "scripts/run_production_server.py",
+    "scripts/run_sistema_vnc.py",
     "scripts/docker_entrypoint.py",
     "scripts/uvicorn_wrapper.sh",
     "requirements.txt",

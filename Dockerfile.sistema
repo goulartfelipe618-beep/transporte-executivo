@@ -1,7 +1,7 @@
 FROM python:3.12-slim
 
 ARG NEXUS_GIT_COMMIT=dev
-ARG NEXUS_APP_BUILD=2026.08.11
+ARG NEXUS_APP_BUILD=2026.08.13
 
 WORKDIR /app
 
@@ -11,6 +11,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     NEXUS_BIND_HOST=0.0.0.0 \
     INTEGRACAO_GATEWAY_HOST=0.0.0.0 \
     NEXUS_DEPLOY_TARGET=sistema \
+    NEXUS_SISTEMA_UI=vnc \
     NEXUS_GIT_COMMIT=${NEXUS_GIT_COMMIT} \
     NEXUS_APP_BUILD=${NEXUS_APP_BUILD}
 
@@ -19,6 +20,14 @@ LABEL org.nexus.deploy="sistema-master" \
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev gcc \
+    tk \
+    xvfb \
+    x11vnc \
+    novnc \
+    websockify \
+    x11-utils \
+    fonts-dejavu-core \
+    && printf '%s\n' '<!DOCTYPE html><html><head><meta charset="utf-8"/><meta http-equiv="refresh" content="0;url=/vnc.html?autoconnect=1&resize=scale&reconnect=1"/></head><body>Conectando ao Sistema Master...</body></html>' > /usr/share/novnc/index.html \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
@@ -40,7 +49,7 @@ USER appuser
 
 EXPOSE 8770 8772 8765 8766
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8770/api/v1/public/statistics'); urllib.request.urlopen('http://127.0.0.1:8772/api/health')" || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8770/api/v1/public/statistics'); urllib.request.urlopen('http://127.0.0.1:8772/vnc.html')" || exit 1
 
 ENTRYPOINT ["python", "scripts/docker_entrypoint.py"]
