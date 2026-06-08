@@ -1,33 +1,7 @@
-"""Login obrigatorio do administrador — validado via Supabase (master_admin_login RPC)."""
+"""Login obrigatorio do administrador — UI desktop (Tkinter)."""
 from __future__ import annotations
 
-import tkinter as tk
-
-from .repository.supabase_client import call_rpc, is_configured
-from .theme import COLORS, FONTS, panel_frame, styled_button
-
-
-def authenticate_admin(email, password):
-    if not is_configured():
-        return None, "Supabase nao configurado. Verifique data/supabase_credentials.json."
-    try:
-        result = call_rpc(
-            "master_admin_login",
-            {"p_email": str(email or "").strip(), "p_password": str(password or "")},
-        )
-    except RuntimeError as exc:
-        return None, f"Falha ao validar login: {exc}"
-    if not result or not result.get("ok"):
-        return None, (result or {}).get("error") or "E-mail ou senha invalidos."
-    admin = dict((result.get("admin") or {}))
-    if not admin.get("email"):
-        return None, "Resposta de login invalida."
-    return {
-        "id": admin.get("id", ""),
-        "email": admin.get("email", ""),
-        "nome": admin.get("nome") or "Administrador",
-        "perfil": admin.get("perfil") or "Administrador Master",
-    }, ""
+from .admin_auth import authenticate_admin
 
 
 def _center_window(window, width, height):
@@ -39,7 +13,7 @@ def _center_window(window, width, height):
     window.geometry(f"{width}x{height}+{x}+{y}")
 
 
-def _build_input(parent, label, *, show=None):
+def _build_input(parent, label, *, show=None, tk=None, COLORS=None, FONTS=None):
     block = tk.Frame(parent, bg=COLORS["panel"])
     block.pack(fill="x", pady=(0, 14))
     tk.Label(
@@ -68,6 +42,10 @@ def _build_input(parent, label, *, show=None):
 
 def require_admin_login():
     """Exibe tela de login modal. Retorna dict do admin ou None se cancelado."""
+    import tkinter as tk
+
+    from .theme import COLORS, FONTS, panel_frame, styled_button
+
     result = {"admin": None}
 
     root = tk.Tk()
@@ -119,8 +97,8 @@ def require_admin_login():
         justify="left",
     ).pack(anchor="w", pady=(0, 22))
 
-    email_entry = _build_input(body, "E-mail administrativo")
-    password_entry = _build_input(body, "Senha", show="•")
+    email_entry = _build_input(body, "E-mail administrativo", tk=tk, COLORS=COLORS, FONTS=FONTS)
+    password_entry = _build_input(body, "Senha", show="•", tk=tk, COLORS=COLORS, FONTS=FONTS)
 
     error_label = tk.Label(
         body,

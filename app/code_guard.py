@@ -26,6 +26,7 @@ PROTECTED_FILES = {
     "app/settings_store.py": "DEFAULT_SETTINGS",
     "app/portal_server.py": "start_driver_portal_server",
     "app/portal_auth.py": "ensure_portal_security",
+    "app/admin_auth.py": "authenticate_admin",
     "app/admin_login.py": "require_admin_login",
     "app/portal_urls.py": "company_portal_link",
     "app/sistema_web.py": "start_sistema_web_server",
