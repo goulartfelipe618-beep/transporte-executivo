@@ -1,6 +1,39 @@
 """Entrypoint unico — EasyPanel pode ignorar Dockerfile.sistema e usar Dockerfile."""
 import os
 import sys
+from pathlib import Path
+
+
+def _read_app_build():
+    try:
+        for line in Path("/app/app/version.py").read_text(encoding="utf-8").splitlines():
+            if line.startswith("APP_BUILD"):
+                return line.split("=", 1)[1].strip().strip("\"'")
+    except OSError:
+        pass
+    return "desconhecido"
+
+
+def _verify_sistema_bundle():
+    app_dir = Path("/app/app")
+    auth_file = app_dir / "admin_auth.py"
+    sistema_file = app_dir / "sistema_web.py"
+    if not auth_file.is_file():
+        print("[Nexus] ERRO: admin_auth.py ausente na imagem. Faca rebuild no EasyPanel (branch main).")
+        sys.exit(1)
+    try:
+        sistema_src = sistema_file.read_text(encoding="utf-8")
+    except OSError:
+        print("[Nexus] ERRO: sistema_web.py ausente na imagem.")
+        sys.exit(1)
+    if "from .admin_login import authenticate_admin" in sistema_src:
+        print("[Nexus] ERRO: imagem desatualizada — sistema_web ainda importa admin_login (Tkinter).")
+        print("[Nexus] EasyPanel: Implantar com rebuild completo. Commit minimo: 148a638.")
+        sys.exit(1)
+    build = _read_app_build()
+    commit = os.environ.get("NEXUS_GIT_COMMIT", "").strip()
+    stamp = f"{build}" + (f" ({commit[:7]})" if commit else "")
+    print(f"[Nexus] Bundle sistema validado — build {stamp}")
 
 
 def _run_sistema():
@@ -34,6 +67,7 @@ def main():
     if _is_sistema_mode():
         target = os.environ.get("NEXUS_DEPLOY_TARGET", "").strip().lower() or "api-domain"
         print(f"[Nexus] docker_entrypoint modo sistema ({target})")
+        _verify_sistema_bundle()
         print("[Nexus] Iniciando Sistema Master (headless) porta 8770")
         _run_sistema()
     print("[Nexus] docker_entrypoint modo motor")
