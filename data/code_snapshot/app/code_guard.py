@@ -30,6 +30,8 @@ PROTECTED_FILES = {
     "app/admin_login.py": "require_admin_login",
     "app/portal_urls.py": "company_portal_link",
     "app/sistema_web.py": "start_sistema_web_server",
+    "app/sistema_web_layout.py": "panel_page",
+    "app/sistema_web_modules.py": "render_module",
     "app/portal_landing.py": "driver_portal_landing",
     "app/company_portal.py": "start_company_portal_server",
     "app/automations.py": "AUTOMACAO SOLICITACAO PARA SER MOTORISTA",
