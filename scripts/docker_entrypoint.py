@@ -39,7 +39,13 @@ def _verify_sistema_bundle():
 def _run_sistema():
     ui = os.environ.get("NEXUS_SISTEMA_UI", "vnc").strip().lower()
     if ui == "vnc":
-        print("[Nexus] Painel Tkinter real via noVNC (porta 8772)")
+        vnc_script = Path("/app/scripts/run_sistema_vnc.py")
+        if not vnc_script.is_file():
+            print("[Nexus] ERRO: run_sistema_vnc.py ausente — rebuild com branch main atualizado.")
+            sys.exit(1)
+        build = _read_app_build()
+        print(f"[Nexus] Painel Tkinter REAL via noVNC porta 8772 — build {build}")
+        print("[Nexus] Se aparecer login HTML 'Acesso web remoto', a imagem esta ANTIGA.")
         os.execvp(sys.executable, [sys.executable, "scripts/run_sistema_vnc.py"])
     print("[Nexus] Painel web HTML (porta 8772)")
     os.execvp(sys.executable, [sys.executable, "scripts/run_production_server.py"])

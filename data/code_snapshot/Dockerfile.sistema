@@ -1,7 +1,7 @@
 FROM python:3.12-slim
 
 ARG NEXUS_GIT_COMMIT=dev
-ARG NEXUS_APP_BUILD=2026.08.13
+ARG NEXUS_APP_BUILD=2026.08.14
 
 WORKDIR /app
 
@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     websockify \
     x11-utils \
     fonts-dejavu-core \
+    && printf '%s\n' '<!DOCTYPE html><html><head><meta charset="utf-8"/><meta http-equiv="refresh" content="0;url=/vnc.html?autoconnect=1&resize=scale&reconnect=1"/></head><body>Conectando ao Sistema Master...</body></html>' > /usr/share/novnc/index.html \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
