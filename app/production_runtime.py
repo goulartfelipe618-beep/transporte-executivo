@@ -13,7 +13,9 @@ from .operational_network import ensure_operational_network
 from .partner_network import ensure_partner_networks
 from .portal_auth import ensure_portal_security
 from .portal_server import start_driver_portal_server
+from .portal_urls import company_portal_base, driver_portal_base, engine_base, sistema_web_base
 from .repository import AppRepository
+from .sistema_web import start_sistema_web_server
 from .version import APP_BUILD
 
 
@@ -38,6 +40,7 @@ def bootstrap_production_services(app):
     gateway_url = start_api_gateway_server(app)
     start_driver_portal_server(app)
     start_company_portal_server(app)
+    start_sistema_web_server(app)
     return gateway_url
 
 
@@ -48,7 +51,11 @@ def run_production_forever():
     if not gateway_url:
         print("[Nexus] ERRO: gateway nao iniciou. Verifique porta 8770.")
         sys.exit(1)
-    print(f"[Nexus] Motor de reservas: {gateway_url}/api/v1/network/{{slug}}/{{codigo}}")
+    print(f"[Nexus] API gateway: {gateway_url}")
+    print(f"[Nexus] Sistema web: {sistema_web_base()}")
+    print(f"[Nexus] Portal motorista: {driver_portal_base()}")
+    print(f"[Nexus] Portal empresa: {company_portal_base()}")
+    print(f"[Nexus] Motor rede (engine): {engine_base()}/{{slug}}/{{codigo}}")
     print("[Nexus] Servicos ativos. Ctrl+C para encerrar.")
 
     stop = threading.Event()

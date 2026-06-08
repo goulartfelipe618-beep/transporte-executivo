@@ -40,7 +40,12 @@ if __name__ == "__main__":
     except ImportError:
         _restore_missing_from_snapshot()
 
+    from app.admin_login import require_admin_login
     from app.main_window import TransferSystemApp
 
-    app = TransferSystemApp()
+    admin_user = require_admin_login()
+    if not admin_user:
+        sys.exit(0)
+
+    app = TransferSystemApp(admin_user=admin_user)
     app.mainloop()

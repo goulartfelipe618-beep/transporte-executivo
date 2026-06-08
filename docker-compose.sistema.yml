@@ -5,6 +5,9 @@ services:
       dockerfile: Dockerfile.sistema
     ports:
       - "8770:8770"
+      - "8772:8772"
+      - "8765:8765"
+      - "8766:8766"
     env_file:
       - .env
     environment:
@@ -15,4 +18,9 @@ services:
       NEXUS_BIND_HOST: ${NEXUS_BIND_HOST:-0.0.0.0}
       INTEGRACAO_GATEWAY_HOST: ${INTEGRACAO_GATEWAY_HOST:-0.0.0.0}
       GATEWAY_MOCK_FALLBACK: ${GATEWAY_MOCK_FALLBACK:-false}
+      SISTEMA_WEB_BASE_URL: ${SISTEMA_WEB_BASE_URL:-https://sistema.transporteexecutivo.com}
+      DRIVER_PORTAL_BASE_URL: ${DRIVER_PORTAL_BASE_URL:-https://driver.transporteexecutivo.com}
+      COMPANY_PORTAL_BASE_URL: ${COMPANY_PORTAL_BASE_URL:-https://business.transporteexecutivo.com}
+      INTEGRACAO_API_BASE_URL: ${INTEGRACAO_API_BASE_URL:-https://api.transporteexecutivo.com}
+      ENGINE_BASE_URL: ${ENGINE_BASE_URL:-https://engine.transporteexecutivo.com}
     restart: unless-stopped
