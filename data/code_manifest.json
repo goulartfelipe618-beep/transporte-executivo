@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-08T12:38:28.684091",
+  "saved_at": "2026-06-08T12:43:57.749833",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "f42fdfec4fd22273d1de2a777b814814ad01974b47791a118afb7ffec88f1796",
@@ -18,7 +18,7 @@
       "sha256": "c7bcd3babf67699275c8b5b23cd9628cb99ac57a766e9a3166e7a0109ef5d867"
     },
     "Dockerfile.sistema": {
-      "sha256": "862cc6ec69acf1cb9cb50b8c232685d01f3c4a5db79670392e62368920bb0160"
+      "sha256": "3c26b0a8d858ca951cefbabecb55692395b8babfc1bba4d63805ebe6d2a2044f"
     },
     "INICIAR_VPS.bat": {
       "sha256": "8ee4622b90f2ebb28b52e824a951a25c7688456548711be377cc41f7ce041a1a"
@@ -40,7 +40,7 @@
       "marker": "bind_host"
     },
     "app/code_guard.py": {
-      "sha256": "3796e90827f67c52fe26e4669504a5ffda981777b6bab4a421a13e074717ad29",
+      "sha256": "ba5c7d43ca69a26e83a609a3d0bc50657c9e974e9ad049810e53b49742e646db",
       "marker": "ensure_code_integrity"
     },
     "app/company_portal.py": {
@@ -114,7 +114,7 @@
       "marker": "list_pricing_sources"
     },
     "app/production_runtime.py": {
-      "sha256": "d56e4b3aff84f0dbaafc696140fe377720b9cec8c373571e84c1591c7f7015d0",
+      "sha256": "a782042319ecc7a0bed9160b563994476dd618c44abded03ced059541f050b4a",
       "marker": "bootstrap_production_services"
     },
     "app/repository/app_repository.py": {
@@ -181,7 +181,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "305bba4fd634559b83a538f6ff71ef720ebd264fe52ddc821202c8a27b929d87",
+      "sha256": "e467b75c848fe3babb5fc601e77afa0b758fee83bc947241d87d9a69acd86c37",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {
@@ -198,13 +198,10 @@
       "sha256": "cb407437fdcf6a41d99ee6e34c9cb337e26d2cdcf1f536dbcd7de3d3cfc62ca7"
     },
     "scripts/docker_entrypoint.py": {
-      "sha256": "024825772994fa4fee89557bbc4c4db2b9dc3ded2aa455ec9f214ec7978db895"
+      "sha256": "53829bf93867cd350a9d85190fbc9b8359addac241e95c4676c34740cce57517"
     },
     "scripts/run_production_server.py": {
       "sha256": "48af6afe18622daec695a87456f24fc90f47e945f78e02e2510ef384a6124c19"
-    },
-    "scripts/run_sistema_vnc.py": {
-      "sha256": "c87914dd0956de545081306ed10098167b5d518b2621b08419466101aa84bd70"
     },
     "scripts/uvicorn_wrapper.sh": {
       "sha256": "943ee0224be9d6220d28abfd5a006b60e49d956661bedc307f5ece37b1b979b8"

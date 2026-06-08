@@ -28,26 +28,25 @@ def _verify_sistema_bundle():
         sys.exit(1)
     if "from .admin_login import authenticate_admin" in sistema_src:
         print("[Nexus] ERRO: imagem desatualizada — sistema_web ainda importa admin_login (Tkinter).")
-        print("[Nexus] EasyPanel: Implantar com rebuild completo. Commit minimo: 148a638.")
+        sys.exit(1)
+    if "/vnc.html" not in sistema_src:
+        print("[Nexus] ERRO: sistema_web sem redirect /vnc.html — imagem antiga.")
         sys.exit(1)
     build = _read_app_build()
     commit = os.environ.get("NEXUS_GIT_COMMIT", "").strip()
     stamp = f"{build}" + (f" ({commit[:7]})" if commit else "")
-    print(f"[Nexus] Bundle sistema validado — build {stamp}")
+    print(f"[Nexus] Bundle WEB validado — build {stamp}")
 
 
 def _run_sistema():
     ui = os.environ.get("NEXUS_SISTEMA_UI", "web").strip().lower()
     if ui == "vnc":
-        vnc_script = Path("/app/scripts/run_sistema_vnc.py")
-        if not vnc_script.is_file():
-            print("[Nexus] ERRO: run_sistema_vnc.py ausente.")
-            sys.exit(1)
-        print(f"[Nexus] Modo legado VNC porta 8772 — build {_read_app_build()}")
-        os.execvp(sys.executable, [sys.executable, "scripts/run_sistema_vnc.py"])
+        print("[Nexus] AVISO: NEXUS_SISTEMA_UI=vnc esta OBSOLETO — remova no EasyPanel.")
+        print("[Nexus] VNC foi desligado. Subindo painel WEB na porta 8772.")
     build = _read_app_build()
-    print(f"[Nexus] Painel web direto porta 8772 — build {build}")
-    print("[Nexus] URL: https://sistema.transporteexecutivo.com/ (sem vnc.html)")
+    print(f"[Nexus] Painel WEB direto porta 8772 — build {build}")
+    print("[Nexus] Acesse: https://sistema.transporteexecutivo.com/")
+    print("[Nexus] NAO use /vnc.html — se aparecer noVNC, apague NEXUS_SISTEMA_UI=vnc e rebuild.")
     os.execvp(sys.executable, [sys.executable, "scripts/run_production_server.py"])
 
 
