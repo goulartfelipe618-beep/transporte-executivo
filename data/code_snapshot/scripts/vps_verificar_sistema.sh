@@ -51,6 +51,57 @@ except Exception as e:
 "
 
 echo ""
+echo "--- Porta 8766 Portal Empresa (canônico) ---"
+docker exec "$CONTAINER" python -c "
+import urllib.request, json
+try:
+    r = urllib.request.urlopen('http://127.0.0.1:8766/', timeout=5)
+    print('8766 raiz:', r.status)
+except Exception as e:
+    print('FALHOU 8766 raiz:', e)
+try:
+    r = urllib.request.urlopen('http://127.0.0.1:8766/emp-000001/DXSKJJBJEWRQ', timeout=5)
+    print('8766 canonico:', r.status, 'bytes', len(r.read()))
+except Exception as e:
+    print('FALHOU 8766 canonico:', e)
+"
+
+echo ""
+echo "--- Porta 8770 Gateway ---"
+docker exec "$CONTAINER" python -c "
+import urllib.request
+try:
+    r = urllib.request.urlopen('http://127.0.0.1:8770/api/v1/public/statistics', timeout=5)
+    print('8770 statistics:', r.read()[:120])
+except Exception as e:
+    print('FALHOU 8770:', e)
+"
+
+echo ""
+echo "--- Porta 8765 Portal Motorista ---"
+docker exec "$CONTAINER" python -c "
+import urllib.request
+try:
+    r = urllib.request.urlopen('http://127.0.0.1:8765/', timeout=5)
+    print('8765 status:', r.status)
+except Exception as e:
+    print('FALHOU 8765:', e)
+"
+
+echo ""
+echo "--- Build em execucao ---"
+docker exec "$CONTAINER" python -c "
+import re
+from pathlib import Path
+try:
+    for line in Path('/app/app/version.py').read_text(encoding='utf-8').splitlines():
+        if line.startswith('APP_BUILD'):
+            print(line.strip())
+except Exception as e:
+    print('version.py:', e)
+"
+
+echo ""
 echo "--- Env NEXUS_SISTEMA_UI no container ---"
 docker exec "$CONTAINER" printenv NEXUS_SISTEMA_UI 2>/dev/null || echo "(nao definido = ok)"
 

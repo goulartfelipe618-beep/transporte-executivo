@@ -1,7 +1,6 @@
 FROM python:3.12-slim
 
 ARG NEXUS_GIT_COMMIT=dev
-ARG NEXUS_APP_BUILD=2026.08.22
 
 WORKDIR /app
 
@@ -12,8 +11,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     INTEGRACAO_GATEWAY_HOST=0.0.0.0 \
     NEXUS_DEPLOY_TARGET=sistema \
     NEXUS_SISTEMA_UI=web \
-    NEXUS_GIT_COMMIT=${NEXUS_GIT_COMMIT} \
-    NEXUS_APP_BUILD=${NEXUS_APP_BUILD}
+    NEXUS_GIT_COMMIT=${NEXUS_GIT_COMMIT}
 
 LABEL org.nexus.deploy="sistema-master" \
       org.nexus.port="8770"
@@ -27,7 +25,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . .
 
-RUN echo "${NEXUS_APP_BUILD}" > /app/.nexus_app_build \
+RUN python -c "import re; p=open('app/version.py', encoding='utf-8').read(); m=re.search(r'APP_BUILD\\s*=\\s*[\"\\']([^\"\\']+)[\"\\']', p); open('.nexus_app_build','w', encoding='utf-8').write(m.group(1) if m else 'unknown')" \
     && echo "${NEXUS_GIT_COMMIT}" > /app/.nexus_git_commit
 
 RUN mv /usr/local/bin/uvicorn /usr/local/bin/_uvicorn_motor \
@@ -42,7 +40,11 @@ USER appuser
 
 EXPOSE 8770 8772 8765 8766
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8770/api/v1/public/statistics'); urllib.request.urlopen('http://127.0.0.1:8772/api/health')" || exit 1
+HEALTHCHECK --interval=30s --timeout=15s --start-period=45s --retries=3 \
+  CMD python -c "import urllib.request; \
+urllib.request.urlopen('http://127.0.0.1:8770/api/v1/public/statistics'); \
+urllib.request.urlopen('http://127.0.0.1:8772/api/health'); \
+urllib.request.urlopen('http://127.0.0.1:8765/'); \
+urllib.request.urlopen('http://127.0.0.1:8766/')" || exit 1
 
 ENTRYPOINT ["python", "scripts/docker_entrypoint.py"]

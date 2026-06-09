@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-09T14:21:56.073963",
+  "saved_at": "2026-06-09T14:28:21.136470",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "f42fdfec4fd22273d1de2a777b814814ad01974b47791a118afb7ffec88f1796",
@@ -9,16 +9,16 @@
       "sha256": "2e57cceb52a65cea09679e30394b4421acb4781be423a6b34be9b8eff5d8cc23"
     },
     ".env.sistema.example": {
-      "sha256": "05b2a773c2efc7c84e758457c66ab906726f1c2758a6f454f71843da0e8d99cb"
+      "sha256": "409934b6a7d182b5925d80fb2e5154a51b94fac2b4b4d28d7ca819f3f4d80476"
     },
     "DEPLOY_EASYPANEL.md": {
-      "sha256": "a160c8e7649b4a12a4f2066efc9f2b276dba1fa4881689772b429fcf90203bd1"
+      "sha256": "9f7c4b4bb9af3913203165c9b8889eb776fe6a56e3933238a1f8fb4c289026e2"
     },
     "Dockerfile": {
       "sha256": "c7bcd3babf67699275c8b5b23cd9628cb99ac57a766e9a3166e7a0109ef5d867"
     },
     "Dockerfile.sistema": {
-      "sha256": "7b3011310bce0a6829ba35795d53b2c76df624787e320b2c4cebbae8e136818f"
+      "sha256": "e7829491af9b415ab272b240752e520cbc2c66f5e1492852a8a1abc5dddc9b87"
     },
     "INICIAR_VPS.bat": {
       "sha256": "8ee4622b90f2ebb28b52e824a951a25c7688456548711be377cc41f7ce041a1a"
@@ -181,17 +181,17 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "3be51f81d703342457040db8657dd8ac129a319c78e939904cebcc3d4df9c62d",
+      "sha256": "00d7994237c05caa99111a5f614cdfccb4aff06cb44e4a751720be33baa5debf",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {
-      "sha256": "8e677862abfaeb03c3479d5fcb61cac8c9e203086b2fcbacc3053d7ed4eec394"
+      "sha256": "130ceaaba798d5354347dabe923cb0536373fb6bbde476a0808cb7b6051db544"
     },
     "docker-compose.yml": {
       "sha256": "645791b90e4c7d6d8cf47569cd11314e92863411134c25cac00b8f9c968f62a6"
     },
     "main.py": {
-      "sha256": "884ce37d0f0beafe26efb49469cfff84f56cdc9e854431fbf4eaa8d9fc14a180",
+      "sha256": "2b829bc435ca3649ffeda12280406120377ea7d01a3a474a5670e1c0f52922c2",
       "marker": "code_guard"
     },
     "requirements.txt": {
@@ -210,7 +210,7 @@
       "sha256": "6016beee0f5fffa3e19f01e49478d70929975d1c617e5ea16d1c427e4d156bf1"
     },
     "scripts/vps_verificar_sistema.sh": {
-      "sha256": "93079332915dbc174931c454dfdd4fb4ff93a957a035f220997d263a97b0c2c6"
+      "sha256": "348983b7a05c993661e1ce31a91736908f45079a91eb0a245f1cc1ce6d1d5012"
     }
   }
 }
