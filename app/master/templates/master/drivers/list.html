@@ -1,0 +1,51 @@
+{% extends "master/base.html" %}
+{% block title %}Motoristas — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Motoristas</h2>
+    <p>{{ summary.total }} cadastrados · {{ summary.ativos }} ativos · {{ summary.portal_ativado }} com portal ativado</p>
+  </div>
+  <div>
+    <a class="btn btn-secondary" href="/motoristas">Atualizar</a>
+    <a class="btn btn-success" href="/motoristas/novo">+ Novo motorista</a>
+  </div>
+</div>
+<form class="filters" method="get" action="/motoristas">
+  <div style="flex:1"><label>Buscar</label><input name="q" placeholder="Nome, CPF, telefone, cidade ou ID..." value="{{ search }}"/></div>
+  <div style="align-self:end"><button type="submit" class="btn btn-primary">Filtrar</button></div>
+</form>
+<div class="card">
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Nome</th><th>CPF</th><th>ID</th><th>Cidade</th><th>Frota</th><th>Portal</th><th>Acoes</th></tr></thead>
+      <tbody>
+        {% for item in drivers %}
+        <tr>
+          <td>{{ item.nome }}</td>
+          <td>{{ item.cpf or '—' }}</td>
+          <td><code>{{ item.id }}</code></td>
+          <td>{{ item.cidade or '—' }}</td>
+          <td><span class="status-pill status-{{ (item.frota or 'ativo')|lower }}">{{ item.frota or 'Ativo' }}</span></td>
+          <td>{{ item.portal or '—' }}</td>
+          <td>
+            <div class="actions">
+              <a class="btn btn-secondary btn-sm" href="/motoristas/{{ item.id }}">Detalhes</a>
+              <a class="btn btn-secondary btn-sm" href="/motoristas/{{ item.id }}/editar">Editar</a>
+              <a class="btn btn-primary btn-sm" href="/motoristas/{{ item.id }}/portal">Portal</a>
+              {% if (item.frota or '')|lower not in ['bloqueado','inativo'] %}
+              <form method="post" action="/motoristas/{{ item.id }}/bloquear" onsubmit="return confirm('Bloquear motorista?')"><button type="submit" class="btn btn-danger btn-sm">Bloquear</button></form>
+              {% else %}
+              <form method="post" action="/motoristas/{{ item.id }}/ativar"><button type="submit" class="btn btn-success btn-sm">Ativar</button></form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="muted" style="text-align:center;padding:28px">Nenhum motorista cadastrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

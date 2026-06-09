@@ -1,0 +1,80 @@
+{% extends "master/base.html" %}
+{% block title %}{{ driver_name }} — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h2>{{ driver_name }}</h2><p><code>{{ driver.id }}</code> · {{ driver.cpf or '—' }}</p></div>
+  <div>
+    <a class="btn btn-secondary" href="/motoristas">Voltar</a>
+    <a class="btn btn-secondary" href="/motoristas/{{ driver.id }}/editar">Editar</a>
+    {% if (driver.frota or '')|lower not in ['bloqueado','inativo'] %}
+    <form method="post" action="/motoristas/{{ driver.id }}/bloquear" style="display:inline" onsubmit="return confirm('Bloquear?')"><button class="btn btn-danger">Bloquear</button></form>
+    {% else %}
+    <form method="post" action="/motoristas/{{ driver.id }}/ativar" style="display:inline"><button class="btn btn-success">Ativar</button></form>
+    {% endif %}
+  </div>
+</div>
+{% if success_msg %}<div class="alert alert-success">{{ success_msg }}</div>{% endif %}
+{% if activation_token %}
+<div class="alert alert-warning" id="portal">
+  <strong>Token de ativacao:</strong> <code id="act-token">{{ activation_token }}</code>
+  <button type="button" class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('act-token').textContent)">Copiar</button>
+  <div class="muted" style="margin-top:6px">Valido por 72h. Motorista define senha via POST /api/driver/set-password no portal driver.</div>
+</div>
+{% endif %}
+<div class="cards-grid">
+  <div class="metric-card"><span>Total reservas</span><strong>{{ stats.total_reservas }}</strong></div>
+  <div class="metric-card"><span>Concluidas</span><strong>{{ stats.reservas_concluidas }}</strong></div>
+  <div class="metric-card"><span>Pendentes</span><strong>{{ stats.reservas_pendentes }}</strong></div>
+  <div class="metric-card"><span>Canceladas</span><strong>{{ stats.reservas_canceladas }}</strong></div>
+  <div class="metric-card"><span>Ultima atividade</span><strong style="font-size:.95rem">{{ stats.ultima_atividade }}</strong></div>
+</div>
+<div class="form-section" id="portal">
+  <h3>Portal motorista (driver.transporteexecutivo.com)</h3>
+  <div class="form-grid">
+    <div class="field"><label>Status portal</label><input readonly value="{{ portal.portal_status_label }}"/></div>
+    <div class="field"><label>Portal ativo</label><input readonly value="{% if portal.portal_ativo %}Sim{% else %}Nao{% endif %}"/></div>
+    <div class="field"><label>Slug</label><input readonly value="{{ portal.portal_slug }}"/></div>
+    <div class="field field-full">
+      <label>URL</label>
+      <div class="inline-copy">
+        <input id="portal-link" readonly value="{{ portal.portal_link }}"/>
+        <a class="btn btn-secondary btn-sm" href="{{ portal.portal_link }}" target="_blank" rel="noopener">Abrir</a>
+        <button type="button" class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('portal-link').value)">Copiar</button>
+      </div>
+    </div>
+    {% if portal.activation_pending and not activation_token %}
+    <div class="field field-full">
+      <form method="post" action="/motoristas/{{ driver.id }}/token"><button type="submit" class="btn btn-secondary">Gerar novo token</button></form>
+    </div>
+    {% endif %}
+  </div>
+</div>
+<div class="form-section"><h3>Documentos (referencia)</h3>
+  <div class="form-grid">
+    <div class="field"><label>Foto perfil</label><input readonly value="{{ driver.foto_perfil or '—' }}"/></div>
+    <div class="field"><label>CNH frente</label><input readonly value="{{ driver.cnh_frente or '—' }}"/></div>
+    <div class="field"><label>CNH verso</label><input readonly value="{{ driver.cnh_verso or '—' }}"/></div>
+    <div class="field"><label>Comprovante</label><input readonly value="{{ driver.comprovante_residencia or '—' }}"/></div>
+  </div>
+</div>
+<div class="form-section"><h3>Reservas vinculadas</h3>
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>N</th><th>Cliente</th><th>Data</th><th>Trajeto</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for r in reservations %}
+        <tr>
+          <td>{{ r.numero }}</td>
+          <td>{{ r.cliente }}</td>
+          <td>{{ r.data }}</td>
+          <td>{{ r.trajeto }}</td>
+          <td>{{ r.status }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted">Nenhuma reserva vinculada por driver_id.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

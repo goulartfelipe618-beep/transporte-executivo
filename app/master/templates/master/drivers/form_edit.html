@@ -1,0 +1,23 @@
+{% extends "master/base.html" %}
+{% block title %}Editar Motorista — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header"><div><h2>Editar motorista</h2><p><code>{{ driver.id }}</code></p></div><a class="btn btn-secondary" href="/motoristas/{{ driver.id }}">Detalhes</a></div>
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+<form method="post" action="/motoristas/{{ driver.id }}/editar">
+  <div class="form-section"><h3>Dados pessoais</h3>
+    <div class="form-grid">
+      <div class="field"><label>Nome *</label><input name="nome" value="{{ driver.nome or '' }}"/></div>
+      <div class="field"><label>CPF *</label><input name="cpf" value="{{ driver.cpf or '' }}"/></div>
+      <div class="field"><label>Telefone</label><input name="telefone" value="{{ driver.telefone or '' }}"/></div>
+      <div class="field"><label>E-mail</label><input name="email" type="email" value="{{ driver.email or '' }}"/></div>
+      <div class="field"><label>Cidade</label><input name="cidade" value="{{ driver.cidade or '' }}"/></div>
+      <div class="field"><label>Estado</label><input name="estado" value="{{ driver.estado or '' }}"/></div>
+      <div class="field"><label>CNH / Validade</label><input name="validade_cnh" value="{{ driver.validade_cnh or '' }}"/></div>
+      <div class="field"><label>Frota</label>
+        <select name="frota">{% for f in frota_options %}<option value="{{ f }}" {% if (driver.frota or 'Ativo') == f %}selected{% endif %}>{{ f }}</option>{% endfor %}</select>
+      </div>
+    </div>
+  </div>
+  <div class="form-actions"><button type="submit" class="btn btn-success">Salvar</button></div>
+</form>
+{% endblock %}

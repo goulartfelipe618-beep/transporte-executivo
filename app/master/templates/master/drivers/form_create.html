@@ -1,0 +1,40 @@
+{% extends "master/base.html" %}
+{% block title %}Novo Motorista — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header"><div><h2>Novo motorista</h2></div><a class="btn btn-secondary" href="/motoristas">Cancelar</a></div>
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+<form method="post" action="/motoristas/novo">
+  <div class="form-section"><h3>Dados pessoais</h3>
+    <div class="form-grid">
+      <div class="field"><label>Nome completo *</label><input name="nome" value="{{ form.nome or '' }}"/></div>
+      <div class="field"><label>CPF *</label><input name="cpf" value="{{ form.cpf or '' }}"/></div>
+      <div class="field"><label>RG</label><input name="rg" value="{{ form.rg or '' }}"/></div>
+      <div class="field"><label>Telefone</label><input name="telefone" value="{{ form.telefone or '' }}"/></div>
+      <div class="field"><label>E-mail</label><input name="email" type="email" value="{{ form.email or '' }}"/></div>
+      <div class="field"><label>Data nascimento</label><input name="nascimento" value="{{ form.nascimento or '' }}"/></div>
+    </div>
+  </div>
+  <div class="form-section"><h3>Endereco</h3>
+    <div class="form-grid">
+      <div class="field"><label>Estado (UF)</label><input name="estado" value="{{ form.estado or '' }}"/></div>
+      <div class="field"><label>Cidade</label><input name="cidade" value="{{ form.cidade or '' }}"/></div>
+      <div class="field"><label>CEP</label><input name="cep" value="{{ form.cep or '' }}"/></div>
+      <div class="field field-full"><label>Logradouro</label><input name="logradouro" value="{{ form.logradouro or '' }}"/></div>
+      <div class="field"><label>Numero</label><input name="numero" value="{{ form.numero or '' }}"/></div>
+      <div class="field"><label>Bairro</label><input name="bairro" value="{{ form.bairro or '' }}"/></div>
+    </div>
+  </div>
+  <div class="form-section"><h3>CNH e frota</h3>
+    <div class="form-grid">
+      <div class="field"><label>CNH</label><input name="cnh" value="{{ form.cnh or '' }}"/></div>
+      <div class="field"><label>Categoria</label><input name="categoria" value="{{ form.categoria or 'B' }}"/></div>
+      <div class="field"><label>Validade CNH</label><input name="validade_cnh" value="{{ form.validade_cnh or '' }}"/></div>
+      <div class="field"><label>Situacao na frota</label>
+        <select name="frota">{% for f in frota_options %}<option value="{{ f }}" {% if (form.frota or 'Ativo') == f %}selected{% endif %}>{{ f }}</option>{% endfor %}</select>
+      </div>
+    </div>
+  </div>
+  <div class="form-actions"><button type="submit" class="btn btn-success">Cadastrar motorista</button></div>
+</form>
+<div class="alert" style="margin-top:16px;background:var(--panel-alt)">Token de ativacao sera gerado automaticamente para o portal driver.transporteexecutivo.com</div>
+{% endblock %}
