@@ -1,0 +1,55 @@
+{% extends "master/base.html" %}
+{% block title %}Agenda — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Agenda</h2>
+    <p>Calendario com as reservas programadas. Clique em uma reserva para ver todos os detalhes.</p>
+  </div>
+  <div>
+    <a class="btn btn-secondary" href="/agenda">Atualizar</a>
+    <a class="btn btn-primary" href="/agenda?year={{ calendar.today.year }}&month={{ calendar.today.month }}">Hoje</a>
+  </div>
+</div>
+
+<div class="agenda-shell card">
+  <div class="agenda-toolbar">
+    <div class="agenda-nav">
+      <a class="btn btn-secondary btn-sm" href="/agenda?year={{ calendar.prev.year }}&month={{ calendar.prev.month }}">◀</a>
+      <a class="btn btn-secondary btn-sm" href="/agenda?year={{ calendar.next.year }}&month={{ calendar.next.month }}">▶</a>
+    </div>
+    <div class="agenda-month-title">{{ calendar.month_label }}</div>
+    <div class="agenda-month-stat">
+      <strong>{{ calendar.metrics.total_month }}</strong>
+      <span>reservas no mes</span>
+    </div>
+  </div>
+
+  <div class="agenda-grid">
+    {% for weekday in calendar.weekday_names %}
+    <div class="agenda-weekday">{{ weekday }}</div>
+    {% endfor %}
+
+    {% for week in calendar.weeks %}
+      {% for cell in week %}
+      <div class="agenda-day {% if not cell.is_current_month %}other-month{% endif %} {% if cell.is_today %}today{% endif %}">
+        <div class="agenda-day-head">
+          <span class="agenda-day-num {% if cell.is_today %}today-badge{% endif %}">{{ cell.day }}</span>
+          {% if cell.count %}
+          <span class="agenda-day-count {% if cell.is_current_month %}active{% endif %}">{{ cell.count }}</span>
+          {% endif %}
+        </div>
+        <div class="agenda-day-body">
+          {% for chip in cell.chips %}
+          <a class="agenda-chip" href="{{ chip.href }}">{{ chip.label }}</a>
+          {% endfor %}
+          {% if cell.overflow %}
+          <span class="agenda-overflow">{{ cell.overflow_label }}</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

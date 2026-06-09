@@ -1,9 +1,9 @@
 """Metricas do dashboard — extraidas de pages.py."""
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date
 
-MONTH_NAMES = ["", "Janeiro", "Fevereiro", "Marco", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+from .agenda_service import MONTH_NAMES, parse_reservation_date
 
 
 def parse_money_value(value):
@@ -16,16 +16,6 @@ def parse_money_value(value):
 
 def money_display(value):
     return f"R$ {value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
-
-def parse_reservation_date(reservation):
-    value = reservation if isinstance(reservation, str) else reservation.get("data", "")
-    for fmt in ("%d/%m/%Y", "%d/%m/%Y %H:%M"):
-        try:
-            return datetime.strptime(value, fmt).date()
-        except ValueError:
-            pass
-    return None
 
 
 def count_by_status(reservations, status):
