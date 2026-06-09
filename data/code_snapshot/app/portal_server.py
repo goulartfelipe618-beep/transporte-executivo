@@ -1,8 +1,11 @@
 import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import parse_qs, unquote, urlparse
+from urllib.parse import unquote, urlparse
 
+from .driver_portal_dtos import STATUS_ACTIONS, dashboard_dto, profile_dto, reservation_dto
+from .driver_portal_notifications import notifications_dto, sync_reservation_notifications
+from .driver_portal_ui import render_driver_portal_page
 from .portal_landing import driver_portal_landing
 from .portal_auth import (
     USER_TYPE_DRIVER,
@@ -65,6 +68,20 @@ def _resolve_driver_session(app, data):
     return session, driver
 
 
+def _find_driver_reservation(app, driver, numero):
+    target = str(numero or "").strip()
+    if not target:
+        return None
+    for reservation in driver_reservations_for(app, driver):
+        if str(reservation.get("numero", "")) == target:
+            return reservation
+    return None
+
+
+def _reservation_actions(_reservation):
+    return [{"key": a["key"], "label": a["label"], "status": a["status"]} for a in STATUS_ACTIONS]
+
+
 def _build_handler(app):
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_a):
@@ -101,21 +118,13 @@ def _build_handler(app):
                     self.send_response(404)
                     self.end_headers()
                     return
-                query = parse_qs(parsed.query)
-                activation_hint = ""
-                if query.get("activation"):
-                    activation_hint = "<p>Use o token de ativacao fornecido pelo administrador para definir sua senha via POST /api/driver/set-password.</p>"
-                elif not driver_has_password(driver):
-                    activation_hint = "<p>Portal ainda nao ativado. Solicite o token de ativacao ao administrador.</p>"
-                html = (
-                    f"<html><body><h1>Portal {driver.get('nome', '')}</h1>"
-                    f"<p>Motorista ID: {driver.get('id', '')}</p>"
-                    f"{activation_hint}"
-                    f"<p>Endpoints: login, set-password (com token), reservations, status, logout.</p></body></html>"
-                )
+                html = render_driver_portal_page(app, driver, slug)
+                body = html.encode("utf-8")
                 self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
                 self.end_headers()
-                self.wfile.write(html.encode())
+                self.wfile.write(body)
                 return
             self._json(404, {"error": "not_found"})
 
@@ -209,19 +218,35 @@ def _build_handler(app):
             if not driver:
                 return self._json(401, {"ok": False, "error": "sessao_invalida"})
 
+            if path == "/api/driver/dashboard":
+                payload = dashboard_dto(app, driver, session)
+                return self._json(200, {"ok": True, **payload})
+
+            if path == "/api/driver/profile":
+                return self._json(200, {"ok": True, "profile": profile_dto(driver)})
+
             if path == "/api/driver/reservations":
-                items = [
-                    {
-                        "numero": r.get("numero"),
-                        "cliente": r.get("cliente"),
-                        "data": r.get("data"),
-                        "trajeto": r.get("trajeto"),
-                        "status": r.get("status"),
-                        "driver_id": r.get("driver_id"),
-                    }
-                    for r in driver_reservations_for(app, driver)
-                ]
+                items = [reservation_dto(app, r) for r in driver_reservations_for(app, driver)]
                 return self._json(200, {"ok": True, "items": items})
+
+            if path == "/api/driver/reservation":
+                reservation = _find_driver_reservation(app, driver, data.get("numero"))
+                if not reservation:
+                    return self._json(403, {"ok": False, "error": "reserva_nao_permitida"})
+                return self._json(
+                    200,
+                    {
+                        "ok": True,
+                        "item": reservation_dto(app, reservation),
+                        "actions": _reservation_actions(reservation),
+                    },
+                )
+
+            if path == "/api/driver/notifications":
+                changed = sync_reservation_notifications(app, driver)
+                if changed and hasattr(app, "save_state"):
+                    app.save_state()
+                return self._json(200, {"ok": True, "items": notifications_dto(driver)})
 
             if path == "/api/driver/status":
                 ok = update_reservation_status(app, data.get("numero"), data.get("status"), driver)

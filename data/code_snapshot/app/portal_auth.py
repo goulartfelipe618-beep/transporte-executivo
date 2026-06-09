@@ -473,16 +473,34 @@ def ensure_portal_security(app):
 
 
 def driver_reservations_for(app, driver):
-    driver_id = str(driver.get("id", ""))
+    driver_ids = _driver_identity_ids(driver)
     items = []
     for reservation in getattr(app, "reservations", []):
-        if reservation.get("driver_id") == driver_id:
+        if _reservation_driver_ids(reservation) & driver_ids:
             items.append(reservation)
     return items
 
 
+def _driver_identity_ids(driver):
+    ids = set()
+    for key in ("id", "uuid", "supabase_id"):
+        value = str((driver or {}).get(key, "")).strip()
+        if value:
+            ids.add(value)
+    return ids
+
+
+def _reservation_driver_ids(reservation):
+    ids = set()
+    for key in ("driver_id", "driver_uuid"):
+        value = str((reservation or {}).get(key, "")).strip()
+        if value:
+            ids.add(value)
+    return ids
+
+
 def reservation_belongs_to_driver(reservation, driver):
-    return str(reservation.get("driver_id", "")) == str(driver.get("id", ""))
+    return bool(_reservation_driver_ids(reservation) & _driver_identity_ids(driver))
 
 
 def active_portal_drivers(app):

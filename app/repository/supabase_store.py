@@ -210,6 +210,20 @@ def load_collection(collection):
     return [from_db_row(row) for row in rows]
 
 
+def _upsert_row_idempotent(table, row, *, conflict_key="legacy_admin_id"):
+    """Upsert por legacy_admin_id — evita 409 quando row.id (uuid) diverge do registro existente."""
+    legacy = row.get(conflict_key)
+    if legacy:
+        existing = db.select_one(table, filters={conflict_key: legacy})
+        if existing:
+            patch_payload = {key: value for key, value in row.items() if key != "id"}
+            patched = db.patch_rows(table, {conflict_key: legacy}, patch_payload)
+            if patched:
+                return patched[0]
+            return existing
+    return db.upsert_row(table, row, on_conflict=conflict_key)
+
+
 def upsert_collection_items(collection, items):
     """Grava apenas os itens informados (sem varrer/deletar colecoes inteiras)."""
     items = [item for item in (items or []) if isinstance(item, dict)]
@@ -233,7 +247,10 @@ def upsert_collection_items(collection, items):
         if collection == "event_log" and not item.get("id"):
             item = {**item, "id": f"evt-fast-{index + 1:04d}"}
         row = _invoke_mapper(mapper, collection, item, resolver)
-        saved = db.upsert_row(table, row)
+        if collection == "network_commissions":
+            saved = _upsert_row_idempotent(table, row)
+        else:
+            saved = db.upsert_row(table, row)
         if saved:
             item["uuid"] = saved.get("id")
             resolver.register(item.get("id"), saved.get("id"))
@@ -310,7 +327,10 @@ def persist_state(app):
                 seen.add(legacy)
                 item = {**item, "id": legacy}
             row = _invoke_mapper(mapper, key, item, resolver)
-            saved = db.upsert_row(table, row)
+            if key == "network_commissions":
+                saved = _upsert_row_idempotent(table, row)
+            else:
+                saved = db.upsert_row(table, row)
             if saved:
                 item["uuid"] = saved.get("id")
                 resolver.register(item.get("id"), saved.get("id"))
@@ -387,7 +407,7 @@ def import_json_file(path=None):
 
     for item in data.get("network_commissions") or []:
         row = TO_ROW["network_commissions"](item, resolver)
-        db.upsert_row("network_commissions", row)
+        _upsert_row_idempotent("network_commissions", row)
 
     for item in data.get("contributor_commissions") or []:
         row = TO_ROW["contributor_commissions"](item, resolver)

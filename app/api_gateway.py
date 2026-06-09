@@ -454,7 +454,11 @@ def _build_handler(app):
             if net_result is not None:
                 code, payload = net_result
                 if code == 200 and hasattr(app, "save_state"):
-                    app.save_state()
+                    try:
+                        app.save_state()
+                    except RuntimeError:
+                        payload = dict(payload or {})
+                        payload.setdefault("persist_warning", "supabase_save_deferred")
                 return self._send_json(code, payload, cacheable=False)
 
             if not _verify_secret(self.headers):

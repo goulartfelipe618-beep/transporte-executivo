@@ -60,7 +60,7 @@ from .pricing_engine import estimate_route, published_vehicle_catalog
 
 COMPANY_PORTAL_PORT = 8766
 
-_SESSION_KEYS = {"slug", "token"}
+_SESSION_KEYS = {"slug", "token", "format"}
 
 
 def _payload_data(data):

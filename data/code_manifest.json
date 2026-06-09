@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-09T12:14:18.600345",
+  "saved_at": "2026-06-09T14:05:16.431690",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "f42fdfec4fd22273d1de2a777b814814ad01974b47791a118afb7ffec88f1796",
@@ -44,7 +44,7 @@
       "marker": "ensure_code_integrity"
     },
     "app/company_portal.py": {
-      "sha256": "fec82446f6c4cf4c429a4f7e20bd1bb6892178f385f3e022db1cc50d6222b05d",
+      "sha256": "53c2b7f7e09a4b4de0921a4454bd31a2e80c8187a63f939a9d55fd81db8e9ecd",
       "marker": "start_company_portal_server"
     },
     "app/components.py": {
@@ -94,7 +94,7 @@
       "marker": "network_vehicles_for_partner"
     },
     "app/portal_auth.py": {
-      "sha256": "90f22bf8d0b54dcd2bc4cde03adcd1e039849672046a0ee8755111ec5ef4371d",
+      "sha256": "71d514f7a35c8c30a4ada58986b7dea8329a49ec5c17351cbd12ed28ea1d7239",
       "marker": "ensure_portal_security"
     },
     "app/portal_landing.py": {
@@ -102,7 +102,7 @@
       "marker": "driver_portal_landing"
     },
     "app/portal_server.py": {
-      "sha256": "f47a1128a3cd126c7d27ab1151a360e3b008b72bf42b2703ec660d8beb329a24",
+      "sha256": "bb1465c019825c4935ae6b5c6438cca8112e7e7e8499b5b67fc0e7b165a9f209",
       "marker": "start_driver_portal_server"
     },
     "app/portal_urls.py": {
@@ -134,7 +134,7 @@
       "sha256": "911c6c11fbd235f900e8735928d3044046b4954b16e96c88693bb3ed25d752a9"
     },
     "app/repository/supabase_store.py": {
-      "sha256": "ba40af305da44dfc0cf44c4cd49d49305ba4ef2d4d65d03f3990bf85825d44b1",
+      "sha256": "fa61202c8f0a33fe5858ad713611bd19faa4f53d922106832debc02f9d2717cf",
       "marker": "persist_state"
     },
     "app/reservation_numbers.py": {
@@ -181,7 +181,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "ce4fe4232e8a3177c2022e1e395a6b91cb77324f841cba70d5e40cdf899bbd1e",
+      "sha256": "dde3c052852ea45f7d7f929c9a960ca2075fc4856654bc6a7bc72411b202483d",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {
@@ -191,7 +191,7 @@
       "sha256": "645791b90e4c7d6d8cf47569cd11314e92863411134c25cac00b8f9c968f62a6"
     },
     "main.py": {
-      "sha256": "884ce37d0f0beafe26efb49469cfff84f56cdc9e854431fbf4eaa8d9fc14a180",
+      "sha256": "2b829bc435ca3649ffeda12280406120377ea7d01a3a474a5670e1c0f52922c2",
       "marker": "code_guard"
     },
     "requirements.txt": {
