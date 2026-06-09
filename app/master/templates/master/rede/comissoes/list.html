@@ -1,0 +1,68 @@
+{% extends "master/base.html" %}
+{% block title %}Comissoes — Rede Comercial{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Comissoes</h2>
+    <p>network_commissions e contributor_commissions vinculadas a reservas da rede.</p>
+  </div>
+  <a class="btn btn-secondary" href="/rede/comissoes">Atualizar</a>
+</div>
+{% include "master/rede/_nav.html" %}
+<div class="cards-grid">
+  <div class="metric-card"><span>Total</span><strong>{{ summary.total }}</strong></div>
+  <div class="metric-card"><span>Pendentes</span><strong>{{ summary.pendente }}</strong></div>
+  <div class="metric-card"><span>Pagas</span><strong>{{ summary.pago }}</strong></div>
+  <div class="metric-card"><span>Rede / Contrib.</span><strong>{{ summary.rede }} / {{ summary.contribuidor }}</strong></div>
+</div>
+<form class="filters" method="get" action="/rede/comissoes">
+  <div><label>Status pagamento</label>
+    <select name="status">
+      <option value="">Todos</option>
+      {% for s in status_options %}
+      <option value="{{ s }}" {% if filter_status == s %}selected{% endif %}>{{ s|capitalize }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div><label>Parceiro</label>
+    <select name="partner_id">
+      <option value="">Todos</option>
+      {% for p in partner_choices %}
+      <option value="{{ p.id }}" {% if filter_partner_id == p.id %}selected{% endif %}>{{ p.nome }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div style="align-self:end"><button type="submit" class="btn btn-primary">Filtrar</button></div>
+</form>
+<div class="card">
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Tipo</th><th>Parceiro</th><th>Contribuidor</th><th>Reserva</th><th>Base</th><th>Comissao</th><th>Status</th><th>Acoes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in commissions %}
+        <tr>
+          <td>{{ 'Rede' if row.kind == 'rede' else 'Contribuidor' }}</td>
+          <td>{{ row.partner_nome }}</td>
+          <td>{{ row.contributor_nome if row.kind == 'contribuidor' else '—' }}</td>
+          <td><code>{{ row.reservation_numero or row.reservation_id or '—' }}</code></td>
+          <td>{{ row.valor_base_display }}</td>
+          <td>{{ row.valor_display }}</td>
+          <td><span class="status-pill">{{ row.status_label }}</span></td>
+          <td>
+            {% if row.reservation_href %}
+            <a class="btn btn-secondary btn-sm" href="{{ row.reservation_href }}">Ver reserva</a>
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="muted" style="text-align:center;padding:28px">Nenhuma comissao registrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

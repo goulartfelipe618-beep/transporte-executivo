@@ -1,0 +1,28 @@
+{% extends "master/base.html" %}
+{% block title %}Rede Comercial — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Dashboard da Rede Comercial</h2>
+    <p>Indicadores de parceiros, contribuidores e comissoes da operacao em rede.</p>
+  </div>
+  <a class="btn btn-secondary" href="/rede">Atualizar</a>
+</div>
+{% include "master/rede/_nav.html" %}
+<div class="cards-grid">
+  <div class="metric-card"><span>Parceiros</span><strong>{{ kpis.partners_total }}</strong><small>{{ kpis.partners_active }} ativos</small></div>
+  <div class="metric-card"><span>Contribuidores</span><strong>{{ kpis.contributors_total }}</strong><small>vinculados a parceiros</small></div>
+  <div class="metric-card"><span>Comissoes geradas</span><strong>{{ kpis.commissions_total }}</strong><small>rede + contribuidor</small></div>
+  <div class="metric-card"><span>Comissoes pendentes</span><strong>{{ kpis.commissions_pending + kpis.contributor_commissions_pending }}</strong><small>{{ kpis.commissions_pending }} rede · {{ kpis.contributor_commissions_pending }} contrib.</small></div>
+</div>
+<div class="card" style="margin-top:16px">
+  <div class="card-body">
+    <p class="muted" style="margin:0 0 12px">Fonte oficial: partner_networks, network_contributors, network_commissions e contributor_commissions.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a class="btn btn-primary" href="/rede/parceiros/nova">+ Novo parceiro</a>
+      <a class="btn btn-secondary" href="/rede/contribuidores/nova">+ Novo contribuidor</a>
+      <a class="btn btn-secondary" href="/rede/comissoes">Ver comissoes</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

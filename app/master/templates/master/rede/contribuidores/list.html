@@ -1,0 +1,54 @@
+{% extends "master/base.html" %}
+{% block title %}Contribuidores — Rede Comercial{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Contribuidores</h2>
+    <p>Rastreiam pedidos via ?ref=codigo_ref no link do Motor.</p>
+  </div>
+  <div>
+    <a class="btn btn-secondary" href="/rede/contribuidores">Atualizar</a>
+    <a class="btn btn-success" href="/rede/contribuidores/nova">+ Novo contribuidor</a>
+  </div>
+</div>
+{% include "master/rede/_nav.html" %}
+<form class="filters" method="get" action="/rede/contribuidores">
+  <div><label>Parceiro</label>
+    <select name="partner_id">
+      <option value="">Todos</option>
+      {% for p in partner_choices %}
+      <option value="{{ p.id }}" {% if filter_partner_id == p.id %}selected{% endif %}>{{ p.nome }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div style="align-self:end"><button type="submit" class="btn btn-primary">Filtrar</button></div>
+</form>
+<div class="card">
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Nome</th><th>Parceiro</th><th>Codigo ref</th><th>Comissao %</th><th>Status</th><th>Acoes</th></tr></thead>
+      <tbody>
+        {% for row in contributors %}
+        <tr>
+          <td>{{ row.nome }}</td>
+          <td>{{ row.partner_nome }}</td>
+          <td><code>{{ row.codigo_ref }}</code></td>
+          <td>{{ row.comissao_display }}</td>
+          <td>{{ row.status_label }}</td>
+          <td>
+            <div class="actions">
+              <a class="btn btn-secondary btn-sm" href="/rede/contribuidores/{{ row.id }}/editar">Editar</a>
+              <form method="post" action="/rede/contribuidores/{{ row.id }}/excluir" onsubmit="return confirm('Remover contribuidor?')">
+                <button type="submit" class="btn btn-danger btn-sm">Remover</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="muted" style="text-align:center;padding:28px">Nenhum contribuidor cadastrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

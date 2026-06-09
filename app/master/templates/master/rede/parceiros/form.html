@@ -1,0 +1,53 @@
+{% extends "master/base.html" %}
+{% block title %}{% if is_edit %}Editar{% else %}Nova{% endif %} Parceiro — Rede{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{% if is_edit %}Editar empresa{% else %}Nova empresa da Rede{% endif %}</h2>
+    <p>Cadastro oficial publicado no Motor de Reservas.</p>
+  </div>
+  <a class="btn btn-secondary" href="{% if is_edit %}/rede/parceiros/{{ partner.id }}{% else %}/rede/parceiros{% endif %}">Cancelar</a>
+</div>
+{% include "master/rede/_nav.html" %}
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+<form method="post" action="{% if is_edit %}/rede/parceiros/{{ partner.id }}/editar{% else %}/rede/parceiros/nova{% endif %}">
+  <div class="form-section">
+    <h3>Identidade da rede</h3>
+    <div class="form-grid">
+      {% if is_edit and partner.id %}
+      <div class="field"><label>ID (fixo)</label><input readonly disabled value="{{ partner.id }}"/></div>
+      {% endif %}
+      <div class="field"><label>Nome da rede *</label><input name="nome_rede" value="{{ form.nome_rede or form.nome or '' }}" placeholder="Ex.: Hotel Aurora"/></div>
+      <div class="field"><label>Tipo da rede</label>
+        <select name="tipo_rede">{% for t in fields.tipo_options %}<option value="{{ t }}" {% if (form.tipo_rede or 'AFILIADO') == t %}selected{% endif %}>{{ t }}</option>{% endfor %}</select>
+      </div>
+      <div class="field"><label>Status</label>
+        <select name="status">{% for s in fields.status_options %}<option value="{{ s }}" {% if (form.status or 'Ativo') == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+      </div>
+    </div>
+  </div>
+  <div class="form-section">
+    <h3>Branding do Motor</h3>
+    <div class="form-grid">
+      <div class="field"><label>Logo (URL)</label><input name="logo_url" value="{{ form.logo_url or '' }}"/></div>
+      <div class="field"><label>Banner (URL)</label><input name="banner_url" value="{{ form.banner_url or '' }}"/></div>
+      <div class="field"><label>Cor primaria</label><input name="cor_primaria" value="{{ form.cor_primaria or fields.branding_defaults.cor_primaria }}"/></div>
+      <div class="field"><label>Cor secundaria</label><input name="cor_secundaria" value="{{ form.cor_secundaria or fields.branding_defaults.cor_secundaria }}"/></div>
+      <div class="field field-full"><label>Texto de boas-vindas</label><input name="texto_boas_vindas" value="{{ form.texto_boas_vindas or fields.branding_defaults.texto_boas_vindas }}"/></div>
+    </div>
+  </div>
+  <div class="form-section">
+    <h3>Contato e localizacao</h3>
+    <div class="form-grid">
+      <div class="field"><label>Telefone</label><input name="telefone" value="{{ form.telefone or '' }}"/></div>
+      <div class="field"><label>WhatsApp</label><input name="whatsapp" value="{{ form.whatsapp or '' }}"/></div>
+      <div class="field"><label>E-mail</label><input name="email" type="email" value="{{ form.email or '' }}"/></div>
+      <div class="field"><label>Cidade</label><input name="cidade" value="{{ form.cidade or '' }}"/></div>
+      <div class="field"><label>Estado (UF)</label><input name="estado" value="{{ form.estado or '' }}"/></div>
+      <div class="field"><label>Comissao rede (%) *</label><input name="comissao_rede" value="{{ form.comissao_rede or form.comissao_pct or '' }}" placeholder="Ex.: 10"/></div>
+      <div class="field field-full"><label>Observacoes</label><input name="observacoes" value="{{ form.observacoes or '' }}"/></div>
+    </div>
+  </div>
+  <div class="form-actions"><button type="submit" class="btn btn-success">Salvar</button></div>
+</form>
+{% endblock %}

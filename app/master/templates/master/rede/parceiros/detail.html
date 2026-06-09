@@ -1,0 +1,52 @@
+{% extends "master/base.html" %}
+{% block title %}{{ partner.nome_rede }} — Rede{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ partner.nome_rede }}</h2>
+    <p>{{ partner.tipo_rede }} · {{ partner.cidade or '—' }}{% if partner.estado %} / {{ partner.estado }}{% endif %}</p>
+  </div>
+  <div style="display:flex;gap:8px">
+    <a class="btn btn-secondary" href="/rede/parceiros">Voltar</a>
+    <a class="btn btn-primary" href="/rede/parceiros/{{ partner.id }}/editar">Editar</a>
+    <form method="post" action="/rede/parceiros/{{ partner.id }}/toggle">
+      <button type="submit" class="btn btn-secondary">{% if partner.status == 'Ativo' %}Desativar{% else %}Ativar{% endif %}</button>
+    </form>
+  </div>
+</div>
+{% include "master/rede/_nav.html" %}
+<div class="cards-grid" style="margin-bottom:16px">
+  <div class="metric-card"><span>Status</span><strong>{{ partner.status }}</strong></div>
+  <div class="metric-card"><span>Comissao</span><strong>{{ partner.comissao_display }}</strong></div>
+  <div class="metric-card"><span>Contribuidores</span><strong>{{ partner.contribuidores_count }}</strong></div>
+  <div class="metric-card"><span>Slug / Codigo</span><strong style="font-size:.85rem">{{ partner.slug }} / {{ partner.codigo }}</strong></div>
+</div>
+<div class="form-section">
+  <h3>Link do motor</h3>
+  <input readonly value="{{ partner.link or 'Pendente' }}" style="width:100%"/>
+</div>
+<div class="page-header" style="margin-top:20px">
+  <div><h3 style="margin:0">Contribuidores</h3></div>
+  <a class="btn btn-success btn-sm" href="/rede/contribuidores/nova?partner_id={{ partner.id }}">+ Novo contribuidor</a>
+</div>
+<div class="card">
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Nome</th><th>Codigo ref</th><th>Comissao %</th><th>Status</th><th>Acoes</th></tr></thead>
+      <tbody>
+        {% for row in contributors %}
+        <tr>
+          <td>{{ row.nome }}</td>
+          <td><code>{{ row.codigo_ref }}</code></td>
+          <td>{{ row.comissao_display }}</td>
+          <td>{{ row.status_label }}</td>
+          <td><a class="btn btn-secondary btn-sm" href="/rede/contribuidores/{{ row.id }}/editar">Editar</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Nenhum contribuidor cadastrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

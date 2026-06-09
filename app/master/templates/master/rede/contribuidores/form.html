@@ -1,0 +1,43 @@
+{% extends "master/base.html" %}
+{% block title %}{% if is_edit %}Editar{% else %}Novo{% endif %} Contribuidor — Rede{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{% if is_edit %}Editar contribuidor{% else %}Novo contribuidor{% endif %}</h2>
+    <p>Nome e codigo de rastreamento (?ref=) no link do Motor.</p>
+  </div>
+  <a class="btn btn-secondary" href="/rede/contribuidores">Cancelar</a>
+</div>
+{% include "master/rede/_nav.html" %}
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+<form method="post" action="{% if is_edit %}/rede/contribuidores/{{ contributor.id }}/editar{% else %}/rede/contribuidores/nova{% endif %}">
+  <div class="form-section">
+    <h3>Dados do contribuidor</h3>
+    <div class="form-grid">
+      <div class="field field-full">
+        <label>Parceiro *</label>
+        <select name="partner_id" required>
+          <option value="">Selecione...</option>
+          {% for p in partner_choices %}
+          <option value="{{ p.id }}" {% if (form.partner_id or '') == p.id %}selected{% endif %}>{{ p.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field"><label>Nome *</label><input name="nome" value="{{ form.nome or '' }}" placeholder="Ex.: Recepcionista Maria"/></div>
+      <div class="field"><label>Codigo ref *</label><input name="codigo_ref" value="{{ form.codigo_ref or '' }}" placeholder="Ex.: maria-recepcao"/></div>
+      <div class="field"><label>Comissao sobre comissao rede (%)</label><input name="percentual_comissao" value="{{ form.percentual_comissao or '' }}" placeholder="Ex.: 20"/></div>
+    </div>
+    {% if is_edit and contributor.link %}
+    <p class="muted" style="margin-top:12px;font-size:.85rem">Link de rastreamento: <code>{{ contributor.link }}</code></p>
+    {% endif %}
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-success">Salvar</button>
+  </div>
+</form>
+{% if is_edit %}
+<form method="post" action="/rede/contribuidores/{{ contributor.id }}/excluir" style="margin-top:12px" onsubmit="return confirm('Remover contribuidor?')">
+  <button type="submit" class="btn btn-danger">Remover contribuidor</button>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "master/base.html" %}
+{% block title %}Parceiros — Rede Comercial{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Parceiros da Rede</h2>
+    <p>Fonte oficial do Motor — campos editados aqui sao expostos em GET /api/v1/network/{slug}/{codigo}.</p>
+  </div>
+  <div>
+    <a class="btn btn-secondary" href="/rede/parceiros">Atualizar</a>
+    <a class="btn btn-success" href="/rede/parceiros/nova">+ Nova empresa</a>
+  </div>
+</div>
+{% include "master/rede/_nav.html" %}
+<div class="card">
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>ID</th><th>Empresa</th><th>Tipo</th><th>Cidade</th><th>Comissao</th><th>Status</th><th>Link</th><th>Acoes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in partners %}
+        <tr>
+          <td><code>{{ row.id }}</code></td>
+          <td>{{ row.nome_rede or row.nome }}</td>
+          <td>{{ row.tipo_rede }}</td>
+          <td>{{ row.cidade or '—' }}</td>
+          <td>{{ row.comissao_display }}</td>
+          <td><span class="status-pill {% if row.status == 'Ativo' %}status-ativo{% else %}status-inativo{% endif %}">{{ row.status }}</span></td>
+          <td><code style="font-size:.75rem">{{ row.link or 'Pendente' }}</code></td>
+          <td>
+            <div class="actions">
+              <a class="btn btn-secondary btn-sm" href="/rede/parceiros/{{ row.id }}">Detalhes</a>
+              <a class="btn btn-secondary btn-sm" href="/rede/parceiros/{{ row.id }}/editar">Editar</a>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="muted" style="text-align:center;padding:28px">Nenhuma empresa cadastrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
