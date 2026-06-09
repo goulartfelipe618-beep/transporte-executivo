@@ -522,6 +522,77 @@ def to_company_row(item):
     return {k: v for k, v in row.items() if v is not None}
 
 
+def company_user_storage_legacy(company_legacy_id, user_legacy_id):
+    company_legacy_id = str(company_legacy_id or "").strip()
+    user_legacy_id = str(user_legacy_id or "").strip()
+    if company_legacy_id and user_legacy_id:
+        return f"{company_legacy_id}:{user_legacy_id}"
+    return user_legacy_id
+
+
+def company_user_runtime_id(storage_legacy):
+    raw = str(storage_legacy or "").strip()
+    if ":" in raw:
+        return raw.split(":", 1)[1]
+    return raw
+
+
+def from_company_user_row(row):
+    item = _merge_row(row)
+    storage_legacy = row.get("legacy_admin_id") or item.get("id", "")
+    item["id"] = company_user_runtime_id(storage_legacy)
+    if row.get("password_hash"):
+        item["senha"] = row["password_hash"]
+    if row.get("company_id") and not item.get("company_uuid"):
+        item["company_uuid"] = row["company_id"]
+    return item
+
+
+def to_company_user_row(item, *, company_uuid, company_legacy_id=None):
+    known = {
+        "legacy_admin_id",
+        "company_id",
+        "nome",
+        "email",
+        "telefone",
+        "perfil",
+        "status",
+        "password_hash",
+        "dados_extra",
+    }
+    extra = _extra(
+        item,
+        known
+        | {
+            "id",
+            "uuid",
+            "senha",
+            "company_uuid",
+            "criado_em",
+            "atualizado_em",
+            "must_change_password",
+        },
+    )
+    if item.get("must_change_password") is not None:
+        extra["must_change_password"] = bool(item.get("must_change_password"))
+    runtime_id = item.get("id")
+    storage_legacy = company_user_storage_legacy(company_legacy_id, runtime_id)
+    row = {
+        "legacy_admin_id": storage_legacy,
+        "company_id": company_uuid,
+        "nome": item.get("nome"),
+        "email": str(item.get("email", "")).strip().lower(),
+        "telefone": item.get("telefone"),
+        "perfil": item.get("perfil"),
+        "status": item.get("status", "Ativo"),
+        "password_hash": item.get("password_hash") or item.get("senha"),
+        "dados_extra": extra,
+    }
+    if item.get("uuid"):
+        row["id"] = item["uuid"]
+    return {k: v for k, v in row.items() if v is not None}
+
+
 def to_master_client_row(item):
     known = {"legacy_admin_id", "tipo_pessoa", "nome_completo", "cpf_cnpj", "email", "telefone", "estado", "dados_extra"}
     row = {

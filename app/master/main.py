@@ -10,6 +10,7 @@ from .dependencies import STATIC_DIR
 from .routers.api.health import router as health_router
 from .routers.web.auth import router as auth_router
 from .routers.web.dashboard import router as dashboard_router
+from .routers.web.companies import router as companies_router
 from .routers.web.reservations import router as reservations_router
 
 
@@ -39,4 +40,5 @@ def create_master_app(runtime_app) -> FastAPI:
     app.include_router(auth_router)
     app.include_router(dashboard_router)
     app.include_router(reservations_router)
+    app.include_router(companies_router)
     return app

@@ -1,0 +1,34 @@
+{% extends "master/base.html" %}
+{% block title %}{{ company_name }} — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h2>{{ company_name }}</h2><p><code>{{ company.id }}</code> · {{ company_doc }}</p></div>
+  <div>
+    <a class="btn btn-secondary" href="/empresas">Voltar</a>
+    <a class="btn btn-secondary" href="/empresas/{{ company.id }}/editar">Editar</a>
+    {% if company.status_empresa != 'Bloqueada' %}<form method="post" action="/empresas/{{ company.id }}/bloquear" style="display:inline" onsubmit="return confirm('Bloquear?')"><button class="btn btn-danger">Bloquear</button></form>{% endif %}
+  </div>
+</div>
+{% if success_msg %}<div class="alert alert-success">{{ success_msg }}</div>{% endif %}
+{% if temp_password %}<div class="alert alert-warning"><strong>Senha temporaria:</strong> <code id="temp-pass">{{ temp_password }}</code> <button type="button" class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('temp-pass').textContent)">Copiar</button></div>{% endif %}
+<div class="cards-grid">
+  <div class="metric-card"><span>Total reservas</span><strong>{{ stats.total_reservas }}</strong></div>
+  <div class="metric-card"><span>Concluidas</span><strong>{{ stats.reservas_concluidas }}</strong></div>
+  <div class="metric-card"><span>Canceladas</span><strong>{{ stats.reservas_canceladas }}</strong></div>
+  <div class="metric-card"><span>Receita total</span><strong>{{ stats.receita_total_fmt }}</strong></div>
+  <div class="metric-card"><span>Ultima atividade</span><strong style="font-size:.95rem">{{ stats.ultima_atividade }}</strong></div>
+</div>
+<div class="form-section" id="portal"><h3>Portal da Empresa</h3>
+  <div class="form-grid">
+    <div class="field"><label>Portal ativo?</label><input readonly value="{% if portal.portal_ativo %}Sim{% else %}Nao{% endif %}"/></div>
+    <div class="field"><label>Portal key</label><input readonly value="{{ portal.portal_key }}"/></div>
+    <div class="field"><label>Portal codigo</label><input readonly value="{{ portal.portal_codigo }}"/></div>
+    <div class="field field-full"><label>URL</label><div class="inline-copy"><input id="portal-link" readonly value="{{ portal.portal_link }}"/><a class="btn btn-secondary btn-sm" href="{{ portal.portal_link }}" target="_blank" rel="noopener">Abrir</a><button type="button" class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('portal-link').value)">Copiar</button></div></div>
+  </div>
+</div>
+<div class="form-section"><div class="page-header" style="margin-bottom:8px"><h3>Usuarios</h3><a class="btn btn-success btn-sm" href="/empresas/{{ company.id }}/usuarios/nova">+ Usuario</a></div>
+  <table class="data"><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Acoes</th></tr></thead>
+    <tbody>{% for user in users %}<tr><td>{{ user.nome }}</td><td>{{ user.email }}</td><td>{{ user.perfil }}</td><td>{{ user.status }}</td><td><a class="btn btn-secondary btn-sm" href="/empresas/{{ company.id }}/usuarios/{{ user.id }}/editar">Editar</a></td></tr>{% else %}<tr><td colspan="5" class="muted">Nenhum usuario.</td></tr>{% endfor %}</tbody>
+  </table>
+</div>
+{% endblock %}

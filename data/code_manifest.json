@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-09T02:29:30.029119",
+  "saved_at": "2026-06-09T03:12:13.888839",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "f42fdfec4fd22273d1de2a777b814814ad01974b47791a118afb7ffec88f1796",
@@ -18,7 +18,7 @@
       "sha256": "c7bcd3babf67699275c8b5b23cd9628cb99ac57a766e9a3166e7a0109ef5d867"
     },
     "Dockerfile.sistema": {
-      "sha256": "cc6d26eca9de6bcf1ab1f4b38e26ee3845a11c9d7b936a8f6f1d5df13b513f13"
+      "sha256": "7b3011310bce0a6829ba35795d53b2c76df624787e320b2c4cebbae8e136818f"
     },
     "INICIAR_VPS.bat": {
       "sha256": "8ee4622b90f2ebb28b52e824a951a25c7688456548711be377cc41f7ce041a1a"
@@ -127,14 +127,14 @@
       "sha256": "094e2e8149e91b605a7ffc352e0c2f1226b9c476ca5b1c3bfe6c0eec29ac8188"
     },
     "app/repository/supabase_mappers.py": {
-      "sha256": "06c781afd707e71151e03b5c45e1d6241919c68aad9c65ff038e47ea00119aed",
+      "sha256": "ceb7349a4e01522f1b676dee10945a90bbe41e20629a0250a938479f36a1f47d",
       "marker": "TO_ROW"
     },
     "app/repository/supabase_repository.py": {
       "sha256": "911c6c11fbd235f900e8735928d3044046b4954b16e96c88693bb3ed25d752a9"
     },
     "app/repository/supabase_store.py": {
-      "sha256": "effdf73ae562616649fcfaab189d2ac30c0145c13929e6bc2ad3ecae77ca38f6",
+      "sha256": "ba40af305da44dfc0cf44c4cd49d49305ba4ef2d4d65d03f3990bf85825d44b1",
       "marker": "persist_state"
     },
     "app/reservation_numbers.py": {
@@ -181,7 +181,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "341aed3130cd85b349aa8f5a53f71bafdde3631f01c99096785a04eb8a61f424",
+      "sha256": "3d2c423aba1d22e7ca9077194152605bca402ee85a198f8fabaae6ffe2718209",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {

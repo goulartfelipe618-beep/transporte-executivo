@@ -1,0 +1,48 @@
+{% extends "master/base.html" %}
+{% block title %}Empresas — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Empresas Corporativas</h2>
+    <p>{{ summary.total }} cadastradas · {{ summary.ativas }} ativas · {{ summary.bloqueadas }} bloqueadas</p>
+  </div>
+  <div>
+    <a class="btn btn-secondary" href="/empresas">Atualizar</a>
+    <a class="btn btn-success" href="/empresas/nova">+ Cadastrar empresa</a>
+  </div>
+</div>
+<form class="filters" method="get" action="/empresas">
+  <div style="flex:1"><label>Buscar</label><input name="q" placeholder="Nome, CNPJ, telefone, e-mail ou ID..." value="{{ search }}"/></div>
+  <div style="align-self:end"><button type="submit" class="btn btn-primary">Filtrar</button></div>
+</form>
+<div class="card">
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Empresa</th><th>CNPJ</th><th>ID</th><th>Contato</th><th>Status</th><th>Portal</th><th>Acoes</th></tr></thead>
+      <tbody>
+        {% for item in companies %}
+        <tr>
+          <td>{{ item.nome_fantasia or item.razao_social or item.nome }}</td>
+          <td>{{ item.cnpj or '—' }}</td>
+          <td><code>{{ item.id }}</code></td>
+          <td>{{ item.email or '—' }}<br/><span class="muted">{{ item.telefone or '' }}</span></td>
+          <td><span class="status-pill status-{{ (item.status_empresa or 'Ativa')|lower|replace('í','i') }}">{{ item.status_empresa or 'Ativa' }}</span></td>
+          <td>{% if item.portal_ativo %}<span class="status-pill status-ativa">Ativo</span>{% else %}<span class="status-pill status-bloqueada">Inativo</span>{% endif %}</td>
+          <td>
+            <div class="actions">
+              <a class="btn btn-secondary btn-sm" href="/empresas/{{ item.id }}">Detalhes</a>
+              <a class="btn btn-secondary btn-sm" href="/empresas/{{ item.id }}/editar">Editar</a>
+              {% if item.status_empresa != 'Bloqueada' %}
+              <form method="post" action="/empresas/{{ item.id }}/bloquear" onsubmit="return confirm('Bloquear empresa?')"><button type="submit" class="btn btn-danger btn-sm">Bloquear</button></form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="muted" style="text-align:center;padding:28px">Nenhuma empresa corporativa cadastrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

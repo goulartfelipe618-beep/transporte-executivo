@@ -1,0 +1,17 @@
+{% extends "master/base.html" %}
+{% block title %}Usuario — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header"><div><h2>{% if is_create %}Novo usuario{% else %}Editar usuario{% endif %}</h2><p><code>{{ company.id }}</code></p></div><a class="btn btn-secondary" href="/empresas/{{ company.id }}">Cancelar</a></div>
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+<form method="post" action="{% if is_create %}/empresas/{{ company.id }}/usuarios/nova{% else %}/empresas/{{ company.id }}/usuarios/{{ user.id }}/editar{% endif %}">
+  <div class="form-grid">
+    <div class="field"><label>Nome *</label><input name="nome" value="{{ form.nome or '' }}"/></div>
+    <div class="field"><label>E-mail *</label><input name="email" type="email" value="{{ form.email or '' }}"/></div>
+    <div class="field"><label>Telefone</label><input name="telefone" value="{{ form.telefone or '' }}"/></div>
+    <div class="field"><label>Perfil</label><select name="perfil">{% for p in user_profiles %}<option value="{{ p }}" {% if (form.perfil or 'Solicitante') == p %}selected{% endif %}>{{ p }}</option>{% endfor %}</select></div>
+    <div class="field"><label>Status</label><select name="status">{% for s in user_statuses %}<option value="{{ s }}" {% if (form.status or 'Ativo') == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+    <div class="field"><label>{% if is_create %}Senha inicial *{% else %}Nova senha{% endif %}</label><input name="senha" type="password"/></div>
+  </div>
+  <div class="form-actions"><button type="submit" class="btn btn-success">Salvar</button></div>
+</form>
+{% endblock %}

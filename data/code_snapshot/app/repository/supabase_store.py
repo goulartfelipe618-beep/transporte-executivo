@@ -12,9 +12,11 @@ from .supabase_mappers import (
     RefResolver,
     TO_ROW,
     from_catalog_row,
+    from_company_user_row,
     from_db_row,
     to_catalog_row,
     to_company_row,
+    to_company_user_row,
     to_event_log_row,
     to_master_client_row,
 )
@@ -99,6 +101,23 @@ def _build_resolver(tables=None):
     return resolver
 
 
+def _hydrate_company_users(items):
+    if not db.is_configured():
+        return
+    users_by_company = {}
+    for row in db.select_all("company_users"):
+        company_uuid = str(row.get("company_id") or "")
+        if not company_uuid:
+            continue
+        users_by_company.setdefault(company_uuid, []).append(from_company_user_row(row))
+    for item in items:
+        if item.get("tipo_pessoa") != "juridica":
+            continue
+        company_uuid = str(item.get("uuid") or "")
+        if company_uuid and company_uuid in users_by_company:
+            item["usuarios"] = users_by_company[company_uuid]
+
+
 def _load_clients():
     items = []
     for row in db.select_all("companies"):
@@ -109,13 +128,15 @@ def _load_clients():
         item = from_db_row(row)
         item["tipo_pessoa"] = item.get("tipo_pessoa", "fisica")
         items.append(item)
+    _hydrate_company_users(items)
     return items
 
 
 def _save_clients(clients):
     for item in clients or []:
         if item.get("tipo_pessoa") == "juridica" or item.get("cnpj") or item.get("razao_social"):
-            row = to_company_row(item)
+            payload = {key: value for key, value in item.items() if key != "usuarios"}
+            row = to_company_row(payload)
             saved = db.upsert_row("companies", row)
             if saved and saved.get("id"):
                 item["uuid"] = saved["id"]
@@ -124,6 +145,39 @@ def _save_clients(clients):
             saved = db.upsert_row("master_clients", row)
             if saved and saved.get("id"):
                 item["uuid"] = saved["id"]
+
+
+def load_company_users(company_uuid):
+    if not db.is_configured() or not company_uuid:
+        return []
+    rows = db.select_all("company_users", filters={"company_id": company_uuid})
+    return [from_company_user_row(row) for row in rows]
+
+
+def upsert_company_user(item, *, company_uuid, company_legacy_id=None):
+    if not db.is_configured():
+        return None
+    row = to_company_user_row(item, company_uuid=company_uuid, company_legacy_id=company_legacy_id)
+    saved = db.upsert_row("company_users", row)
+    if saved and saved.get("id"):
+        item["uuid"] = saved["id"]
+    return saved
+
+
+def delete_company_user_row(*, company_uuid, legacy_user_id=None, user_uuid=None, company_legacy_id=None):
+    if not db.is_configured():
+        return False
+    filters = {"company_id": company_uuid}
+    if user_uuid:
+        filters["id"] = user_uuid
+    elif legacy_user_id:
+        from .supabase_mappers import company_user_storage_legacy
+
+        filters["legacy_admin_id"] = company_user_storage_legacy(company_legacy_id, legacy_user_id)
+    else:
+        return False
+    db.delete_rows("company_users", filters)
+    return True
 
 
 def _load_catalog(collection_key):

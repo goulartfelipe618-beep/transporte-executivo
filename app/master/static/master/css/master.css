@@ -417,6 +417,16 @@ table.data tr:nth-child(even) td { background: #fafbfd; }
   align-items: start;
 }
 
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.metric-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+.metric-card span { display: block; color: var(--muted); font-size: .78rem; margin-bottom: 6px; }
+.metric-card strong { font-size: 1.2rem; }
+.inline-copy { display: flex; gap: 8px; align-items: center; }
+.inline-copy input { flex: 1; }
+.alert-warning { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; }
+.form-actions { margin-top: 16px; }
+.muted { color: var(--muted); }
+
 @media (max-width: 900px) {
   .layout { flex-direction: column; }
   .sidebar { width: 100%; }
