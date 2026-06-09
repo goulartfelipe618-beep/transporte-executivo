@@ -1,0 +1,24 @@
+{% extends "master/base.html" %}
+{% block title %}Editar Veiculo — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header"><div><h2>Editar veiculo</h2><p><code>{{ vehicle.id }}</code></p></div><a class="btn btn-secondary" href="/veiculos/{{ vehicle.id }}">Detalhes</a></div>
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+<form method="post" action="/veiculos/{{ vehicle.id }}/editar">
+  <div class="form-section"><h3>Dados</h3>
+    <div class="form-grid">
+      <div class="field"><label>Tipo</label><select name="tipo_veiculo">{% for t in vehicle_types %}<option value="{{ t }}" {% if (vehicle.tipo_veiculo or vehicle_types[0]) == t %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+      <div class="field"><label>Status</label><select name="status">{% for s in status_options %}<option value="{{ s }}" {% if (vehicle.status or 'Ativo') == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+      <div class="field"><label>Marca *</label><input name="marca" value="{{ vehicle.marca or '' }}"/></div>
+      <div class="field"><label>Modelo *</label><input name="modelo" value="{{ vehicle.modelo or '' }}"/></div>
+      <div class="field"><label>Placa *</label><input name="placa" value="{{ vehicle.placa or '' }}"/></div>
+      <div class="field"><label>Motorista</label>
+        <select name="driver_id"><option value="">—</option>{% for d in drivers %}<option value="{{ d.id }}" {% if vehicle.driver_id == d.id %}selected{% endif %}>{{ d.label }}</option>{% endfor %}</select>
+      </div>
+      <div class="field"><label>Rede?</label><select name="veiculo_de_rede"><option value="1" {% if vehicle.veiculo_de_rede == 'Sim' %}selected{% endif %}>Sim</option><option value="0" {% if vehicle.veiculo_de_rede != 'Sim' %}selected{% endif %}>Nao</option></select></div>
+      <div class="field"><label>Valor KM</label><input name="valor_km" value="{{ vehicle.valor_km or '' }}"/></div>
+      <div class="field"><label>Valor hora</label><input name="valor_hora" value="{{ vehicle.valor_hora or '' }}"/></div>
+    </div>
+  </div>
+  <div class="form-actions"><button type="submit" class="btn btn-success">Salvar</button></div>
+</form>
+{% endblock %}

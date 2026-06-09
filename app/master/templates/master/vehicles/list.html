@@ -1,0 +1,50 @@
+{% extends "master/base.html" %}
+{% block title %}Veiculos — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Frota de Veiculos</h2>
+    <p>{{ summary.total }} cadastrados · {{ summary.ativos }} ativos · {{ summary.rede }} de rede · {{ summary.publicados }} publicados</p>
+  </div>
+  <div>
+    <a class="btn btn-secondary" href="/veiculos">Atualizar</a>
+    <a class="btn btn-success" href="/veiculos/novo">+ Novo veiculo</a>
+  </div>
+</div>
+<form class="filters" method="get" action="/veiculos">
+  <div style="flex:1"><label>Buscar</label><input name="q" placeholder="Placa, marca, modelo ou tipo..." value="{{ search }}"/></div>
+  <div style="align-self:end"><button type="submit" class="btn btn-primary">Filtrar</button></div>
+</form>
+<div class="card">
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Veiculo</th><th>Placa</th><th>ID</th><th>Tipo</th><th>Status</th><th>Rede</th><th>Acoes</th></tr></thead>
+      <tbody>
+        {% for item in vehicles %}
+        <tr>
+          <td>{{ item.marca }} {{ item.modelo }}</td>
+          <td>{{ item.placa or '—' }}</td>
+          <td><code>{{ item.id }}</code></td>
+          <td>{{ item.tipo_veiculo or '—' }}</td>
+          <td><span class="status-pill status-{{ (item.status or 'ativo')|lower }}">{{ item.status or 'Ativo' }}</span></td>
+          <td>{% if item.veiculo_de_rede == 'Sim' %}Sim{% else %}Nao{% endif %}</td>
+          <td>
+            <div class="actions">
+              <a class="btn btn-secondary btn-sm" href="/veiculos/{{ item.id }}">Detalhes</a>
+              <a class="btn btn-secondary btn-sm" href="/veiculos/{{ item.id }}/editar">Editar</a>
+              {% if (item.status or '')|lower != 'inativo' %}
+              <form method="post" action="/veiculos/{{ item.id }}/bloquear" onsubmit="return confirm('Bloquear veiculo?')"><button type="submit" class="btn btn-danger btn-sm">Bloquear</button></form>
+              {% else %}
+              <form method="post" action="/veiculos/{{ item.id }}/ativar"><button type="submit" class="btn btn-success btn-sm">Ativar</button></form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="muted" style="text-align:center;padding:28px">Nenhum veiculo cadastrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

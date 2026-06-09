@@ -1,0 +1,44 @@
+{% extends "master/base.html" %}
+{% block title %}Novo Veiculo — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header"><div><h2>Novo veiculo</h2></div><a class="btn btn-secondary" href="/veiculos">Cancelar</a></div>
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+<form method="post" action="/veiculos/novo">
+  <div class="form-section"><h3>Dados do veiculo</h3>
+    <div class="form-grid">
+      <div class="field"><label>Tipo *</label><select name="tipo_veiculo">{% for t in vehicle_types %}<option value="{{ t }}" {% if (form.tipo_veiculo or vehicle_types[0]) == t %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+      <div class="field"><label>Status</label><select name="status">{% for s in status_options %}<option value="{{ s }}">{{ s }}</option>{% endfor %}</select></div>
+      <div class="field"><label>Marca *</label><input name="marca" value="{{ form.marca or '' }}"/></div>
+      <div class="field"><label>Modelo *</label><input name="modelo" value="{{ form.modelo or '' }}"/></div>
+      <div class="field"><label>Placa *</label><input name="placa" value="{{ form.placa or '' }}"/></div>
+      <div class="field"><label>Ano</label><input name="ano" value="{{ form.ano or '' }}"/></div>
+      <div class="field"><label>Cor</label><input name="cor" value="{{ form.cor or '' }}"/></div>
+      <div class="field"><label>Combustivel</label><select name="combustivel">{% for c in combustivel_options %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select></div>
+      <div class="field"><label>RENAVAM</label><input name="renavam" value="{{ form.renavam or '' }}"/></div>
+      <div class="field"><label>Chassi</label><input name="chassi" value="{{ form.chassi or '' }}"/></div>
+      <div class="field"><label>Motorista vinculado</label>
+        <select name="driver_id"><option value="">— Nenhum —</option>{% for d in drivers %}<option value="{{ d.id }}">{{ d.label }}</option>{% endfor %}</select>
+      </div>
+      <div class="field"><label>Veiculo de rede?</label><select name="veiculo_de_rede"><option value="1">Sim</option><option value="0" selected>Nao</option></select></div>
+    </div>
+  </div>
+  <div class="form-section"><h3>Operacional (rede)</h3>
+    <div class="form-grid">
+      <div class="field"><label>Valor KM</label><input name="valor_km" value="{{ form.valor_km or '' }}"/></div>
+      <div class="field"><label>Valor hora</label><input name="valor_hora" value="{{ form.valor_hora or '' }}"/></div>
+      <div class="field"><label>Tarifa base</label><input name="tarifa_base" value="{{ form.tarifa_base or '' }}"/></div>
+      <div class="field"><label>Valor minimo</label><input name="valor_minimo" value="{{ form.valor_minimo or '' }}"/></div>
+    </div>
+  </div>
+  <div class="form-section"><h3>Imagens (caminho ou URL)</h3>
+    <div class="form-grid">
+      <div class="field field-full"><label>Capa</label><input name="capa" value="{{ form.capa or '' }}"/></div>
+      {% for key in image_fields %}{% if key != 'capa' %}
+      <div class="field"><label>{{ key }}</label><input name="{{ key }}" value=""/></div>
+      {% endif %}{% endfor %}
+    </div>
+  </div>
+  <div class="form-section"><h3>Observacoes</h3><div class="field field-full"><textarea name="observacoes" rows="3">{{ form.observacoes or '' }}</textarea></div></div>
+  <div class="form-actions"><button type="submit" class="btn btn-success">Cadastrar veiculo</button></div>
+</form>
+{% endblock %}

@@ -13,6 +13,7 @@ from .routers.web.dashboard import router as dashboard_router
 from .routers.web.companies import router as companies_router
 from .routers.web.drivers import router as drivers_router
 from .routers.web.reservations import router as reservations_router
+from .routers.web.vehicles import router as vehicles_router
 
 
 def create_master_app(runtime_app) -> FastAPI:
@@ -43,4 +44,5 @@ def create_master_app(runtime_app) -> FastAPI:
     app.include_router(reservations_router)
     app.include_router(companies_router)
     app.include_router(drivers_router)
+    app.include_router(vehicles_router)
     return app

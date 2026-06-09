@@ -1,0 +1,44 @@
+{% extends "master/base.html" %}
+{% block title %}{{ vehicle_name }} — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h2>{{ vehicle_name }}</h2><p><code>{{ vehicle.id }}</code> · {{ vehicle.tipo_veiculo or '—' }}</p></div>
+  <div>
+    <a class="btn btn-secondary" href="/veiculos">Voltar</a>
+    <a class="btn btn-secondary" href="/veiculos/{{ vehicle.id }}/editar">Editar</a>
+    {% if (vehicle.status or '')|lower != 'inativo' %}
+    <form method="post" action="/veiculos/{{ vehicle.id }}/bloquear" style="display:inline" onsubmit="return confirm('Bloquear?')"><button class="btn btn-danger">Bloquear</button></form>
+    {% else %}
+    <form method="post" action="/veiculos/{{ vehicle.id }}/ativar" style="display:inline"><button class="btn btn-success">Ativar</button></form>
+    {% endif %}
+  </div>
+</div>
+{% if success_msg %}<div class="alert alert-success">{{ success_msg }}</div>{% endif %}
+<div class="cards-grid">
+  <div class="metric-card"><span>Reservas</span><strong>{{ stats.total_reservas }}</strong></div>
+  <div class="metric-card"><span>Concluidas</span><strong>{{ stats.reservas_concluidas }}</strong></div>
+  <div class="metric-card"><span>Pendentes</span><strong>{{ stats.reservas_pendentes }}</strong></div>
+  <div class="metric-card"><span>Motoristas</span><strong>{{ stats.motoristas_vinculados }}</strong></div>
+  <div class="metric-card"><span>Rede / Publicado</span><strong>{% if stats.rede %}Rede{% else %}Manual{% endif %} / {% if stats.portal_publicado %}Sim{% else %}Nao{% endif %}</strong></div>
+</div>
+<div class="form-section"><h3>Documentos</h3>
+  <table class="data"><thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+    <tbody>{% for doc in documents %}<tr><td>{{ doc.label }}</td><td>{{ doc.value }}</td></tr>{% else %}<tr><td colspan="2" class="muted">Sem documentos registrados.</td></tr>{% endfor %}</tbody>
+  </table>
+</div>
+<div class="form-section"><h3>Imagens</h3>
+  <table class="data"><thead><tr><th>Tipo</th><th>Caminho / URL</th></tr></thead>
+    <tbody>{% for img in images %}<tr><td>{{ img.label }}</td><td><code>{{ img.path }}</code></td></tr>{% else %}<tr><td colspan="2" class="muted">Nenhuma imagem cadastrada.</td></tr>{% endfor %}</tbody>
+  </table>
+</div>
+<div class="form-section"><h3>Motoristas vinculados</h3>
+  <table class="data"><thead><tr><th>Nome</th><th>ID</th><th>Cidade</th></tr></thead>
+    <tbody>{% for d in drivers %}<tr><td><a href="/motoristas/{{ d.id }}">{{ d.nome }}</a></td><td><code>{{ d.id }}</code></td><td>{{ d.cidade or '—' }}</td></tr>{% else %}<tr><td colspan="3" class="muted">Nenhum motorista vinculado.</td></tr>{% endfor %}</tbody>
+  </table>
+</div>
+<div class="form-section"><h3>Reservas vinculadas</h3>
+  <table class="data"><thead><tr><th>N</th><th>Cliente</th><th>Data</th><th>Motorista</th><th>Status</th></tr></thead>
+    <tbody>{% for r in reservations %}<tr><td>{{ r.numero }}</td><td>{{ r.cliente }}</td><td>{{ r.data }}</td><td>{{ r.motorista }}</td><td>{{ r.status }}</td></tr>{% else %}<tr><td colspan="5" class="muted">Nenhuma reserva vinculada.</td></tr>{% endfor %}</tbody>
+  </table>
+</div>
+{% endblock %}
