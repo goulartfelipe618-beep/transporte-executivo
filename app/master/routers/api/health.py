@@ -33,6 +33,7 @@ def _deploy_payload():
 
 
 @router.get("/health")
+@router.get("/api/health")
 @router.get("/api/v1/master/health")
 async def health():
     return JSONResponse(
