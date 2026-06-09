@@ -1,0 +1,65 @@
+{% extends "master/base.html" %}
+{% block title %}Abrangencia — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Abrangencia Nacional</h2>
+    <p>{{ summary.total }} pontos · {{ summary.ativos }} operando · {{ summary.estados_com_pontos }} estados · {{ summary.cidades_com_pontos }} cidades</p>
+  </div>
+  <div>
+    <a class="btn btn-secondary" href="/abrangencia">Atualizar</a>
+    <a class="btn btn-success" href="/abrangencia/nova">+ Novo ponto</a>
+  </div>
+</div>
+<div class="cards-grid">
+  <div class="metric-card"><span>Estados IBGE</span><strong>{{ summary.estados_ibge }}</strong></div>
+  <div class="metric-card"><span>Pontos operacionais</span><strong>{{ summary.total }}</strong></div>
+  <div class="metric-card"><span>Ativos</span><strong>{{ summary.ativos }}</strong></div>
+  <div class="metric-card"><span>Estados com pontos</span><strong>{{ summary.estados_com_pontos }}</strong></div>
+</div>
+<form class="filters" method="get" action="/abrangencia">
+  <div style="flex:1"><label>Buscar</label><input name="q" placeholder="Nome, endereco, cidade..." value="{{ search }}"/></div>
+  <div><label>Tipo</label>
+    <select name="tipo"><option value="">Todos</option>{% for t in filter_tipos %}<option value="{{ t }}" {% if filter_tipo == t %}selected{% endif %}>{{ t }}</option>{% endfor %}</select>
+  </div>
+  <div><label>Status</label>
+    <select name="status"><option value="">Todos</option>{% for s in filter_statuses %}<option value="{{ s }}" {% if filter_status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+  </div>
+  <div><label>UF</label>
+    <select name="uf"><option value="">Todas</option>{% for u in filter_ufs %}<option value="{{ u }}" {% if filter_uf == u %}selected{% endif %}>{{ u }}</option>{% endfor %}</select>
+  </div>
+  <div style="align-self:end"><button type="submit" class="btn btn-primary">Filtrar</button></div>
+</form>
+<div class="card">
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Ponto</th><th>ID</th><th>Tipo</th><th>Cidade/UF</th><th>Status</th><th>Portal</th><th>Acoes</th></tr></thead>
+      <tbody>
+        {% for item in points %}
+        <tr>
+          <td>{{ item.nome }}</td>
+          <td><code>{{ item.id }}</code></td>
+          <td>{{ item.tipo or '—' }}</td>
+          <td>{{ item.cidade_nome or '—' }} / {{ item.estado_uf or '—' }}</td>
+          <td><span class="status-pill status-{{ (item.status or 'operando')|lower }}">{{ item.status or 'Operando' }}</span></td>
+          <td>{% if item.portal_publicado %}Sim{% else %}Nao{% endif %}</td>
+          <td>
+            <div class="actions">
+              <a class="btn btn-secondary btn-sm" href="/abrangencia/{{ item.id }}">Detalhes</a>
+              <a class="btn btn-secondary btn-sm" href="/abrangencia/{{ item.id }}/editar">Editar</a>
+              {% if (item.status or '')|lower != 'pausado' %}
+              <form method="post" action="/abrangencia/{{ item.id }}/bloquear" onsubmit="return confirm('Bloquear ponto?')"><button type="submit" class="btn btn-danger btn-sm">Bloquear</button></form>
+              {% else %}
+              <form method="post" action="/abrangencia/{{ item.id }}/ativar"><button type="submit" class="btn btn-success btn-sm">Ativar</button></form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="muted" style="text-align:center;padding:28px">Nenhum ponto operacional cadastrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
