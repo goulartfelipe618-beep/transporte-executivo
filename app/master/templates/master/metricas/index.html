@@ -1,0 +1,96 @@
+{% extends "master/base.html" %}
+{% block title %}Metricas — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Metricas e Performance</h2>
+    <p>Indicadores de performance, receita, reservas e operacao. Dados carregados da base de reservas.</p>
+  </div>
+  <div>
+    <a class="btn btn-secondary" href="/metricas">Atualizar</a>
+    <a class="btn btn-success" href="/reservas/nova">+ Criar Reserva</a>
+  </div>
+</div>
+
+<div class="cards-grid">
+  <div class="metric-card"><span>Reservas</span><strong>{{ stats.total }}</strong><small>total na base</small></div>
+  <div class="metric-card"><span>Receita</span><strong>{{ stats.revenue_display }}</strong><small>valor total</small></div>
+  <div class="metric-card"><span>Ticket medio</span><strong>{{ stats.ticket_display }}</strong><small>por reserva</small></div>
+  <div class="metric-card"><span>Concluidas</span><strong>{{ stats.done }}</strong><small>{{ stats.done_pct }}% do total</small></div>
+  <div class="metric-card"><span>Pendentes</span><strong>{{ stats.pending }}</strong><small>requer acompanhamento</small></div>
+</div>
+
+<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px">
+  <div class="card">
+    <div class="card-body">
+      <h3 style="margin:0 0 4px;font-size:1rem">Evolucao mensal</h3>
+      <p class="muted" style="margin:0 0 12px">Reservas e receita por mes</p>
+      <div style="display:flex;align-items:flex-end;gap:10px;min-height:160px;padding-top:8px">
+        {% for bar in monthly_bars %}
+        <div style="flex:1;text-align:center">
+          <div style="height:120px;display:flex;align-items:flex-end;justify-content:center">
+            <div title="{{ bar.count }} reservas · {{ bar.revenue_display }}" style="width:70%;max-width:48px;height:{{ bar.height_pct }}%;min-height:{% if bar.count %}8px{% else %}0{% endif %};background:#d97706;border-radius:4px 4px 0 0"></div>
+          </div>
+          <div style="font-size:0.75rem;margin-top:6px">{{ bar.label }}</div>
+          <div class="muted" style="font-size:0.7rem">{{ bar.count }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3 style="margin:0 0 4px;font-size:1rem">Status das reservas</h3>
+      <p class="muted" style="margin:0 0 12px">Distribuicao operacional</p>
+      {% for bar in status_bars %}
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="width:90px;font-size:0.85rem">{{ bar.label }}</span>
+        <div style="flex:1;background:#E5EAF1;height:14px;border-radius:4px;overflow:hidden">
+          <div style="width:{{ bar.width_pct }}%;height:100%;background:{{ bar.color }}"></div>
+        </div>
+        <strong style="width:32px;text-align:right;font-size:0.85rem">{{ bar.value }}</strong>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+  <div class="card">
+    <div class="card-body">
+      <h3 style="margin:0 0 4px;font-size:1rem">Ultimos Transfers</h3>
+      <p class="muted" style="margin:0 0 12px">{{ latest|length }} recentes</p>
+      {% for row in latest %}
+      <div style="display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #e5eaf1">
+        <div>
+          {% if row.href %}<a href="{{ row.href }}"><strong>{{ row.numero }}</strong> — {{ row.cliente or '—' }}</a>{% else %}<strong>{{ row.numero or '—' }}</strong> — {{ row.cliente or '—' }}{% endif %}
+          <div class="muted" style="font-size:0.85rem">{{ row.trajeto or '—' }}</div>
+        </div>
+        <div style="text-align:right">
+          <div>{{ row.valor }}</div>
+          <div class="muted" style="font-size:0.85rem">{{ row.status }}</div>
+        </div>
+      </div>
+      {% else %}
+      <p class="muted">Nenhuma reserva encontrada.</p>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3 style="margin:0 0 4px;font-size:1rem">Top destinos</h3>
+      <p class="muted" style="margin:0 0 12px">principais trajetos</p>
+      {% for bar in route_bars %}
+      <div style="margin-bottom:12px">
+        <div style="font-size:0.9rem;margin-bottom:4px">{{ bar.rank }}. {{ bar.route }}</div>
+        <div style="background:#E5EAF1;height:10px;border-radius:4px;overflow:hidden">
+          <div style="width:{{ bar.width_pct }}%;height:100%;background:#d97706"></div>
+        </div>
+      </div>
+      {% else %}
+      <p class="muted">Sem trajetos para exibir.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -20,6 +20,7 @@ from .routers.web.agenda import router as agenda_router
 from .routers.web.company_leads import router as company_leads_router
 from .routers.web.driver_leads import router as driver_leads_router
 from .routers.web.finance import router as finance_router
+from .routers.web.metrics import router as metrics_router
 
 
 def create_master_app(runtime_app) -> FastAPI:
@@ -57,4 +58,5 @@ def create_master_app(runtime_app) -> FastAPI:
     app.include_router(company_leads_router)
     app.include_router(driver_leads_router)
     app.include_router(finance_router)
+    app.include_router(metrics_router)
     return app
