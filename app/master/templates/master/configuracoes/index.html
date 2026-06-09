@@ -1,0 +1,136 @@
+{% extends "master/base.html" %}
+{% block title %}Configuracoes — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Configuracoes do Sistema</h2>
+    <p>Parametros da operacao, identidade visual e dados contratuais.</p>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    {% if editing %}
+    <span style="font-size:.8rem;padding:4px 10px;border-radius:6px;background:#fffbeb;color:#92400e;border:1px solid #fcd34d">Editando</span>
+    <a class="btn btn-secondary" href="/configuracoes">Cancelar</a>
+    {% else %}
+    <span style="font-size:.8rem;padding:4px 10px;border-radius:6px;background:#f1f5f9;color:#475569;border:1px solid var(--line)">Somente leitura</span>
+    <a class="btn btn-primary" href="/configuracoes?editar=1">Editar</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if saved %}<div class="alert alert-success">Configuracoes salvas com sucesso.</div>{% endif %}
+{% if warning %}<div class="alert alert-warning">{{ warning }}</div>{% endif %}
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+
+<div class="cards-grid" style="margin-bottom:16px">
+  {% for label, value in pills %}
+  <div class="metric-card"><span>{{ label }}</span><strong>{{ value[:42] }}</strong></div>
+  {% endfor %}
+</div>
+
+<form method="post" action="/configuracoes">
+  <div class="form-section">
+    <h3>Meu Perfil</h3>
+    <p class="muted">Dados pessoais e da empresa operadora</p>
+    <div class="form-grid">
+      {% for key, label, placeholder, required in profile_fields %}
+      <div class="field {% if key == 'endereco_completo' %}field-full{% endif %}">
+        <label>{{ label }}{% if required %} *{% endif %}</label>
+        <input name="{{ key }}" value="{{ settings[key] or '' }}" placeholder="{{ placeholder }}"
+               {% if not editing %}readonly disabled{% endif %}/>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>Identidade visual</h3>
+    <p class="muted">Logomarca, nome do projeto e tipografia global</p>
+    <div class="field field-full" style="margin-bottom:12px">
+      <label>Logomarca global</label>
+      {% if editing %}
+      <input name="logo_global" value="{{ settings.logo_global or '' }}" placeholder="Caminho da imagem (PNG, JPG, WEBP)"/>
+      {% else %}
+      <div style="padding:9px 12px;background:var(--panel-alt);border:1px solid var(--line);border-radius:8px">{{ display_file(settings.logo_global) }}</div>
+      {% endif %}
+    </div>
+    <div class="form-grid">
+      {% for key, label, placeholder, required in brand_fields %}
+      <div class="field">
+        <label>{{ label }}{% if required %} *{% endif %}</label>
+        <input name="{{ key }}" value="{{ settings[key] or '' }}" placeholder="{{ placeholder }}"
+               {% if not editing %}readonly disabled{% endif %}/>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="alert" style="margin-top:12px;background:var(--primary-soft);border-color:var(--primary);color:var(--text)">
+      {{ preview_text }}
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>Informacoes contratuais</h3>
+    <p class="muted">Cabecalho legal dos contratos e documentos</p>
+    <div class="field" style="margin-bottom:12px">
+      <label>Possui CNPJ da empresa?</label>
+      {% if editing %}
+      <div style="display:flex;gap:16px;margin-top:6px">
+        <label><input type="radio" name="possui_cnpj" value="sim" {% if (settings.possui_cnpj or 'sim') == 'sim' %}checked{% endif %}/> Sim</label>
+        <label><input type="radio" name="possui_cnpj" value="nao" {% if settings.possui_cnpj == 'nao' %}checked{% endif %}/> Nao</label>
+      </div>
+      {% else %}
+      <div style="padding:9px 12px;background:var(--panel-alt);border:1px solid var(--line);border-radius:8px">{{ 'Sim' if (settings.possui_cnpj or 'sim') == 'sim' else 'Nao' }}</div>
+      {% endif %}
+    </div>
+    <div class="form-grid">
+      {% for key, label, placeholder, required in contract_fields %}
+      <div class="field {% if key == 'endereco_sede' %}field-full{% endif %}">
+        <label>{{ label }}{% if required %} *{% endif %}</label>
+        {% if key in file_fields and not editing %}
+        <div style="padding:9px 12px;background:var(--panel-alt);border:1px solid var(--line);border-radius:8px">{{ display_file(settings[key]) }}</div>
+        {% else %}
+        <input name="{{ key }}" value="{{ settings[key] or '' }}" placeholder="{{ placeholder }}"
+               {% if not editing %}readonly disabled{% endif %}/>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>Assinatura eletronica</h3>
+    <p class="muted">Imagem usada em PDFs e documentos oficiais</p>
+    <div class="field field-full">
+      <label>Assinatura</label>
+      {% if editing %}
+      <input name="assinatura" value="{{ settings.assinatura or '' }}" placeholder="Caminho da imagem da assinatura"/>
+      {% else %}
+      <div style="padding:9px 12px;background:var(--panel-alt);border:1px solid var(--line);border-radius:8px">{{ display_file(settings.assinatura) }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>Seguranca</h3>
+    <p class="muted">Credenciais de acesso e autenticacao em dois fatores</p>
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" disabled title="Disponivel no painel desktop">Alterar senha de acesso</button>
+      <button type="button" class="btn btn-secondary" disabled title="Disponivel no painel desktop">Configurar 2FA (TOTP)</button>
+    </div>
+  </div>
+
+  {% if editing %}
+  <div class="form-actions">
+    <button type="submit" class="btn btn-success">Salvar alteracoes</button>
+    <a class="btn btn-secondary" href="/configuracoes">Cancelar</a>
+  </div>
+  {% endif %}
+</form>
+
+<p class="muted" style="margin-top:12px;font-size:.85rem">
+  {% if editing %}
+  Revise os dados antes de salvar. As alteracoes persistem em Supabase e em data/settings.json.
+  {% else %}
+  Clique em Editar para alterar os dados. Fora do modo edicao, as informacoes ficam protegidas contra alteracoes acidentais.
+  {% endif %}
+</p>
+{% endblock %}
