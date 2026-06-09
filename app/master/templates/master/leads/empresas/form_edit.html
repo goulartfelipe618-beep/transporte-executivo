@@ -1,0 +1,24 @@
+{% extends "master/base.html" %}
+{% block title %}Editar {{ item_name }} — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header"><div><h2>Editar lead</h2><p><code>{{ item.id }}</code> — {{ item_name }}</p></div><a class="btn btn-secondary" href="/leads/empresas/{{ item.id }}">Cancelar</a></div>
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+<form method="post" action="/leads/empresas/{{ item.id }}/editar">
+  <div class="form-section"><h3>Dados da empresa</h3>
+    <div class="form-grid">
+      <div class="field"><label>Empresa *</label><input name="empresa" value="{{ form.empresa or '' }}" required/></div>
+      <div class="field"><label>Responsavel *</label><input name="responsavel" value="{{ form.responsavel or '' }}" required/></div>
+      <div class="field"><label>Telefone</label><input name="telefone" value="{{ form.telefone or '' }}"/></div>
+      <div class="field"><label>Email</label><input name="email" value="{{ form.email or '' }}"/></div>
+      <div class="field"><label>Cidade</label><input name="cidade" value="{{ form.cidade or '' }}"/></div>
+      <div class="field"><label>Estado (UF)</label><input name="estado" maxlength="2" value="{{ form.estado or '' }}"/></div>
+      <div class="field"><label>Status</label>
+        <select name="status">{% for s in status_options %}<option value="{{ s }}" {% if (form.status or item.status) == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+      </div>
+      <div class="field"><label>Origem</label><input name="origem" value="{{ form.origem or item.origem or '' }}"/></div>
+    </div>
+  </div>
+  <div class="form-section"><h3>Observacoes</h3><div class="field field-full"><textarea name="observacoes" rows="3">{{ form.observacoes or '' }}</textarea></div></div>
+  <div class="form-actions"><button type="submit" class="btn btn-success">Salvar alteracoes</button></div>
+</form>
+{% endblock %}

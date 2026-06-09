@@ -1,0 +1,52 @@
+{% extends "master/base.html" %}
+{% block title %}{{ item_name }} — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h2>{{ item_name }}</h2><p><code>{{ item.id }}</code> · {{ item.status or 'Novo' }}</p></div>
+  <div>
+    <a class="btn btn-secondary" href="/leads/empresas">Voltar</a>
+    <a class="btn btn-secondary" href="/leads/empresas/{{ item.id }}/editar">Editar</a>
+    {% if (item.status or '') != block_status %}
+    <form method="post" action="/leads/empresas/{{ item.id }}/bloquear" style="display:inline" onsubmit="return confirm('Marcar lead como Perdido?')"><button class="btn btn-danger">Perdido</button></form>
+    {% else %}
+    <form method="post" action="/leads/empresas/{{ item.id }}/ativar" style="display:inline"><button class="btn btn-success">Reativar</button></form>
+    {% endif %}
+  </div>
+</div>
+{% if success_msg %}<div class="alert alert-success">{{ success_msg }}</div>{% endif %}
+<div class="cards-grid">
+  <div class="metric-card"><span>Status</span><strong>{{ stats.status }}</strong></div>
+  <div class="metric-card"><span>Origem</span><strong>{{ stats.origem or '—' }}</strong></div>
+  <div class="metric-card"><span>Empresa cadastrada</span><strong>{% if stats.tem_empresa %}Sim{% else %}Nao{% endif %}</strong></div>
+  <div class="metric-card"><span>Situacao</span><strong>{% if stats.bloqueado %}Perdido{% else %}Ativo{% endif %}</strong></div>
+</div>
+<div class="form-section"><h3>Acoes rapidas</h3>
+  <div class="actions">
+    {% if item.telefone %}
+    <button type="button" class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('{{ item.telefone }}')">Copiar telefone</button>
+    {% endif %}
+    {% if item.email %}
+    <button type="button" class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('{{ item.email }}')">Copiar e-mail</button>
+    {% endif %}
+    <a class="btn btn-primary btn-sm" href="/empresas/nova">Abrir cadastro de empresa</a>
+  </div>
+</div>
+<div class="form-section"><h3>Dados do lead</h3>
+  <table class="data"><tbody>
+    <tr><th>Empresa</th><td>{{ item.empresa or '—' }}</td></tr>
+    <tr><th>Responsavel</th><td>{{ item.responsavel or '—' }}</td></tr>
+    <tr><th>Telefone</th><td>{{ item.telefone or '—' }}</td></tr>
+    <tr><th>Email</th><td>{{ item.email or '—' }}</td></tr>
+    <tr><th>Cidade / UF</th><td>{{ item.cidade or '—' }}{% if item.estado %} / {{ item.estado }}{% endif %}</td></tr>
+    <tr><th>Origem</th><td>{{ item.origem or '—' }}</td></tr>
+    <tr><th>Criado em</th><td>{{ item.criado_em or '—' }}</td></tr>
+    <tr><th>Atualizado em</th><td>{{ item.atualizado_em or '—' }}</td></tr>
+    <tr><th>Observacoes</th><td>{{ item.observacoes or '—' }}</td></tr>
+  </tbody></table>
+</div>
+<div class="form-section"><h3>Empresa vinculada (match por nome)</h3>
+  {% if company %}
+  <p><a href="/empresas/{{ company.id }}">{{ company.razao_social or company.nome_fantasia or company.nome or company.empresa }}</a> <code>{{ company.id }}</code></p>
+  {% else %}<p class="muted">Nenhuma empresa cadastrada com nome correspondente.</p>{% endif %}
+</div>
+{% endblock %}
