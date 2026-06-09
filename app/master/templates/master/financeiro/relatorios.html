@@ -1,0 +1,50 @@
+{% extends "master/base.html" %}
+{% block title %}Relatorios — Financeiro — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Relatorios financeiros</h2>
+    <p>Fechamento, margens e leituras para conferencia.</p>
+  </div>
+  <a class="btn btn-secondary" href="/financeiro/relatorios">Atualizar</a>
+</div>
+<nav class="filters" style="margin-bottom:16px;flex-wrap:wrap;gap:8px">
+  {% for tab in finance_nav %}
+  <a class="btn btn-sm {% if active_finance_tab == tab.key %}btn-primary{% else %}btn-secondary{% endif %}" href="{{ tab.href }}">{{ tab.label }}</a>
+  {% endfor %}
+</nav>
+<div class="cards-grid">
+  <div class="metric-card"><span>Margem operacional</span><strong style="color:{% if margin_positive %}#16a34a{% else %}#dc2626{% endif %}">{{ summary.margin_pct }}%</strong><small>sobre receita prevista</small></div>
+  <div class="metric-card"><span>Reservas contabilizadas</span><strong>{{ summary.reservation_count }}</strong><small>base financeira</small></div>
+  <div class="metric-card"><span>Ticket medio</span><strong>{{ average_ticket_display }}</strong><small>valor medio por transfer</small></div>
+  <div class="metric-card"><span>Repasses</span><strong>{{ total_repasse_display }}</strong><small>custo motorista</small></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+  <div class="card">
+    <div class="card-body">
+      <h3 style="margin:0 0 12px;font-size:1rem">Resumo por status</h3>
+      <p class="muted" style="margin:0 0 12px">controle financeiro</p>
+      {% for bar in status_bars %}
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="width:100px;font-size:0.85rem">{{ bar.label }}</span>
+        <div style="flex:1;background:#E5EAF1;height:14px;border-radius:4px;overflow:hidden">
+          <div style="width:{{ bar.width_pct }}%;height:100%;background:#2563eb"></div>
+        </div>
+        <strong style="width:40px;text-align:right;font-size:0.85rem">{{ bar.value }}</strong>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3 style="margin:0 0 12px;font-size:1rem">Fechamento sugerido</h3>
+      <p class="muted" style="margin:0 0 12px">rotina para conferencia</p>
+      <ul style="margin:0;padding-left:18px">
+        {% for item in checklist %}
+        <li style="margin-bottom:8px">{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "master/base.html" %}
+{% block title %}Contas a pagar — Financeiro — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Contas a pagar</h2>
+    <p>Repasses e compromissos previstos com motoristas.</p>
+  </div>
+  <a class="btn btn-secondary" href="/financeiro/contas-a-pagar">Atualizar</a>
+</div>
+<nav class="filters" style="margin-bottom:16px;flex-wrap:wrap;gap:8px">
+  {% for tab in finance_nav %}
+  <a class="btn btn-sm {% if active_finance_tab == tab.key %}btn-primary{% else %}btn-secondary{% endif %}" href="{{ tab.href }}">{{ tab.label }}</a>
+  {% endfor %}
+</nav>
+<div class="card">
+  <div class="card-body">
+    <h3 style="margin:0 0 12px;font-size:1rem">Contas a pagar</h3>
+    <p class="muted">{{ summary.payables|length }} repasses previstos · Total pendente: {{ to_pay_display }}</p>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Vencimento</th><th>Conta</th><th>Motorista</th><th>Reserva</th><th>Descricao</th><th>Valor</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          {% for row in summary.payables %}
+          {% set numero_slug = row.number|replace('#', '') %}
+          <tr>
+            <td>{{ row.date }}</td>
+            <td><code>{{ row.account or 'CP-REPASSE' }}</code></td>
+            <td>{{ row.driver }}</td>
+            <td>{% if numero_slug %}<a href="/reservas/{{ numero_slug }}">{{ row.number }}</a>{% else %}{{ row.number or '—' }}{% endif %}</td>
+            <td>{{ row.description }}</td>
+            <td>{{ money_display(row.value) }}</td>
+            <td>{{ row.status }}</td>
+            <td>{% if numero_slug %}<a class="btn btn-secondary btn-sm" href="/reservas/{{ numero_slug }}">Reserva</a>{% endif %}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8" class="muted" style="text-align:center;padding:28px">Nenhuma conta a pagar registrada.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "master/base.html" %}
+{% block title %}Lancamentos — Financeiro — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Lancamentos</h2>
+    <p>Entradas e saidas geradas automaticamente pelas reservas de transfer.</p>
+  </div>
+  <a class="btn btn-secondary" href="/financeiro/lancamentos">Atualizar</a>
+</div>
+<nav class="filters" style="margin-bottom:16px;flex-wrap:wrap;gap:8px">
+  {% for tab in finance_nav %}
+  <a class="btn btn-sm {% if active_finance_tab == tab.key %}btn-primary{% else %}btn-secondary{% endif %}" href="{{ tab.href }}">{{ tab.label }}</a>
+  {% endfor %}
+</nav>
+<div class="card">
+  <div class="card-body">
+    <h3 style="margin:0 0 12px;font-size:1rem">Lancamentos contabilizados</h3>
+    <p class="muted">{{ summary.entries|length }} movimentos</p>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Data</th><th>Tipo</th><th>Descricao</th><th>Categoria</th><th>Valor</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for row in summary.entries %}
+          <tr>
+            <td>{{ row.date }}</td>
+            <td>{{ row.type }}</td>
+            <td>{{ row.description }}</td>
+            <td>{{ row.category }}</td>
+            <td>{{ money_display(row.value) }}</td>
+            <td>{{ row.status }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="muted" style="text-align:center;padding:28px">Nenhum lancamento encontrado.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

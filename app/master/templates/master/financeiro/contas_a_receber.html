@@ -1,0 +1,43 @@
+{% extends "master/base.html" %}
+{% block title %}Contas a receber — Financeiro — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Contas a receber</h2>
+    <p>Valores previstos para recebimento dos clientes.</p>
+  </div>
+  <a class="btn btn-secondary" href="/financeiro/contas-a-receber">Atualizar</a>
+</div>
+<nav class="filters" style="margin-bottom:16px;flex-wrap:wrap;gap:8px">
+  {% for tab in finance_nav %}
+  <a class="btn btn-sm {% if active_finance_tab == tab.key %}btn-primary{% else %}btn-secondary{% endif %}" href="{{ tab.href }}">{{ tab.label }}</a>
+  {% endfor %}
+</nav>
+<div class="card">
+  <div class="card-body">
+    <h3 style="margin:0 0 12px;font-size:1rem">Contas a receber</h3>
+    <p class="muted">{{ summary.receivables|length }} receitas previstas · Total a receber: {{ to_receive_display }}</p>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Previsao</th><th>Cliente</th><th>Reserva</th><th>Trajeto</th><th>Valor</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          {% for row in summary.receivables %}
+          {% set numero_slug = row.number|replace('#', '') %}
+          <tr>
+            <td>{{ row.date }}</td>
+            <td>{{ row.client or '—' }}</td>
+            <td>{% if numero_slug %}<a href="/reservas/{{ numero_slug }}">{{ row.number }}</a>{% else %}{{ row.number or '—' }}{% endif %}</td>
+            <td>{{ row.route or '—' }}</td>
+            <td>{{ money_display(row.value) }}</td>
+            <td>{{ row.status }}</td>
+            <td>{% if numero_slug %}<a class="btn btn-secondary btn-sm" href="/reservas/{{ numero_slug }}">Reserva</a>{% endif %}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="muted" style="text-align:center;padding:28px">Nenhuma conta a receber pendente.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "master/base.html" %}
+{% block title %}Financeiro — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Financeiro</h2>
+    <p>Visao geral de receitas, repasses, recebiveis e resultado operacional.</p>
+  </div>
+  <a class="btn btn-secondary" href="/financeiro">Atualizar</a>
+</div>
+<nav class="filters" style="margin-bottom:16px;flex-wrap:wrap;gap:8px">
+  {% for tab in finance_nav %}
+  <a class="btn btn-sm {% if active_finance_tab == tab.key %}btn-primary{% else %}btn-secondary{% endif %}" href="{{ tab.href }}">{{ tab.label }}</a>
+  {% endfor %}
+</nav>
+<div class="cards-grid">
+  <div class="metric-card"><span>Receita prevista</span><strong>{{ gross_revenue_display }}</strong><small>reservas nao canceladas</small></div>
+  <div class="metric-card"><span>Recebido</span><strong>{{ received_display }}</strong><small>reservas concluidas</small></div>
+  <div class="metric-card"><span>A receber</span><strong>{{ to_receive_display }}</strong><small>pendente/confirmado</small></div>
+  <div class="metric-card"><span>A pagar</span><strong>{{ to_pay_display }}</strong><small>repasses motoristas</small></div>
+  <div class="metric-card"><span>Resultado</span><strong style="color:{% if net_positive %}#16a34a{% else %}#dc2626{% endif %}">{{ net_result_display }}</strong><small>receita - repasses</small></div>
+</div>
+<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px">
+  <div class="card">
+    <div class="card-body">
+      <h3 style="margin:0 0 12px;font-size:1rem">Fluxo financeiro</h3>
+      <p class="muted" style="margin:0 0 12px">entradas x saidas</p>
+      {% for bar in flow_bars %}
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="width:120px;font-size:0.85rem">{{ bar.label }}</span>
+        <div style="flex:1;background:#E5EAF1;height:16px;border-radius:4px;overflow:hidden">
+          <div style="width:{{ bar.width_pct }}%;height:100%;background:{{ bar.color }}"></div>
+        </div>
+        <strong style="width:110px;text-align:right;font-size:0.85rem">{{ bar.display }}</strong>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3 style="margin:0 0 12px;font-size:1rem">Saude da operacao</h3>
+      <p class="muted" style="margin:0 0 12px">indicadores de controle</p>
+      <div class="detail-grid">
+        {% for item in health_items %}
+        <div class="detail-item">
+          <div class="k">{{ item.label }}</div>
+          <div class="v">{{ item.value }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+<p class="hint" style="margin-top:14px">Dados derivados de <a href="/reservas">reservas</a>. Edicao de valores e repasses em cada reserva.</p>
+{% endblock %}
