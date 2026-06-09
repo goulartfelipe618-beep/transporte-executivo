@@ -9,6 +9,7 @@ from app.partner_network import (
     sync_partner_state,
     toggle_rede_status,
 )
+from app.domain.formatters import money_display
 from app.partner_network_schema import NETWORK_BRANDING_DEFAULTS, TIPO_REDE_OPTIONS
 
 REDE_STATUSES = ("Ativo", "Inativo")
@@ -66,11 +67,6 @@ def contributor_link(partner, contributor):
         return ""
     sep = "&" if "?" in base else "?"
     return f"{base}{sep}ref={ref}"
-
-
-def money_display(value):
-    amount = float(value or 0)
-    return f"R$ {amount:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def dashboard_context(runtime):

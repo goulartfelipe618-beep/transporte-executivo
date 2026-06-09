@@ -4,6 +4,8 @@ from __future__ import annotations
 import re
 from datetime import datetime
 
+from app.domain.formatters import format_amount, parse_amount
+
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
@@ -52,19 +54,6 @@ def validate_future_datetime(date_value, time_value="", *, label="Data/hora"):
     if parsed < datetime.now():
         return False, f"{label} nao pode ser anterior a data e hora atuais."
     return True, ""
-
-
-def parse_amount(value):
-    text = str(value or "0").replace("R$", "").replace(".", "").replace(",", ".").strip()
-    try:
-        return float(text)
-    except ValueError:
-        return 0.0
-
-
-def format_amount(value):
-    amount = float(value or 0)
-    return f"R$ {amount:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def calculate_total_amount(valor_base, desconto):

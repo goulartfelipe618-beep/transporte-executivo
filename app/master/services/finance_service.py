@@ -1,21 +1,11 @@
 """Financeiro — visao derivada de reservas (read-only, logica extraida de pages.py)."""
 from __future__ import annotations
 
+from app.domain.formatters import money_display, parse_money_value
+
 
 def count_by_status(reservations, status):
     return sum(1 for item in reservations if item.get("status") == status)
-
-
-def parse_money_value(value):
-    text = str(value or "0").replace("R$", "").replace(".", "").replace(",", ".").strip()
-    try:
-        return float(text)
-    except ValueError:
-        return 0.0
-
-
-def money_display(value):
-    return f"R$ {float(value or 0):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def build_finance_summary(reservations):

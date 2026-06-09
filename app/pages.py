@@ -6,6 +6,7 @@ from datetime import date, datetime
 from tkinter import filedialog, messagebox, ttk
 
 from .components import apply_input_rules, data_table, header_panel, resolve_widget_value, settings_grid, setup_date_mask, setup_placeholder, summary_cards
+from .domain.formatters import money_display, parse_money_value
 from .data import (
     ABRANGENCIA,
     REGISTRY_PAGES,
@@ -654,19 +655,6 @@ def top_routes(reservations):
 
 def count_by_status(reservations, status):
     return sum(1 for item in reservations if item.get("status") == status)
-
-
-def parse_money_value(value):
-    text = str(value or "0").replace("R$", "").replace(".", "").replace(",", ".").strip()
-    try:
-        return float(text)
-    except ValueError:
-        return 0
-
-
-def money_display(value):
-    return f"R$ {value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
 
 
 def render_finance(parent, app, key):

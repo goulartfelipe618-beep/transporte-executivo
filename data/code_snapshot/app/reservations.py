@@ -12,6 +12,7 @@ from .components import (
     validate_future_datetime,
 )
 from .address_po_field import add_po_address_field, collect_address_values
+from .domain.formatters import format_amount, parse_amount
 from .portal_auth import active_portal_drivers, find_driver_by_name
 from .reservation_numbers import next_reservation_number, next_reservation_numbers
 from .reservation_pdf import default_pdf_filename, generate_reservation_pdf
@@ -429,18 +430,6 @@ def add_total_label(parent, label, row):
     value_label = tk.Label(parent, text="R$ 0,00", bg=COLORS["panel_alt"], fg=COLORS["text"], font=("Segoe UI Semibold", 10), anchor="w", padx=8, pady=5)
     value_label.grid(row=row, column=1, sticky="ew", padx=12, pady=5)
     return value_label
-
-
-def parse_amount(value):
-    text = str(value or "0").replace("R$", "").replace(".", "").replace(",", ".").strip()
-    try:
-        return float(text)
-    except ValueError:
-        return 0.0
-
-
-def format_amount(value):
-    return f"R$ {value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def calculate_total_amount(valor_base_widget, desconto_widget):

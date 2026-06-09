@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-09T11:58:31.905587",
+  "saved_at": "2026-06-09T12:14:18.600345",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "f42fdfec4fd22273d1de2a777b814814ad01974b47791a118afb7ffec88f1796",
@@ -79,7 +79,7 @@
       "sha256": "9e86cb67d2bc60ffd8596c5c68d04dda3b35bbe892dd2e1c52c2b571cb349d79"
     },
     "app/pages.py": {
-      "sha256": "e4d34034fd384a3ef0138afaf92d638cb9c91bd7368b6300aed97d7b8b7e8e9c",
+      "sha256": "b5de62b5eaad2b05e0dc9cfe34d009bde8893aeed5743e2c525b101cc58cd576",
       "marker": "render_finance"
     },
     "app/partner_network_gateway.py": {
@@ -141,7 +141,7 @@
       "sha256": "b5962d50ffa4fc87d8a27aac4fb5c3d0183550bd16de510857b74b2d1bef6ded"
     },
     "app/reservations.py": {
-      "sha256": "ac3269f3d336bcee743782eb93ac81f5b754e9765c92749a3caae6587a1ebb3d",
+      "sha256": "1f246449984d884e3d23e1b2baf3c862ff6b1b3d6b93c8dcf96386f5383ed707",
       "marker": "download_reservation"
     },
     "app/settings_store.py": {
@@ -181,7 +181,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "17d739f788b643253625f94ba12f2cb44e8cd292e1148f024100cf0c954154d1",
+      "sha256": "ce4fe4232e8a3177c2022e1e395a6b91cb77324f841cba70d5e40cdf899bbd1e",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {

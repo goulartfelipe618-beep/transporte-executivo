@@ -3,19 +3,9 @@ from __future__ import annotations
 
 from datetime import date
 
+from app.domain.formatters import money_display, parse_money_value
+
 from .agenda_service import MONTH_NAMES, parse_reservation_date
-
-
-def parse_money_value(value):
-    text = str(value or "0").replace("R$", "").replace(".", "").replace(",", ".").strip()
-    try:
-        return float(text)
-    except ValueError:
-        return 0.0
-
-
-def money_display(value):
-    return f"R$ {value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def count_by_status(reservations, status):
