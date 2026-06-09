@@ -17,17 +17,12 @@ def _read_app_build():
 def _verify_sistema_bundle():
     app_dir = Path("/app/app")
     auth_file = app_dir / "admin_auth.py"
-    sistema_file = app_dir / "sistema_web.py"
+    master_file = app_dir / "master" / "main.py"
     if not auth_file.is_file():
         print("[Nexus] ERRO: admin_auth.py ausente na imagem. Faca rebuild no EasyPanel (branch main).")
         sys.exit(1)
-    try:
-        sistema_src = sistema_file.read_text(encoding="utf-8")
-    except OSError:
-        print("[Nexus] ERRO: sistema_web.py ausente na imagem.")
-        sys.exit(1)
-    if "from .admin_login import authenticate_admin" in sistema_src:
-        print("[Nexus] ERRO: imagem desatualizada — sistema_web ainda importa admin_login (Tkinter).")
+    if not master_file.is_file():
+        print("[Nexus] ERRO: app/master/main.py ausente — rebuild obrigatorio (Sistema Master Web FastAPI).")
         sys.exit(1)
     if Path("/usr/share/novnc").exists():
         print("[Nexus] ERRO: imagem contem noVNC — rebuild obrigatorio (Dockerfile.sistema atual).")
@@ -47,7 +42,7 @@ def _run_sistema():
         print("[Nexus] ERRO: NEXUS_SISTEMA_UI=vnc — APAGUE essa variavel no EasyPanel e rebuild.")
         sys.exit(1)
     build = _read_app_build()
-    print(f"[Nexus] Painel WEB porta 8772 — build {build} — VNC desativado")
+    print(f"[Nexus] Sistema Master Web FastAPI porta 8772 — build {build} — VNC desativado")
     print("[Nexus] https://sistema.transporteexecutivo.com/")
     os.execvp(sys.executable, [sys.executable, "scripts/run_production_server.py"])
 

@@ -16,7 +16,7 @@ from .portal_auth import ensure_portal_security
 from .portal_server import start_driver_portal_server
 from .portal_urls import company_portal_base, driver_portal_base, engine_base, sistema_web_base
 from .repository import AppRepository
-from .sistema_web import start_sistema_web_server
+from .master.server import start_master_web_server
 from .version import APP_BUILD
 
 
@@ -45,7 +45,7 @@ def bootstrap_production_services(app):
     if skip_web:
         print("[Nexus] HTML 8772 desativado (modo legado)")
     else:
-        start_sistema_web_server(app)
+        start_master_web_server(app)
     return gateway_url
 
 
@@ -58,9 +58,9 @@ def run_production_forever():
         sys.exit(1)
     print(f"[Nexus] API gateway: {gateway_url}")
     if not os.environ.get("NEXUS_SKIP_SISTEMA_WEB", "").strip().lower() in {"1", "true", "yes"}:
-        print(f"[Nexus] Sistema web: {sistema_web_base()}")
+        print(f"[Nexus] Sistema Master Web (FastAPI): {sistema_web_base()}")
     else:
-        print(f"[Nexus] Sistema web: {sistema_web_base()}")
+        print(f"[Nexus] Sistema Master Web: {sistema_web_base()}")
     print(f"[Nexus] Portal motorista: {driver_portal_base()}")
     print(f"[Nexus] Portal empresa: {company_portal_base()}")
     print(f"[Nexus] Motor rede (engine): {engine_base()}/{{slug}}/{{codigo}}")

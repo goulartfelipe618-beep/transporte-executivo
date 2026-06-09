@@ -1,0 +1,44 @@
+{% extends "master/base.html" %}
+{% block title %}Editar {{ reservation.numero }} — {{ app_title }}{% endblock %}
+{% block content %}
+{% set numero_slug = reservation.numero|replace('#', '') %}
+<div class="page-header">
+  <div>
+    <h2>Editar Reserva</h2>
+    <p>{{ reservation.numero }} — {{ reservation.cliente }}</p>
+  </div>
+  <a class="btn btn-secondary" href="/reservas/{{ numero_slug }}">Cancelar</a>
+</div>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<form method="post" action="/reservas/{{ numero_slug }}/editar">
+  <div class="form-section">
+    <h3>Dados da reserva</h3>
+    <div class="form-grid">
+      <div class="field"><label>Cliente *</label><input name="cliente" required value="{{ reservation.cliente }}"/></div>
+      <div class="field"><label>Contato</label><input name="contato" value="{{ reservation.contato }}"/></div>
+      <div class="field"><label>E-mail</label><input name="email" type="email" value="{{ reservation.email }}"/></div>
+      <div class="field"><label>Tipo</label><input name="tipo" value="{{ reservation.tipo }}"/></div>
+      <div class="field field-full"><label>Trajeto</label><input name="trajeto" value="{{ reservation.trajeto }}"/></div>
+      <div class="field"><label>Data</label><input name="data" value="{{ reservation.data }}"/></div>
+      <div class="field"><label>Motorista</label><input name="motorista" value="{{ reservation.motorista }}"/></div>
+      <div class="field"><label>Valor</label><input name="valor" value="{{ reservation.valor }}"/></div>
+      <div class="field">
+        <label>Status</label>
+        <select name="status">
+          {% for st in status_options %}
+          <option value="{{ st }}" {% if reservation.status == st %}selected{% endif %}>{{ st }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button type="submit" class="btn btn-success">Salvar</button>
+    <a class="btn btn-secondary" href="/reservas/{{ numero_slug }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

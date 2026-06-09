@@ -1,0 +1,67 @@
+{% extends "master/base.html" %}
+{% block title %}Reserva {{ reservation.numero }} — {{ app_title }}{% endblock %}
+{% block content %}
+{% set numero_slug = reservation.numero|replace('#', '') %}
+<div class="page-header">
+  <div>
+    <h2>Reserva {{ reservation.numero }}</h2>
+    <p>{{ reservation.cliente }} · {{ reservation.data }}</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-secondary" href="/reservas">Voltar</a>
+    <a class="btn btn-secondary" href="/reservas/{{ numero_slug }}/editar">Editar</a>
+  </div>
+</div>
+
+{% if show_payable_notice and reservation.conta_pagar %}
+<div class="alert alert-info">
+  Conta a pagar registrada: <strong>{{ reservation.conta_pagar }}</strong> — {{ reservation.conta_pagar_descricao }}
+</div>
+{% endif %}
+
+<div class="card" style="margin-bottom:16px">
+  <div class="card-body detail-grid">
+    <div class="detail-item"><div class="k">Cliente</div><div class="v">{{ reservation.cliente }}</div></div>
+    <div class="detail-item"><div class="k">Contato</div><div class="v">{{ reservation.contato }}</div></div>
+    <div class="detail-item"><div class="k">E-mail</div><div class="v">{{ reservation.email }}</div></div>
+    <div class="detail-item"><div class="k">Tipo</div><div class="v">{{ reservation.tipo }}</div></div>
+    <div class="detail-item"><div class="k">Trajeto</div><div class="v">{{ reservation.trajeto }}</div></div>
+    <div class="detail-item"><div class="k">Data</div><div class="v">{{ reservation.data }}</div></div>
+    <div class="detail-item"><div class="k">Motorista</div><div class="v">{{ reservation.motorista }}</div></div>
+    <div class="detail-item"><div class="k">Valor</div><div class="v">{{ reservation.valor }}</div></div>
+    <div class="detail-item"><div class="k">Status</div><div class="v">{{ reservation.status }}</div></div>
+    <div class="detail-item"><div class="k">Pagamento</div><div class="v">{{ reservation.pagamento or '—' }}</div></div>
+    <div class="detail-item"><div class="k">Repasse</div><div class="v">{{ reservation.repasse or '—' }}</div></div>
+    {% if reservation.passageiros %}
+    <div class="detail-item"><div class="k">Passageiros</div><div class="v">{{ reservation.passageiros }}</div></div>
+    {% endif %}
+  </div>
+</div>
+
+{% if reservation.observacoes %}
+<div class="card" style="margin-bottom:16px">
+  <div class="card-body">
+    <h3 style="margin:0 0 8px;font-size:.95rem">Observacoes</h3>
+    <p style="margin:0;white-space:pre-wrap">{{ reservation.observacoes }}</p>
+  </div>
+</div>
+{% endif %}
+
+<div class="card" id="pdf">
+  <div class="card-body">
+    <h3 style="margin:0 0 12px;font-size:1rem">Baixar PDF</h3>
+    <div class="actions">
+      {% for via in pdf_vias %}
+      <a class="btn btn-primary btn-sm" href="/reservas/{{ numero_slug }}/pdf/{{ via }}">
+        Via {{ via|capitalize }}
+      </a>
+      {% endfor %}
+    </div>
+    <p class="hint" style="margin-top:10px">Cliente: oculta repasse · Motorista: oculta valor cobrado · Loja: documento completo.</p>
+  </div>
+</div>
+
+<form method="post" action="/reservas/{{ numero_slug }}/excluir" style="margin-top:16px" onsubmit="return confirm('Excluir esta reserva?')">
+  <button type="submit" class="btn btn-danger">Excluir reserva</button>
+</form>
+{% endblock %}

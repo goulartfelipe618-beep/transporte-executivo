@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="nexus-service" content="master-web"/>
+  <title>{% block title %}{{ app_title }}{% endblock %}</title>
+  <link rel="stylesheet" href="/static/master/css/master.css"/>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="logo">NT</div>
+        <h1>{{ app_title }}</h1>
+        <p>Build {{ app_build }}</p>
+      </div>
+      <nav>
+        <a href="/dashboard" class="{% if active_nav == 'dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="/reservas" class="{% if active_nav == 'reservas' %}active{% endif %}">Reservas</a>
+      </nav>
+      <div class="sidebar-footer">
+        <strong>{{ admin.nome }}</strong>
+        <span>{{ admin.email }}</span>
+        <form method="post" action="/logout" style="margin-top:10px">
+          <button type="submit" class="btn btn-secondary btn-sm" style="width:100%">Sair</button>
+        </form>
+      </div>
+    </aside>
+    <main class="main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

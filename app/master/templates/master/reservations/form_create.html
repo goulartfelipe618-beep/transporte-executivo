@@ -1,0 +1,225 @@
+{% extends "master/base.html" %}
+{% block title %}Nova Reserva — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Criar Nova Reserva</h2>
+    <p>Preencha os dados para criar uma nova reserva manual.</p>
+  </div>
+  <a class="btn btn-secondary" href="/reservas">Cancelar</a>
+</div>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+{% if payable_notices %}
+<div class="alert alert-success">
+  {% for line in payable_notices %}<div>{{ line }}</div>{% endfor %}
+</div>
+{% endif %}
+
+<form method="post" action="/reservas/nova" id="reservation-form">
+  <div class="form-section">
+    <h3>Informacoes do Cliente</h3>
+    <div class="form-grid">
+      <div class="field field-full">
+        <label>Origem do cliente</label>
+        <label><input type="radio" name="client_mode" value="cadastrado" {% if form.client_mode == 'cadastrado' %}checked{% endif %}/> Cliente cadastrado</label>
+        <label><input type="radio" name="client_mode" value="novo" {% if form.client_mode != 'cadastrado' %}checked{% endif %}/> Novo cliente</label>
+      </div>
+      <div class="field field-full" id="client-selector">
+        <label>Cliente cadastrado</label>
+        <select name="cliente_cadastrado">
+          <option value="">— Selecione —</option>
+          {% for client in clients %}
+          <option value="{{ client.nome }}" {% if form.cliente_cadastrado == client.nome %}selected{% endif %}>{{ client.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field"><label>Nome completo *</label><input name="nome" value="{{ form.nome or '' }}"/></div>
+      <div class="field"><label>CPF/CNPJ *</label><input name="documento" value="{{ form.documento or '' }}"/></div>
+      <div class="field"><label>Email *</label><input name="email" type="email" value="{{ form.email or '' }}"/></div>
+      <div class="field"><label>Telefone *</label><input name="telefone" value="{{ form.telefone or '' }}"/></div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>Detalhes da Viagem</h3>
+    <div class="form-grid">
+      <div class="field">
+        <label>Tipo de viagem *</label>
+        <select name="tipo" id="trip-type">
+          {% for t in trip_types %}
+          <option value="{{ t }}" {% if (form.tipo or 'Somente Ida') == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section trip-block" data-trip="ida">
+    <h3>→ Ida</h3>
+    <div class="form-grid">
+      {% for key, label in [('embarque','Embarque (IDA) *'), ('desembarque','Desembarque (IDA) *')] %}
+      <div class="field field-full po-field">
+        <label>{{ label }}</label>
+        <div class="po-row">
+          <select name="{{ key }}_modo">
+            <option value="manual" {% if form[key ~ '_modo'] != 'rede' %}selected{% endif %}>Manual</option>
+            <option value="rede" {% if form[key ~ '_modo'] == 'rede' %}selected{% endif %}>PO</option>
+          </select>
+          <input name="{{ key }}" value="{{ form[key] or '' }}" placeholder="Endereco completo"/>
+        </div>
+        <select name="{{ key }}_po_id" class="po-select">
+          <option value="">— Ponto operacional —</option>
+          {% for po in po_options %}
+          <option value="{{ po.id }}" {% if form[key ~ '_po_id'] == po.id %}selected{% endif %}>{{ po.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endfor %}
+      <div class="field"><label>Data embarque *</label><input name="data" placeholder="DD/MM/AAAA" value="{{ form.data or '' }}"/></div>
+      <div class="field"><label>Hora embarque *</label><input name="hora" placeholder="HH:MM" value="{{ form.hora or '' }}"/></div>
+      <div class="field"><label>Passageiros *</label><input name="passageiros" value="{{ form.passageiros or '' }}"/></div>
+      <div class="field"><label>Cupom</label><input name="cupom" value="{{ form.cupom or '' }}"/></div>
+      <div class="field field-full"><label>Mensagem</label><textarea name="mensagem">{{ form.mensagem or '' }}</textarea></div>
+    </div>
+  </div>
+
+  <div class="form-section trip-block" data-trip="volta" style="display:none">
+    <h3>↔ Volta</h3>
+    <div class="form-grid">
+      {% for key, label in [('volta_embarque','Embarque (Volta) *'), ('volta_desembarque','Desembarque (Volta) *')] %}
+      <div class="field field-full po-field">
+        <label>{{ label }}</label>
+        <div class="po-row">
+          <select name="{{ key }}_modo">
+            <option value="manual" {% if form[key ~ '_modo'] != 'rede' %}selected{% endif %}>Manual</option>
+            <option value="rede" {% if form[key ~ '_modo'] == 'rede' %}selected{% endif %}>PO</option>
+          </select>
+          <input name="{{ key }}" value="{{ form[key] or '' }}"/>
+        </div>
+        <select name="{{ key }}_po_id" class="po-select">
+          <option value="">— Ponto operacional —</option>
+          {% for po in po_options %}
+          <option value="{{ po.id }}" {% if form[key ~ '_po_id'] == po.id %}selected{% endif %}>{{ po.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endfor %}
+      <div class="field"><label>Data volta *</label><input name="volta_data" value="{{ form.volta_data or '' }}"/></div>
+      <div class="field"><label>Hora volta *</label><input name="volta_hora" value="{{ form.volta_hora or '' }}"/></div>
+      <div class="field"><label>Passageiros</label><input name="volta_passageiros" value="{{ form.volta_passageiros or '' }}"/></div>
+      <div class="field"><label>Cupom</label><input name="volta_cupom" value="{{ form.volta_cupom or '' }}"/></div>
+      <div class="field field-full"><label>Mensagem</label><textarea name="volta_mensagem">{{ form.volta_mensagem or '' }}</textarea></div>
+    </div>
+  </div>
+
+  <div class="form-section trip-block" data-trip="hora" style="display:none">
+    <h3>Por Hora</h3>
+    <div class="form-grid">
+      {% for key, label in [('hora_inicio','Inicio *'), ('hora_fim','Encerramento *')] %}
+      <div class="field field-full po-field">
+        <label>{{ label }}</label>
+        <div class="po-row">
+          <select name="{{ key }}_modo">
+            <option value="manual" {% if form[key ~ '_modo'] != 'rede' %}selected{% endif %}>Manual</option>
+            <option value="rede" {% if form[key ~ '_modo'] == 'rede' %}selected{% endif %}>PO</option>
+          </select>
+          <input name="{{ key }}" value="{{ form[key] or '' }}"/>
+        </div>
+        <select name="{{ key }}_po_id" class="po-select">
+          <option value="">— Ponto operacional —</option>
+          {% for po in po_options %}
+          <option value="{{ po.id }}" {% if form[key ~ '_po_id'] == po.id %}selected{% endif %}>{{ po.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endfor %}
+      <div class="field"><label>Data *</label><input name="hora_data" value="{{ form.hora_data or '' }}"/></div>
+      <div class="field"><label>Hora inicio *</label><input name="hora_horario" value="{{ form.hora_horario or '' }}"/></div>
+      <div class="field"><label>Passageiros *</label><input name="hora_passageiros" value="{{ form.hora_passageiros or '' }}"/></div>
+      <div class="field"><label>Qtd. horas *</label><input name="qtd_horas" value="{{ form.qtd_horas or '' }}"/></div>
+      <div class="field"><label>Cupom</label><input name="hora_cupom" value="{{ form.hora_cupom or '' }}"/></div>
+      <div class="field field-full"><label>Itinerario / observacoes</label><textarea name="hora_observacoes">{{ form.hora_observacoes or '' }}</textarea></div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>Veiculo e Motorista</h3>
+    <div class="form-grid">
+      <div class="field"><label>Quem fara a viagem?</label><input name="quem_faz" value="{{ form.quem_faz or 'Motorista' }}" readonly/></div>
+      <div class="field">
+        <label>Motorista da frota *</label>
+        <select name="motorista">
+          {% for d in drivers %}
+          <option value="{{ d }}" {% if form.motorista == d %}selected{% endif %}>{{ d }}</option>
+          {% endfor %}
+        </select>
+        <p class="hint">So aparecem motoristas com portal ativo.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>Valores e Pagamento</h3>
+    <div class="form-grid">
+      <div class="field"><label>Valor base *</label><input name="valor_base" value="{{ form.valor_base or '' }}"/></div>
+      <div class="field"><label>Desconto (%)</label><input name="desconto" value="{{ form.desconto or '0' }}"/></div>
+      <div class="field"><label>Metodo de pagamento</label><input name="pagamento" value="{{ form.pagamento or '' }}"/></div>
+      <div class="field">
+        <label>Status</label>
+        <select name="status">
+          {% for st in status_options %}
+          <option value="{{ st }}" {% if (form.status or 'Pendente') == st %}selected{% endif %}>{{ st }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field"><label>Repasse motorista (R$)</label><input name="repasse" value="{{ form.repasse or '0,00' }}"/></div>
+      <p class="hint field-full">Com repasse &gt; 0, registra automaticamente em Financeiro &gt; Contas a pagar.</p>
+      <div class="field field-full"><label>Observacoes</label><textarea name="observacoes">{{ form.observacoes or '' }}</textarea></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button type="submit" class="btn btn-success">Criar Reserva</button>
+    <a class="btn btn-secondary" href="/reservas">Cancelar</a>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const tripType = document.getElementById('trip-type');
+  const blocks = document.querySelectorAll('.trip-block');
+  const clientModeRadios = document.querySelectorAll('input[name="client_mode"]');
+  const clientSelector = document.getElementById('client-selector');
+
+  function updateTripSections() {
+    const v = tripType.value;
+    blocks.forEach(function (el) {
+      el.style.display = 'none';
+    });
+    if (v === 'Ida e Volta') {
+      document.querySelector('[data-trip="ida"]').style.display = '';
+      document.querySelector('[data-trip="volta"]').style.display = '';
+    } else if (v === 'Por Hora') {
+      document.querySelector('[data-trip="hora"]').style.display = '';
+    } else {
+      document.querySelector('[data-trip="ida"]').style.display = '';
+    }
+  }
+
+  function updateClientMode() {
+    const mode = document.querySelector('input[name="client_mode"]:checked');
+    clientSelector.style.display = mode && mode.value === 'cadastrado' ? '' : 'none';
+  }
+
+  tripType.addEventListener('change', updateTripSections);
+  clientModeRadios.forEach(function (r) { r.addEventListener('change', updateClientMode); });
+  updateTripSections();
+  updateClientMode();
+})();
+</script>
+{% endblock %}

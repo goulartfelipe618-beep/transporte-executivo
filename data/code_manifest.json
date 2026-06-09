@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-09T00:48:56.660550",
+  "saved_at": "2026-06-09T02:29:30.029119",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "f42fdfec4fd22273d1de2a777b814814ad01974b47791a118afb7ffec88f1796",
@@ -114,7 +114,7 @@
       "marker": "list_pricing_sources"
     },
     "app/production_runtime.py": {
-      "sha256": "a782042319ecc7a0bed9160b563994476dd618c44abded03ced059541f050b4a",
+      "sha256": "2b26b42e641ae3fc3271b2face4a6f36693b68f109c670724b4f18034eb8cc80",
       "marker": "bootstrap_production_services"
     },
     "app/repository/app_repository.py": {
@@ -181,7 +181,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "dfe20da66410a70ae6ebaa53fb3f350d695e837eba78cbe6c2a153f130ac1e7f",
+      "sha256": "341aed3130cd85b349aa8f5a53f71bafdde3631f01c99096785a04eb8a61f424",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {
@@ -191,14 +191,14 @@
       "sha256": "645791b90e4c7d6d8cf47569cd11314e92863411134c25cac00b8f9c968f62a6"
     },
     "main.py": {
-      "sha256": "884ce37d0f0beafe26efb49469cfff84f56cdc9e854431fbf4eaa8d9fc14a180",
+      "sha256": "2b829bc435ca3649ffeda12280406120377ea7d01a3a474a5670e1c0f52922c2",
       "marker": "code_guard"
     },
     "requirements.txt": {
       "sha256": "cb407437fdcf6a41d99ee6e34c9cb337e26d2cdcf1f536dbcd7de3d3cfc62ca7"
     },
     "scripts/docker_entrypoint.py": {
-      "sha256": "b40cd074c6a67d77991572147dff80ce3b97fdcaf07fbfe194ba29d818de972f"
+      "sha256": "9623049f486f6df9cd9e0c394683cccc6c2ed5a927e6b975c84735ba07bd594e"
     },
     "scripts/run_production_server.py": {
       "sha256": "48af6afe18622daec695a87456f24fc90f47e945f78e02e2510ef384a6124c19"

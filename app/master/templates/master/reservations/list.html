@@ -1,0 +1,92 @@
+{% extends "master/base.html" %}
+{% block title %}Reservas — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Reservas</h2>
+    <p>Transfer ({{ total }} cadastradas · {{ reservations|length }} na lista)</p>
+  </div>
+  <div>
+    <a class="btn btn-secondary" href="/reservas">Atualizar</a>
+    <a class="btn btn-success" href="/reservas/nova">+ Criar Reserva</a>
+  </div>
+</div>
+
+<form class="filters" method="get" action="/reservas">
+  <div>
+    <label>Data (de)</label>
+    <input name="date_from" placeholder="DD/MM/AAAA" value="{{ filters.date_from }}"/>
+  </div>
+  <div>
+    <label>Data (ate)</label>
+    <input name="date_to" placeholder="DD/MM/AAAA" value="{{ filters.date_to }}"/>
+  </div>
+  <div>
+    <label>Estado (UF)</label>
+    <input name="estado" placeholder="TODOS OS ESTADOS" value="{{ filters.estado }}"/>
+  </div>
+  <div>
+    <label>Motorista</label>
+    <input name="motorista" placeholder="TODOS" value="{{ filters.motorista }}"/>
+  </div>
+  <div>
+    <label>Cliente / contato / n</label>
+    <input name="search" placeholder="PESQUISAR..." value="{{ filters.search }}"/>
+  </div>
+  <div style="align-self:end">
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+  </div>
+</form>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>N</th>
+          <th>Cliente</th>
+          <th>Contato</th>
+          <th>Tipo</th>
+          <th>Trajeto</th>
+          <th>Data</th>
+          <th>Motorista</th>
+          <th>Valor</th>
+          <th>Status</th>
+          <th>Acoes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in reservations %}
+        {% set numero_slug = item.numero|replace('#', '') %}
+        <tr>
+          <td>{{ item.numero }}</td>
+          <td>{{ item.cliente }}</td>
+          <td>{{ item.contato }} · {{ item.email }}</td>
+          <td>{{ item.tipo }}</td>
+          <td>{{ item.trajeto }}</td>
+          <td>{{ item.data }}</td>
+          <td>{{ item.motorista }}</td>
+          <td>{{ item.valor }}</td>
+          <td>
+            {% set st = (item.status or '')|lower|replace('í','i') %}
+            <span class="status-pill status-{{ st }}">{{ item.status }}</span>
+          </td>
+          <td>
+            <div class="actions">
+              <a class="btn btn-secondary btn-sm" href="/reservas/{{ numero_slug }}/editar">Editar</a>
+              <a class="btn btn-secondary btn-sm" href="/reservas/{{ numero_slug }}">Ver</a>
+              <a class="btn btn-primary btn-sm" href="/reservas/{{ numero_slug }}#pdf">PDF</a>
+              <form method="post" action="/reservas/{{ numero_slug }}/excluir" onsubmit="return confirm('Excluir reserva {{ item.numero }}?')">
+                <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="10" class="hint" style="padding:20px">Nenhuma reserva encontrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
