@@ -1,8 +1,6 @@
 """Identidade visual global — nome e fonte a partir de Configuracoes."""
 from __future__ import annotations
 
-import tkinter.font as tkfont
-
 from .settings_store import load_settings
 
 DEFAULT_BRAND = "Nexus Transfer"
@@ -18,11 +16,12 @@ def _font_families():
         return _FONT_FAMILIES_CACHE
     try:
         import tkinter as tk
+        import tkinter.font as tkfont
 
         if tk._get_default_root() is None:
             return {}
         _FONT_FAMILIES_CACHE = {item.lower(): item for item in tkfont.families()}
-    except RuntimeError:
+    except (RuntimeError, ImportError, OSError):
         return {}
     return _FONT_FAMILIES_CACHE or {}
 
