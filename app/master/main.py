@@ -15,6 +15,7 @@ from .routers.web.drivers import router as drivers_router
 from .routers.web.reservations import router as reservations_router
 from .routers.web.vehicles import router as vehicles_router
 from .routers.web.coverage import router as coverage_router
+from .routers.web.transport_requests import router as transport_requests_router
 
 
 def create_master_app(runtime_app) -> FastAPI:
@@ -47,4 +48,5 @@ def create_master_app(runtime_app) -> FastAPI:
     app.include_router(drivers_router)
     app.include_router(vehicles_router)
     app.include_router(coverage_router)
+    app.include_router(transport_requests_router)
     return app

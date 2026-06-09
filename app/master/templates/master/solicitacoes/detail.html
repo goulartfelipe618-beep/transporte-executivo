@@ -1,0 +1,58 @@
+{% extends "master/base.html" %}
+{% block title %}{{ item_name }} — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h2>{{ item_name }}</h2><p><code>{{ item.id }}</code> · {{ item.status or 'Recebida' }}</p></div>
+  <div>
+    <a class="btn btn-secondary" href="/solicitacoes">Voltar</a>
+    <a class="btn btn-secondary" href="/solicitacoes/{{ item.id }}/editar">Editar</a>
+    {% if (item.status or '') != 'Cancelada' %}
+    <form method="post" action="/solicitacoes/{{ item.id }}/bloquear" style="display:inline" onsubmit="return confirm('Cancelar solicitacao?')"><button class="btn btn-danger">Cancelar</button></form>
+    <form method="post" action="/solicitacoes/{{ item.id }}/ativar" style="display:inline"><button class="btn btn-success">Confirmar</button></form>
+    {% else %}
+    <form method="post" action="/solicitacoes/{{ item.id }}/ativar" style="display:inline"><button class="btn btn-success">Reativar</button></form>
+    {% endif %}
+  </div>
+</div>
+{% if success_msg %}<div class="alert alert-success">{{ success_msg }}</div>{% endif %}
+<div class="cards-grid">
+  <div class="metric-card"><span>Status</span><strong>{{ stats.status }}</strong></div>
+  <div class="metric-card"><span>Origem</span><strong>{{ stats.origem_fonte or '—' }}</strong></div>
+  <div class="metric-card"><span>Reserva</span><strong>{% if stats.tem_reserva %}{{ stats.reserva_numero }}{% else %}—{% endif %}</strong></div>
+  <div class="metric-card"><span>Vinculos</span><strong>E{% if stats.tem_empresa %}✓{% else %}—{% endif %} M{% if stats.tem_motorista %}✓{% else %}—{% endif %} V{% if stats.tem_veiculo %}✓{% else %}—{% endif %}</strong></div>
+</div>
+<div class="form-section"><h3>Dados da solicitacao</h3>
+  <table class="data"><tbody>
+    <tr><th>Origem</th><td>{{ item.origem or '—' }}</td></tr>
+    <tr><th>Destino</th><td>{{ item.destino or '—' }}</td></tr>
+    <tr><th>Data / Hora</th><td>{{ item.data or '—' }} {{ item.hora or '' }}</td></tr>
+    <tr><th>Nome</th><td>{{ item.nome or '—' }}</td></tr>
+    <tr><th>Empresa</th><td>{{ item.empresa or '—' }}</td></tr>
+    <tr><th>Telefone</th><td>{{ item.telefone or '—' }}</td></tr>
+    <tr><th>Email</th><td>{{ item.email or '—' }}</td></tr>
+    <tr><th>Criado em</th><td>{{ item.criado_em or '—' }}</td></tr>
+    <tr><th>Atualizado em</th><td>{{ item.atualizado_em or '—' }}</td></tr>
+    <tr><th>Observacoes</th><td>{{ item.observacoes or '—' }}</td></tr>
+  </tbody></table>
+</div>
+<div class="form-section"><h3>Empresa vinculada</h3>
+  {% if company %}
+  <p><a href="/empresas/{{ company.id }}">{{ company.razao_social or company.nome or company.empresa }}</a> <code>{{ company.id }}</code></p>
+  {% else %}<p class="muted">Nenhuma empresa vinculada.</p>{% endif %}
+</div>
+<div class="form-section"><h3>Reserva vinculada</h3>
+  {% if reservation %}
+  <p>Reserva <strong>{{ reservation.numero }}</strong> — {{ reservation.cliente }} — {{ reservation.status }}</p>
+  {% else %}<p class="muted">Nenhuma reserva vinculada.</p>{% endif %}
+</div>
+<div class="form-section"><h3>Motorista vinculado</h3>
+  {% if driver %}
+  <p><a href="/motoristas/{{ driver.id }}">{{ driver.nome }}</a> <code>{{ driver.id }}</code></p>
+  {% else %}<p class="muted">Nenhum motorista vinculado (via reserva).</p>{% endif %}
+</div>
+<div class="form-section"><h3>Veiculo vinculado</h3>
+  {% if vehicle %}
+  <p><a href="/veiculos/{{ vehicle.id }}">{{ vehicle.marca }} {{ vehicle.modelo }}</a> <code>{{ vehicle.id }}</code> — {{ vehicle.placa or '—' }}</p>
+  {% else %}<p class="muted">Nenhum veiculo vinculado (via reserva).</p>{% endif %}
+</div>
+{% endblock %}

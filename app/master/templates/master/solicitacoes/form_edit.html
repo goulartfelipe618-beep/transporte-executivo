@@ -1,0 +1,30 @@
+{% extends "master/base.html" %}
+{% block title %}Editar {{ item_name }} — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header"><div><h2>Editar solicitacao</h2><p><code>{{ item.id }}</code></p></div><a class="btn btn-secondary" href="/solicitacoes/{{ item.id }}">Cancelar</a></div>
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+<form method="post" action="/solicitacoes/{{ item.id }}/editar">
+  <div class="form-section"><h3>Trajeto</h3>
+    <div class="form-grid">
+      <div class="field field-full"><label>Origem *</label><input name="origem" value="{{ form.origem or '' }}" required/></div>
+      <div class="field field-full"><label>Destino *</label><input name="destino" value="{{ form.destino or '' }}" required/></div>
+      <div class="field"><label>Data</label><input name="data" value="{{ form.data or '' }}"/></div>
+      <div class="field"><label>Hora</label><input name="hora" value="{{ form.hora or '' }}"/></div>
+    </div>
+  </div>
+  <div class="form-section"><h3>Solicitante</h3>
+    <div class="form-grid">
+      <div class="field"><label>Nome *</label><input name="nome" value="{{ form.nome or '' }}" required/></div>
+      <div class="field"><label>Empresa</label><input name="empresa" value="{{ form.empresa or '' }}"/></div>
+      <div class="field"><label>Telefone</label><input name="telefone" value="{{ form.telefone or '' }}"/></div>
+      <div class="field"><label>Email</label><input name="email" value="{{ form.email or '' }}"/></div>
+      <div class="field"><label>Status</label>
+        <select name="status">{% for s in status_options %}<option value="{{ s }}" {% if (form.status or item.status) == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+      </div>
+      <div class="field"><label>Origem do registro</label><input name="origem_fonte" value="{{ form.origem_fonte or item.origem_fonte or '' }}"/></div>
+    </div>
+  </div>
+  <div class="form-section"><h3>Observacoes</h3><div class="field field-full"><textarea name="observacoes" rows="3">{{ form.observacoes or '' }}</textarea></div></div>
+  <div class="form-actions"><button type="submit" class="btn btn-success">Salvar alteracoes</button></div>
+</form>
+{% endblock %}
