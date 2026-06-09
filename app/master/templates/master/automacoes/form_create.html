@@ -1,0 +1,40 @@
+{% extends "master/base.html" %}
+{% block title %}Nova Automacao — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Nova Automacao</h2>
+    <p>Defina um nome e selecione o tipo de webhook.</p>
+  </div>
+  <a class="btn btn-secondary" href="/automacoes">Cancelar</a>
+</div>
+
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+
+<form method="post" action="/automacoes/nova">
+  <div class="form-section">
+    <h3>Dados do webhook</h3>
+    <div class="form-grid">
+      <div class="field field-full">
+        <label>Nome da automacao *</label>
+        <input name="nome" value="{{ form.nome or '' }}" placeholder="Ex: Formulario do site principal"/>
+      </div>
+      <div class="field field-full">
+        <label>Tipo de automacao *</label>
+        <select name="tipo">
+          <option value="">Selecione o tipo...</option>
+          {% for choice in type_choices %}
+          <option value="{{ choice.key }}" {% if form.tipo == choice.key %}selected{% endif %}>{{ choice.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:12px;font-size:.85rem">
+      Cada automacao cria um webhook proprio, com ativacao individual e bloqueio por dominio permitido.
+    </p>
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-success">Criar webhook</button>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "master/base.html" %}
+{% block title %}Automacoes — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Automacoes</h2>
+    <p>Webhooks seguros para solicitacoes de transfer e cadastro de motorista.</p>
+  </div>
+  <div>
+    <a class="btn btn-secondary" href="/automacoes">Atualizar</a>
+    <a class="btn btn-success" href="/automacoes/nova">+ Nova automacao</a>
+  </div>
+</div>
+
+<div class="alert" style="margin-bottom:16px;background:var(--panel-alt);border:1px solid var(--line)">
+  <strong>Tipos disponiveis:</strong> AUTOMACAO SOLICITACAO DE TRANSFER e AUTOMACAO SOLICITACAO PARA SER MOTORISTA.
+  <br/><span class="muted">Cada webhook so aceita POST quando estiver ativo e quando o dominio de origem for exatamente o dominio permitido.</span>
+</div>
+
+<div class="cards-grid">
+  <div class="metric-card"><span>Total</span><strong>{{ summary.total }}</strong></div>
+  <div class="metric-card"><span>Ativos</span><strong>{{ summary.ativos }}</strong></div>
+  <div class="metric-card"><span>Transfer</span><strong>{{ summary.transfer }}</strong></div>
+  <div class="metric-card"><span>Motorista</span><strong>{{ summary.motorista }}</strong></div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Tipo</th>
+          <th>Webhook URL</th>
+          <th>Status</th>
+          <th>Dominio</th>
+          <th>Acoes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in automations %}
+        <tr>
+          <td>{{ row.nome }}</td>
+          <td>{{ row.tipo_label }}</td>
+          <td><code style="font-size:.78rem">{{ row.url }}</code></td>
+          <td>
+            <span class="status-pill {% if row.ativo %}status-ativo{% else %}status-inativo{% endif %}">{{ row.status_label }}</span>
+          </td>
+          <td>{{ row.domain_label }}</td>
+          <td>
+            <div class="actions">
+              <a class="btn btn-secondary btn-sm" href="/automacoes/{{ row.token }}">Detalhes</a>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" class="muted" style="text-align:center;padding:28px">
+            Nenhuma automacao cadastrada. Crie um webhook de Transfer ou Motorista.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

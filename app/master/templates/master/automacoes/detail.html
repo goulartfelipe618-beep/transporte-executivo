@@ -1,0 +1,95 @@
+{% extends "master/base.html" %}
+{% block title %}{{ automation.nome }} — Automacoes{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ automation.nome }}</h2>
+    <p>{{ automation.tipo_label }} · {{ automation.status_label }}</p>
+  </div>
+  <div style="display:flex;gap:8px">
+    <a class="btn btn-secondary" href="/automacoes">Voltar</a>
+    <form method="post" action="/automacoes/{{ automation.token }}/toggle">
+      <button type="submit" class="btn btn-secondary">
+        {% if automation.ativo %}Desativar{% else %}Ativar{% endif %}
+      </button>
+    </form>
+    <form method="post" action="/automacoes/{{ automation.token }}/excluir" onsubmit="return confirm('Excluir {{ automation.nome }}?')">
+      <button type="submit" class="btn btn-danger">Excluir</button>
+    </form>
+  </div>
+</div>
+
+{% if saved %}<div class="alert alert-success">Dominio salvo com sucesso.</div>{% endif %}
+{% if domain_error %}<div class="alert alert-error">{{ domain_error }}</div>{% endif %}
+
+<div class="cards-grid" style="margin-bottom:16px">
+  <div class="metric-card"><span>Status</span><strong>{{ automation.status_label }}</strong></div>
+  <div class="metric-card"><span>Testes recebidos</span><strong>{{ automation.tests_count }}</strong></div>
+  <div class="metric-card"><span>Dominio</span><strong style="font-size:.9rem">{{ automation.domain_label }}</strong></div>
+</div>
+
+<div class="form-section">
+  <h3>Webhook URL</h3>
+  <div style="display:flex;gap:8px;align-items:center">
+    <input id="webhook-url" readonly value="{{ automation.url }}" style="flex:1"/>
+    <button type="button" class="btn btn-primary btn-sm" onclick="copyWebhookUrl()">Copiar URL</button>
+  </div>
+</div>
+
+<div class="form-section">
+  <h3>Dominio permitido</h3>
+  <p class="muted">Defina o unico dominio autorizado para enviar POST para este webhook.</p>
+  <form method="post" action="/automacoes/{{ automation.token }}/dominio">
+    <div class="field field-full">
+      <label>Dominio (ex: https://seudominio.com)</label>
+      <input name="dominio_permitido" value="{{ automation.dominio_permitido or '' }}" placeholder="https://seudominio.com"/>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-success">Salvar dominio</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <h3 style="margin:0 0 4px;font-size:1rem">Testes recebidos</h3>
+    <p class="muted" style="margin:0 0 12px">Ultimos POST recebidos pelo webhook (max. 20)</p>
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>Recebido em</th>
+            <th>Origem</th>
+            <th>Previa do corpo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for test in tests %}
+          <tr>
+            <td>{{ test.received_at or '—' }}</td>
+            <td>{{ test.origin or '—' }}</td>
+            <td><code style="font-size:.75rem;white-space:pre-wrap">{{ test.body_preview or '—' }}</code></td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3" class="muted" style="text-align:center;padding:24px">Nenhum POST recebido ainda.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyWebhookUrl() {
+  const input = document.getElementById('webhook-url');
+  if (!input) return;
+  input.select();
+  input.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(input.value).catch(function () {});
+}
+</script>
+{% endblock %}

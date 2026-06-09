@@ -22,6 +22,7 @@ from .routers.web.driver_leads import router as driver_leads_router
 from .routers.web.finance import router as finance_router
 from .routers.web.metrics import router as metrics_router
 from .routers.web.settings import router as settings_router
+from .routers.web.automations import router as automations_router
 
 
 def create_master_app(runtime_app) -> FastAPI:
@@ -61,4 +62,5 @@ def create_master_app(runtime_app) -> FastAPI:
     app.include_router(finance_router)
     app.include_router(metrics_router)
     app.include_router(settings_router)
+    app.include_router(automations_router)
     return app
