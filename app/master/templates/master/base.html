@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="nexus-service" content="master-web"/>
   <title>{% block title %}{{ page_title }} — {{ brand_name }}{% endblock %}</title>
+  <script>(function(){var t=localStorage.getItem("nexus-master-theme")||"mixed";document.documentElement.setAttribute("data-theme",t);})();</script>
   <style>{{ master_css()|safe }}</style>
 </head>
 <body>
@@ -82,6 +83,14 @@
       <header class="topbar">
         <h1 class="topbar-title">{% block page_title %}{{ page_title }}{% endblock %}</h1>
         <div class="topbar-meta">
+          <label class="theme-switcher" title="Tema visual">
+            <span class="theme-switcher-label">Tema</span>
+            <select id="theme-select" class="theme-select" aria-label="Tema visual">
+              <option value="mixed">Dark + Light</option>
+              <option value="dark">Dark</option>
+              <option value="light">Claro</option>
+            </select>
+          </label>
           <span class="build-badge">Build {{ app_build }}</span>
           <span class="topbar-date">{{ today }}</span>
           {% if admin %}<span class="topbar-user">{{ admin.nome }}</span>
@@ -93,6 +102,22 @@
   </div>
   <script>
   (function () {
+    var KEY = "nexus-master-theme";
+    var root = document.documentElement;
+    var select = document.getElementById("theme-select");
+
+    function applyTheme(theme) {
+      if (!theme) theme = "mixed";
+      root.setAttribute("data-theme", theme);
+      localStorage.setItem(KEY, theme);
+      if (select) select.value = theme;
+    }
+
+    if (select) {
+      select.value = root.getAttribute("data-theme") || "mixed";
+      select.addEventListener("change", function () { applyTheme(select.value); });
+    }
+
     document.querySelectorAll(".nav-group-toggle").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var section = btn.closest(".nav-section");

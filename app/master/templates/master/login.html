@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="nexus-service" content="master-web"/>
   <title>Acesso — {{ brand_name }}</title>
+  <script>(function(){var t=localStorage.getItem("nexus-master-theme")||"mixed";document.documentElement.setAttribute("data-theme",t);})();</script>
   <style>{{ master_css()|safe }}</style>
 </head>
 <body class="login-page">
@@ -23,7 +24,29 @@
         <button type="submit">Entrar no sistema</button>
       </form>
       <p class="login-foot">Build {{ app_build }} · master-web</p>
+      <label class="theme-switcher theme-switcher-login">
+        <span class="theme-switcher-label">Tema</span>
+        <select id="theme-select" class="theme-select" aria-label="Tema visual">
+          <option value="mixed">Dark + Light</option>
+          <option value="dark">Dark</option>
+          <option value="light">Claro</option>
+        </select>
+      </label>
     </div>
   </div>
+  <script>
+  (function () {
+    var KEY = "nexus-master-theme";
+    var root = document.documentElement;
+    var select = document.getElementById("theme-select");
+    if (!select) return;
+    select.value = root.getAttribute("data-theme") || "mixed";
+    select.addEventListener("change", function () {
+      var theme = select.value || "mixed";
+      root.setAttribute("data-theme", theme);
+      localStorage.setItem(KEY, theme);
+    });
+  })();
+  </script>
 </body>
 </html>
