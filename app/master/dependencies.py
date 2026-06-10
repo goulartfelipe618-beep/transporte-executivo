@@ -52,6 +52,12 @@ def template_context(request: Request, admin=None, **extra):
     settings = get_settings()
     brand = brand_display_name()
     active_nav = extra.get("active_nav", "")
+    nav_open = {
+        "financeiro": active_nav == "financeiro" or bool(extra.get("active_finance_tab")),
+        "transfer": active_nav in {"solicitacoes", "reservas"},
+        "rede": active_nav == "rede" or bool(extra.get("rede_tab")),
+        "sistema": active_nav in {"configuracoes", "automacoes", "leads_empresas", "leads_motoristas"},
+    }
     ctx = {
         "request": request,
         "admin": admin,
@@ -62,6 +68,7 @@ def template_context(request: Request, admin=None, **extra):
         "brand_initials": brand_initials(brand),
         "today": datetime.now().strftime("%d/%m/%Y"),
         "page_title": NAV_TITLES.get(active_nav, settings.app_title),
+        "nav_open": nav_open,
     }
     ctx.update(extra)
     return ctx

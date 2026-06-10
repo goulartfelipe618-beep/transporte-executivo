@@ -24,28 +24,57 @@
         <a href="/abrangencia" class="nav-link{% if active_nav == 'abrangencia' %} active{% endif %}"><span class="nav-icon">◎</span><span>ABRANGENCIA</span></a>
         <a href="/agenda" class="nav-link{% if active_nav == 'agenda' %} active{% endif %}"><span class="nav-icon">▦</span><span>AGENDA</span></a>
         <a href="/metricas" class="nav-link{% if active_nav == 'metricas' %} active{% endif %}"><span class="nav-icon">▤</span><span>METRICAS</span></a>
-        <div class="nav-group"><span class="nav-group-icon">F</span> FINANCEIRO</div>
-        <a href="/financeiro" class="nav-link nav-sub{% if active_nav == 'financeiro' and active_finance_tab|default('dashboard') == 'dashboard' %} active{% endif %}">DASHBOARD</a>
-        <a href="/financeiro/lancamentos" class="nav-link nav-sub{% if active_finance_tab|default('') == 'lancamentos' %} active{% endif %}">LANCAMENTOS</a>
-        <a href="/financeiro/contas-a-pagar" class="nav-link nav-sub{% if active_finance_tab|default('') == 'pagar' %} active{% endif %}">CONTAS A PAGAR</a>
-        <a href="/financeiro/contas-a-receber" class="nav-link nav-sub{% if active_finance_tab|default('') == 'receber' %} active{% endif %}">CONTAS A RECEBER</a>
-        <a href="/financeiro/relatorios" class="nav-link nav-sub{% if active_finance_tab|default('') == 'relatorios' %} active{% endif %}">RELATORIOS</a>
-        <div class="nav-group"><span class="nav-group-icon">T</span> TRANSFER</div>
-        <a href="/solicitacoes" class="nav-link nav-sub{% if active_nav == 'solicitacoes' %} active{% endif %}">SOLICITACOES</a>
-        <a href="/reservas" class="nav-link nav-sub{% if active_nav == 'reservas' %} active{% endif %}">RESERVAS</a>
+
+        <div class="nav-section{% if nav_open.financeiro %} open{% endif %}" data-nav-group="financeiro">
+          <button type="button" class="nav-group-toggle" aria-expanded="{{ 'true' if nav_open.financeiro else 'false' }}">
+            <span class="nav-group-icon">F</span><span class="nav-group-label">FINANCEIRO</span><span class="nav-chevron">▸</span>
+          </button>
+          <div class="nav-submenu">
+            <a href="/financeiro" class="nav-link nav-sub{% if active_nav == 'financeiro' and active_finance_tab|default('dashboard') == 'dashboard' %} active{% endif %}">DASHBOARD</a>
+            <a href="/financeiro/lancamentos" class="nav-link nav-sub{% if active_finance_tab|default('') == 'lancamentos' %} active{% endif %}">LANCAMENTOS</a>
+            <a href="/financeiro/contas-a-pagar" class="nav-link nav-sub{% if active_finance_tab|default('') == 'pagar' %} active{% endif %}">CONTAS A PAGAR</a>
+            <a href="/financeiro/contas-a-receber" class="nav-link nav-sub{% if active_finance_tab|default('') == 'receber' %} active{% endif %}">CONTAS A RECEBER</a>
+            <a href="/financeiro/relatorios" class="nav-link nav-sub{% if active_finance_tab|default('') == 'relatorios' %} active{% endif %}">RELATORIOS</a>
+          </div>
+        </div>
+
+        <div class="nav-section{% if nav_open.transfer %} open{% endif %}" data-nav-group="transfer">
+          <button type="button" class="nav-group-toggle" aria-expanded="{{ 'true' if nav_open.transfer else 'false' }}">
+            <span class="nav-group-icon">T</span><span class="nav-group-label">TRANSFER</span><span class="nav-chevron">▸</span>
+          </button>
+          <div class="nav-submenu">
+            <a href="/solicitacoes" class="nav-link nav-sub{% if active_nav == 'solicitacoes' %} active{% endif %}">SOLICITACOES</a>
+            <a href="/reservas" class="nav-link nav-sub{% if active_nav == 'reservas' %} active{% endif %}">RESERVAS</a>
+          </div>
+        </div>
+
         <a href="/motoristas" class="nav-link{% if active_nav == 'motoristas' %} active{% endif %}"><span class="nav-icon">◉</span><span>MOTORISTAS</span></a>
         <a href="/empresas" class="nav-link{% if active_nav == 'empresas' %} active{% endif %}"><span class="nav-icon">▣</span><span>EMPRESAS</span></a>
         <a href="/veiculos" class="nav-link{% if active_nav == 'veiculos' %} active{% endif %}"><span class="nav-icon">◈</span><span>VEICULOS</span></a>
-        <div class="nav-group"><span class="nav-group-icon">R</span> REDE</div>
-        <a href="/rede" class="nav-link nav-sub{% if active_nav == 'rede' and rede_tab|default('dashboard') == 'dashboard' %} active{% endif %}">DASHBOARD REDE</a>
-        <a href="/rede/parceiros" class="nav-link nav-sub{% if rede_tab|default('') == 'parceiros' %} active{% endif %}">PARCEIROS</a>
-        <a href="/rede/contribuidores" class="nav-link nav-sub{% if rede_tab|default('') == 'contribuidores' %} active{% endif %}">CONTRIBUIDORES</a>
-        <a href="/rede/comissoes" class="nav-link nav-sub{% if rede_tab|default('') == 'comissoes' %} active{% endif %}">COMISSOES</a>
-        <div class="nav-group"><span class="nav-group-icon">S</span> SISTEMA</div>
-        <a href="/configuracoes" class="nav-link nav-sub{% if active_nav == 'configuracoes' %} active{% endif %}">CONFIGURACOES</a>
-        <a href="/automacoes" class="nav-link nav-sub{% if active_nav == 'automacoes' %} active{% endif %}">AUTOMACOES</a>
-        <a href="/leads/empresas" class="nav-link nav-sub{% if active_nav == 'leads_empresas' %} active{% endif %}">LEADS EMPRESAS</a>
-        <a href="/leads/motoristas" class="nav-link nav-sub{% if active_nav == 'leads_motoristas' %} active{% endif %}">LEADS MOTORISTAS</a>
+
+        <div class="nav-section{% if nav_open.rede %} open{% endif %}" data-nav-group="rede">
+          <button type="button" class="nav-group-toggle" aria-expanded="{{ 'true' if nav_open.rede else 'false' }}">
+            <span class="nav-group-icon">R</span><span class="nav-group-label">REDE</span><span class="nav-chevron">▸</span>
+          </button>
+          <div class="nav-submenu">
+            <a href="/rede" class="nav-link nav-sub{% if active_nav == 'rede' and rede_tab|default('dashboard') == 'dashboard' %} active{% endif %}">DASHBOARD REDE</a>
+            <a href="/rede/parceiros" class="nav-link nav-sub{% if rede_tab|default('') == 'parceiros' %} active{% endif %}">PARCEIROS</a>
+            <a href="/rede/contribuidores" class="nav-link nav-sub{% if rede_tab|default('') == 'contribuidores' %} active{% endif %}">CONTRIBUIDORES</a>
+            <a href="/rede/comissoes" class="nav-link nav-sub{% if rede_tab|default('') == 'comissoes' %} active{% endif %}">COMISSOES</a>
+          </div>
+        </div>
+
+        <div class="nav-section{% if nav_open.sistema %} open{% endif %}" data-nav-group="sistema">
+          <button type="button" class="nav-group-toggle" aria-expanded="{{ 'true' if nav_open.sistema else 'false' }}">
+            <span class="nav-group-icon">S</span><span class="nav-group-label">SISTEMA</span><span class="nav-chevron">▸</span>
+          </button>
+          <div class="nav-submenu">
+            <a href="/configuracoes" class="nav-link nav-sub{% if active_nav == 'configuracoes' %} active{% endif %}">CONFIGURACOES</a>
+            <a href="/automacoes" class="nav-link nav-sub{% if active_nav == 'automacoes' %} active{% endif %}">AUTOMACOES</a>
+            <a href="/leads/empresas" class="nav-link nav-sub{% if active_nav == 'leads_empresas' %} active{% endif %}">LEADS EMPRESAS</a>
+            <a href="/leads/motoristas" class="nav-link nav-sub{% if active_nav == 'leads_motoristas' %} active{% endif %}">LEADS MOTORISTAS</a>
+          </div>
+        </div>
       </nav>
       <div class="sidebar-foot"><div class="status-dot"></div><span>ONLINE · BUILD {{ app_build }}</span></div>
     </aside>
@@ -62,6 +91,18 @@
       <main class="main-content">{% block content %}{% endblock %}</main>
     </div>
   </div>
+  <script>
+  (function () {
+    document.querySelectorAll(".nav-group-toggle").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var section = btn.closest(".nav-section");
+        if (!section) return;
+        section.classList.toggle("open");
+        btn.setAttribute("aria-expanded", section.classList.contains("open") ? "true" : "false");
+      });
+    });
+  })();
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
