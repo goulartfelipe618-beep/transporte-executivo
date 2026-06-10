@@ -29,6 +29,7 @@ def _deploy_payload():
         "vnc_removed": True,
         "login_url": "/login",
         "title": settings.app_title,
+        "css_inline": True,
     }
 
 

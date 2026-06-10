@@ -4,19 +4,17 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="nexus-service" content="master-web"/>
-  <title>Acesso — {{ app_title }}</title>
-  <link rel="stylesheet" href="/static/master/css/master.css"/>
+  <title>Acesso — {{ brand_name }}</title>
+  <style>{{ master_css()|safe }}</style>
 </head>
 <body class="login-page">
   <div class="login-card">
     <div class="login-accent"></div>
     <div class="login-body">
-      <div class="logo">NT</div>
-      <h1>{{ app_title }}</h1>
+      <div class="logo">{{ brand_initials }}</div>
+      <h1>{{ brand_name }}</h1>
       <p class="sub">Identifique-se para acessar o painel administrativo.</p>
-      {% if error %}
-      <div class="alert alert-error">{{ error }}</div>
-      {% endif %}
+      {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
       <form method="post" action="/login">
         <label for="email">E-mail administrativo</label>
         <input id="email" name="email" type="email" required autocomplete="username" value="{{ email }}"/>
@@ -24,7 +22,7 @@
         <input id="password" name="password" type="password" required autocomplete="current-password"/>
         <button type="submit">Entrar no sistema</button>
       </form>
-      <p class="login-foot">Acesso validado no Supabase (master_admins). Servico master-web · build {{ app_build }}.</p>
+      <p class="login-foot">Build {{ app_build }} · master-web</p>
     </div>
   </div>
 </body>

@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from .config import get_settings
-from .dependencies import STATIC_DIR
+from .dependencies import MASTER_STATIC_DIR
 from .routers.api.health import router as health_router
 from .routers.web.auth import router as auth_router
 from .routers.web.dashboard import router as dashboard_router
@@ -45,8 +46,16 @@ def create_master_app(runtime_app) -> FastAPI:
         https_only=settings.https_only,
     )
 
-    if STATIC_DIR.is_dir():
-        app.mount("/static/master", StaticFiles(directory=str(STATIC_DIR)), name="master_static")
+    css_file = MASTER_STATIC_DIR / "css" / "master.css"
+
+    @app.get("/static/master/css/master.css", include_in_schema=False)
+    async def master_css_file():
+        if css_file.is_file():
+            return FileResponse(css_file, media_type="text/css")
+        return PlainTextResponse("/* master.css ausente */", media_type="text/css")
+
+    if MASTER_STATIC_DIR.is_dir():
+        app.mount("/static/master", StaticFiles(directory=str(MASTER_STATIC_DIR)), name="master_static")
 
     app.include_router(health_router)
     app.include_router(auth_router)

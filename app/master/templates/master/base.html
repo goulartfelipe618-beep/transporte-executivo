@@ -4,45 +4,63 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="nexus-service" content="master-web"/>
-  <title>{% block title %}{{ app_title }}{% endblock %}</title>
-  <link rel="stylesheet" href="/static/master/css/master.css"/>
+  <title>{% block title %}{{ page_title }} — {{ brand_name }}{% endblock %}</title>
+  <style>{{ master_css()|safe }}</style>
 </head>
 <body>
-  <div class="layout">
+  <div class="app-shell">
     <aside class="sidebar">
       <div class="sidebar-brand">
-        <div class="logo">NT</div>
-        <h1>{{ app_title }}</h1>
-        <p>Build {{ app_build }}</p>
+        <div class="brand-row">
+          <div class="brand-badge">{{ brand_initials }}</div>
+          <div class="brand-text">
+            <div class="brand-title">{{ brand_name|upper }}</div>
+            <div class="brand-sub">PAINEL OPERACIONAL WEB</div>
+          </div>
+        </div>
       </div>
-      <nav>
-        <a href="/dashboard" class="{% if active_nav == 'dashboard' %}active{% endif %}">Dashboard</a>
-        <a href="/metricas" class="{% if active_nav == 'metricas' %}active{% endif %}">Metricas</a>
-        <a href="/agenda" class="{% if active_nav == 'agenda' %}active{% endif %}">Agenda</a>
-        <a href="/reservas" class="{% if active_nav == 'reservas' %}active{% endif %}">Reservas</a>
-        <a href="/empresas" class="{% if active_nav == 'empresas' %}active{% endif %}">Empresas</a>
-        <a href="/motoristas" class="{% if active_nav == 'motoristas' %}active{% endif %}">Motoristas</a>
-        <a href="/veiculos" class="{% if active_nav == 'veiculos' %}active{% endif %}">Veiculos</a>
-        <a href="/abrangencia" class="{% if active_nav == 'abrangencia' %}active{% endif %}">Abrangencia</a>
-        <a href="/solicitacoes" class="{% if active_nav == 'solicitacoes' %}active{% endif %}">Solicitacoes</a>
-        <a href="/leads/empresas" class="{% if active_nav == 'leads_empresas' %}active{% endif %}">Leads Empresas</a>
-        <a href="/leads/motoristas" class="{% if active_nav == 'leads_motoristas' %}active{% endif %}">Leads Motoristas</a>
-        <a href="/financeiro" class="{% if active_nav == 'financeiro' %}active{% endif %}">Financeiro</a>
-        <a href="/configuracoes" class="{% if active_nav == 'configuracoes' %}active{% endif %}">Configuracoes</a>
-        <a href="/automacoes" class="{% if active_nav == 'automacoes' %}active{% endif %}">Automacoes</a>
-        <a href="/rede" class="{% if active_nav == 'rede' %}active{% endif %}">Rede</a>
+      <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-link{% if active_nav == 'dashboard' %} active{% endif %}"><span class="nav-icon">◫</span><span>DASHBOARD</span></a>
+        <a href="/abrangencia" class="nav-link{% if active_nav == 'abrangencia' %} active{% endif %}"><span class="nav-icon">◎</span><span>ABRANGENCIA</span></a>
+        <a href="/agenda" class="nav-link{% if active_nav == 'agenda' %} active{% endif %}"><span class="nav-icon">▦</span><span>AGENDA</span></a>
+        <a href="/metricas" class="nav-link{% if active_nav == 'metricas' %} active{% endif %}"><span class="nav-icon">▤</span><span>METRICAS</span></a>
+        <div class="nav-group"><span class="nav-group-icon">F</span> FINANCEIRO</div>
+        <a href="/financeiro" class="nav-link nav-sub{% if active_nav == 'financeiro' and active_finance_tab|default('dashboard') == 'dashboard' %} active{% endif %}">DASHBOARD</a>
+        <a href="/financeiro/lancamentos" class="nav-link nav-sub{% if active_finance_tab|default('') == 'lancamentos' %} active{% endif %}">LANCAMENTOS</a>
+        <a href="/financeiro/contas-a-pagar" class="nav-link nav-sub{% if active_finance_tab|default('') == 'pagar' %} active{% endif %}">CONTAS A PAGAR</a>
+        <a href="/financeiro/contas-a-receber" class="nav-link nav-sub{% if active_finance_tab|default('') == 'receber' %} active{% endif %}">CONTAS A RECEBER</a>
+        <a href="/financeiro/relatorios" class="nav-link nav-sub{% if active_finance_tab|default('') == 'relatorios' %} active{% endif %}">RELATORIOS</a>
+        <div class="nav-group"><span class="nav-group-icon">T</span> TRANSFER</div>
+        <a href="/solicitacoes" class="nav-link nav-sub{% if active_nav == 'solicitacoes' %} active{% endif %}">SOLICITACOES</a>
+        <a href="/reservas" class="nav-link nav-sub{% if active_nav == 'reservas' %} active{% endif %}">RESERVAS</a>
+        <a href="/motoristas" class="nav-link{% if active_nav == 'motoristas' %} active{% endif %}"><span class="nav-icon">◉</span><span>MOTORISTAS</span></a>
+        <a href="/empresas" class="nav-link{% if active_nav == 'empresas' %} active{% endif %}"><span class="nav-icon">▣</span><span>EMPRESAS</span></a>
+        <a href="/veiculos" class="nav-link{% if active_nav == 'veiculos' %} active{% endif %}"><span class="nav-icon">◈</span><span>VEICULOS</span></a>
+        <div class="nav-group"><span class="nav-group-icon">R</span> REDE</div>
+        <a href="/rede" class="nav-link nav-sub{% if active_nav == 'rede' and rede_tab|default('dashboard') == 'dashboard' %} active{% endif %}">DASHBOARD REDE</a>
+        <a href="/rede/parceiros" class="nav-link nav-sub{% if rede_tab|default('') == 'parceiros' %} active{% endif %}">PARCEIROS</a>
+        <a href="/rede/contribuidores" class="nav-link nav-sub{% if rede_tab|default('') == 'contribuidores' %} active{% endif %}">CONTRIBUIDORES</a>
+        <a href="/rede/comissoes" class="nav-link nav-sub{% if rede_tab|default('') == 'comissoes' %} active{% endif %}">COMISSOES</a>
+        <div class="nav-group"><span class="nav-group-icon">S</span> SISTEMA</div>
+        <a href="/configuracoes" class="nav-link nav-sub{% if active_nav == 'configuracoes' %} active{% endif %}">CONFIGURACOES</a>
+        <a href="/automacoes" class="nav-link nav-sub{% if active_nav == 'automacoes' %} active{% endif %}">AUTOMACOES</a>
+        <a href="/leads/empresas" class="nav-link nav-sub{% if active_nav == 'leads_empresas' %} active{% endif %}">LEADS EMPRESAS</a>
+        <a href="/leads/motoristas" class="nav-link nav-sub{% if active_nav == 'leads_motoristas' %} active{% endif %}">LEADS MOTORISTAS</a>
       </nav>
-      <div class="sidebar-footer">
-        <strong>{{ admin.nome }}</strong>
-        <span>{{ admin.email }}</span>
-        <form method="post" action="/logout" style="margin-top:10px">
-          <button type="submit" class="btn btn-secondary btn-sm" style="width:100%">Sair</button>
-        </form>
-      </div>
+      <div class="sidebar-foot"><div class="status-dot"></div><span>ONLINE · BUILD {{ app_build }}</span></div>
     </aside>
-    <main class="main">
-      {% block content %}{% endblock %}
-    </main>
+    <div class="main-wrap">
+      <header class="topbar">
+        <h1 class="topbar-title">{% block page_title %}{{ page_title }}{% endblock %}</h1>
+        <div class="topbar-meta">
+          <span class="build-badge">Build {{ app_build }}</span>
+          <span class="topbar-date">{{ today }}</span>
+          {% if admin %}<span class="topbar-user">{{ admin.nome }}</span>
+          <form method="post" action="/logout" class="logout-form"><button type="submit" class="btn btn-outline-danger btn-sm">Sair</button></form>{% endif %}
+        </div>
+      </header>
+      <main class="main-content">{% block content %}{% endblock %}</main>
+    </div>
   </div>
   {% block scripts %}{% endblock %}
 </body>
