@@ -5,46 +5,109 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="nexus-service" content="master-web"/>
   <title>Acesso — {{ brand_name }}</title>
-  <script>(function(){var t=localStorage.getItem("nexus-master-theme")||"mixed";document.documentElement.setAttribute("data-theme",t);})();</script>
+  <script>(function(){var t=localStorage.getItem("nexus-master-theme")||"light";document.documentElement.setAttribute("data-theme",t);})();</script>
   <style>{{ master_css()|safe }}</style>
 </head>
 <body class="login-page">
-  <div class="login-card">
-    <div class="login-accent"></div>
-    <div class="login-body">
-      <div class="logo">{{ brand_initials }}</div>
-      <h1>{{ brand_name }}</h1>
-      <p class="sub">Identifique-se para acessar o painel administrativo.</p>
-      {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
-      <form method="post" action="/login">
-        <label for="email">E-mail administrativo</label>
-        <input id="email" name="email" type="email" required autocomplete="username" value="{{ email }}"/>
-        <label for="password">Senha</label>
-        <input id="password" name="password" type="password" required autocomplete="current-password"/>
-        <button type="submit">Entrar no sistema</button>
-      </form>
-      <p class="login-foot">Build {{ app_build }} · master-web</p>
-      <label class="theme-switcher theme-switcher-login">
-        <span class="theme-switcher-label">Tema</span>
-        <select id="theme-select" class="theme-select" aria-label="Tema visual">
-          <option value="mixed">Dark + Light</option>
-          <option value="dark">Dark</option>
-          <option value="light">Claro</option>
-        </select>
-      </label>
-    </div>
+  <div class="login-shell">
+    <aside class="login-visual" aria-hidden="true">
+      <div class="login-visual-top"></div>
+      <div class="login-visual-tagline">
+        <p>Gerencie reservas, motoristas, clientes e operações em um único sistema moderno, rápido e inteligente.</p>
+      </div>
+      <div class="login-visual-bottom"></div>
+    </aside>
+
+    <main class="login-main">
+      <div class="login-main-inner">
+        <header class="login-header">
+          <span class="login-badge">{{ brand_initials }}</span>
+          <h1>Painel {{ brand_name }}</h1>
+          <p class="login-header-sub">Acesse com segurança para gerir sua operação</p>
+        </header>
+
+        <div class="login-card">
+          <h2>Faça seu login</h2>
+          <p class="login-card-sub">Use seu usuário e senha para entrar no painel.</p>
+
+          {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+
+          <form method="post" action="/login" class="login-form">
+            <div class="field-icon">
+              <label for="email">Usuário</label>
+              <div class="input-wrap">
+                <span class="input-icon" aria-hidden="true">✉</span>
+                <input id="email" name="email" type="text" required autocomplete="username" placeholder="E-mail ou usuário" value="{{ email }}"/>
+              </div>
+            </div>
+
+            <div class="field-icon">
+              <label for="password">Senha</label>
+              <div class="input-wrap">
+                <span class="input-icon" aria-hidden="true">🔒</span>
+                <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="Senha"/>
+              </div>
+            </div>
+
+            <div class="field-icon">
+              <label for="captcha">Código de segurança</label>
+              <div class="captcha-row">
+                <div class="captcha-code" id="captcha-display">{{ captcha_code }}</div>
+                <button type="button" class="captcha-refresh" id="captcha-refresh" title="Gerar novo código" aria-label="Gerar novo código">↻</button>
+              </div>
+              <div class="input-wrap">
+                <span class="input-icon" aria-hidden="true">🔑</span>
+                <input id="captcha" name="captcha" type="text" required autocomplete="off" placeholder="Digite o código acima" maxlength="6"/>
+              </div>
+            </div>
+
+            <div class="login-forgot">
+              <a href="#" onclick="return false;">Esqueci minha senha</a>
+            </div>
+
+            <button type="submit" class="login-submit">→ Iniciar sessão</button>
+          </form>
+        </div>
+
+        <div class="login-security-box">
+          <h3>Checkup de segurança</h3>
+          <ul>
+            <li>Nunca compartilhe sua senha com terceiros.</li>
+            <li>Verifique o código de segurança antes de entrar.</li>
+            <li>Ative 2FA no menu Sistema &gt; Configurações.</li>
+          </ul>
+        </div>
+
+        <p class="login-copyright">© 2026 — Todos os direitos reservados.</p>
+        <p class="login-foot">Build {{ app_build }} · master-web</p>
+      </div>
+    </main>
   </div>
   <script>
   (function () {
-    var KEY = "nexus-master-theme";
-    var root = document.documentElement;
-    var select = document.getElementById("theme-select");
-    if (!select) return;
-    select.value = root.getAttribute("data-theme") || "mixed";
-    select.addEventListener("change", function () {
-      var theme = select.value || "mixed";
-      root.setAttribute("data-theme", theme);
-      localStorage.setItem(KEY, theme);
+    var display = document.getElementById("captcha-display");
+    var refresh = document.getElementById("captcha-refresh");
+    var input = document.getElementById("captcha");
+    if (!display || !refresh) return;
+
+    function randomCode() {
+      var chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+      var out = "";
+      for (var i = 0; i < 6; i++) out += chars.charAt(Math.floor(Math.random() * chars.length));
+      return out;
+    }
+
+    refresh.addEventListener("click", function () {
+      fetch("/login/captcha", { credentials: "same-origin" })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data || !data.code) return;
+          display.textContent = data.code;
+          if (input) input.value = "";
+        })
+        .catch(function () {
+          display.textContent = randomCode();
+        });
     });
   })();
   </script>
