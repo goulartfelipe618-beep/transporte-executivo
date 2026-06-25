@@ -1,1 +1,1 @@
-APP_BUILD = "2026.06.23-favicon1"
+APP_BUILD = "2026.06.23-reservas1"

@@ -257,7 +257,19 @@ table.data th, table.data td { padding: 10px 12px; border-bottom: 1px solid var(
 table.data th { background: var(--panel-alt); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; }
 table.data tbody tr:hover td { background: var(--row-hover); }
 table.data tr:nth-child(even) td { background: var(--row-alt); }
-.actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+table.data td .actions {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+table.data td .actions form {
+  display: inline-flex;
+  margin: 0;
+  flex: 0 0 auto;
+}
+table.data td .actions .btn {
+  flex: 0 0 auto;
+}
 
 .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; padding: 14px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); margin-bottom: 16px; }
 .filters label { display: block; font-size: .72rem; font-weight: 600; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; }
