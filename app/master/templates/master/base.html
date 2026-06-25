@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="nexus-service" content="master-web"/>
   <title>{% block title %}{{ page_title }} — {{ brand_name }}{% endblock %}</title>
+  <link rel="icon" type="image/png" href="{{ static_url('master/images/favicon.png') }}" sizes="32x32"/>
+  <link rel="apple-touch-icon" href="{{ static_url('master/images/favicon.png') }}"/>
   <script>(function(){var t=localStorage.getItem("nexus-master-theme")||"mixed";document.documentElement.setAttribute("data-theme",t);})();</script>
   <style>{{ master_css()|safe }}</style>
 </head>

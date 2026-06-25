@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-25T19:54:52.131928",
+  "saved_at": "2026-06-25T20:22:02.750525",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "b6cc6dba6f92c51fc8cbd9e642590aa107dd09d3974d783b1aa5deb5df48907e",
@@ -153,11 +153,11 @@
       "marker": "FINANCEIRO"
     },
     "app/sistema_web.py": {
-      "sha256": "3534caa76d121076cf9390794dce158d5d1814e63ab4bedc9e4dd8b6e0bfc946",
+      "sha256": "3269d738d6f5a58cf6c93cad44cd4e71a42a73300429ef9a0f67785099df58f6",
       "marker": "start_sistema_web_server"
     },
     "app/sistema_web_layout.py": {
-      "sha256": "476dc54d923838f08906b51fdef8508077e08257d6612d94f75ff40054c2100c",
+      "sha256": "55489980f7cecd537b2ef70f12c84271071bcffbd0cfa9c27389617c8d2f3027",
       "marker": "panel_page"
     },
     "app/sistema_web_modules.py": {
@@ -181,7 +181,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "93fc9cc8c94d86e89fdae4cb8c2e1a9ce3447a33e8ecb511bf342a584f161475",
+      "sha256": "3865d08e2d88dd0d68506dc0ac9ffb57b834d088ae929e5592ff44fa01b41651",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {

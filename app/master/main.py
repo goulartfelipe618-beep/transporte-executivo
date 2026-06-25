@@ -47,6 +47,13 @@ def create_master_app(runtime_app) -> FastAPI:
     )
 
     css_file = MASTER_STATIC_DIR / "css" / "master.css"
+    favicon_file = MASTER_STATIC_DIR / "images" / "favicon.png"
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    async def favicon():
+        if favicon_file.is_file():
+            return FileResponse(favicon_file, media_type="image/png")
+        return PlainTextResponse("", status_code=404)
 
     @app.get("/static/master/css/master.css", include_in_schema=False)
     async def master_css_file():

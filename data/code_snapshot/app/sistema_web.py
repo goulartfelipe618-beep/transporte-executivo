@@ -20,6 +20,7 @@ SISTEMA_WEB_PORT = 8772
 _SESSIONS = {}
 _LOGIN_CAPTCHAS = {}
 _LOGIN_IMAGES_DIR = Path(__file__).resolve().parent / "master" / "static" / "master" / "images" / "login"
+_FAVICON_FILE = Path(__file__).resolve().parent / "master" / "static" / "master" / "images" / "favicon.png"
 _CAPTCHA_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"
 
 
@@ -68,9 +69,12 @@ def _login_html(error="", *, email="", captcha_key="", captcha_code=""):
         captcha_key, captcha_code = _issue_login_captcha()
     key_value = captcha_key.replace('"', "&quot;")
     hero_bg = static_url("master/images/login/login-background.jpg")
+    favicon = static_url("master/images/favicon.png")
     return f"""<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Login — {brand}</title>
+<link rel="icon" type="image/png" href="{favicon}" sizes="32x32"/>
+<link rel="apple-touch-icon" href="{favicon}"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 *{{box-sizing:border-box}}body{{margin:0;min-height:100vh;font-family:Inter,Segoe UI,system-ui,sans-serif}}
@@ -197,6 +201,16 @@ def _build_handler(app):
 
             if path in {"/vnc.html", "/vnc_lite.html", "/vnc_auto.html"}:
                 return self._redirect("/")
+
+            if path in {"/favicon.ico", "/favicon.png"}:
+                if _FAVICON_FILE.is_file():
+                    data = _FAVICON_FILE.read_bytes()
+                    self.send_response(200)
+                    self.send_header("Content-Type", "image/png")
+                    self.send_header("Content-Length", str(len(data)))
+                    self.end_headers()
+                    self.wfile.write(data)
+                    return
 
             if path.startswith("/static/login/"):
                 filename = Path(path).name

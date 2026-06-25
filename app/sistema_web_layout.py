@@ -5,6 +5,7 @@ import html
 from datetime import datetime
 
 from .branding import brand_display_name, brand_initials
+from .cdn.urls import static_url
 from .data import MENU_GROUPS, PAGE_TITLES
 from .version import APP_BUILD
 
@@ -78,9 +79,12 @@ def panel_page(admin, active_key, content_html, *, brand_name=None):
     title = esc(PAGE_TITLES.get(active_key, active_key))
     today = datetime.now().strftime("%d/%m/%Y")
     nav = _sidebar_nav(active_key)
+    favicon = static_url("master/images/favicon.png")
     return f"""<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>{title} — {esc(brand_name)}</title>
+<link rel="icon" type="image/png" href="{favicon}" sizes="32x32"/>
+<link rel="apple-touch-icon" href="{favicon}"/>
 <style>
 :root{{--bg:#f0f4f8;--panel:#fff;--sidebar:#1a2332;--sidebar-soft:#243044;--sidebar-hover:#2d3b52;--sidebar-active:#2563eb;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;--primary:#2563eb;--success:#16a34a;--warn:#d97706;--danger:#dc2626}}
 *{{box-sizing:border-box}}body{{margin:0;font-family:Segoe UI,system-ui,sans-serif;background:var(--bg);color:var(--text)}}
