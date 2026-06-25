@@ -1,12 +1,21 @@
 """Persistencia de sessoes administrativas — Supabase REST + SQLAlchemy async opcional."""
 from __future__ import annotations
 
+import os
+import threading
+import time
 from datetime import datetime, timedelta, timezone
 
 from app.repository.supabase_client import delete_rows, insert_row, patch_rows, select_one
 
 TABLE = "master_admin_sessions"
 AUDIT_TABLE = "master_login_audit"
+
+_SESSION_CACHE: dict[str, tuple[dict, float]] = {}
+_LAST_TOUCH: dict[str, float] = {}
+_CACHE_TTL = float(os.environ.get("MASTER_SESSION_CACHE_TTL", "120"))
+_TOUCH_DEBOUNCE = float(os.environ.get("MASTER_SESSION_TOUCH_SECONDS", "300"))
+_cache_lock = threading.Lock()
 
 
 def _utcnow():
@@ -41,29 +50,90 @@ def create_session_record(
         "revoked_at": None,
     }
     row = insert_row(TABLE, payload)
-    return row or payload
+    record = row or payload
+    _store_session_cache(session_id, record)
+    return record
 
 
-def fetch_session(session_id: str) -> dict | None:
+def _store_session_cache(session_id: str, record: dict) -> None:
+    if not session_id or not record:
+        return
+    with _cache_lock:
+        _SESSION_CACHE[session_id] = (dict(record), time.monotonic())
+
+
+def _invalidate_session_cache(session_id: str) -> None:
+    if not session_id:
+        return
+    with _cache_lock:
+        _SESSION_CACHE.pop(session_id, None)
+        _LAST_TOUCH.pop(session_id, None)
+
+
+def fetch_session(session_id: str, *, force_remote: bool = False) -> dict | None:
     if not session_id:
         return None
-    return select_one(TABLE, {"id": session_id})
+    now = time.monotonic()
+    if not force_remote:
+        with _cache_lock:
+            cached = _SESSION_CACHE.get(session_id)
+        if cached and (now - cached[1]) < _CACHE_TTL:
+            return dict(cached[0])
+    record = select_one(TABLE, {"id": session_id})
+    if record:
+        _store_session_cache(session_id, record)
+    else:
+        _invalidate_session_cache(session_id)
+    return record
+
+
+def _touch_session_remote(session_id: str) -> None:
+    try:
+        patch_rows(TABLE, {"id": session_id}, {"last_seen_at": _iso(_utcnow())})
+    except RuntimeError:
+        pass
 
 
 def touch_session(session_id: str) -> None:
-    patch_rows(TABLE, {"id": session_id}, {"last_seen_at": _iso(_utcnow())})
+    if not session_id:
+        return
+    now = time.monotonic()
+    with _cache_lock:
+        last_touch = _LAST_TOUCH.get(session_id, 0.0)
+        if now - last_touch < _TOUCH_DEBOUNCE:
+            cached = _SESSION_CACHE.get(session_id)
+            if cached:
+                record = dict(cached[0])
+                record["last_seen_at"] = _iso(_utcnow())
+                _SESSION_CACHE[session_id] = (record, now)
+            return
+        _LAST_TOUCH[session_id] = now
+    threading.Thread(
+        target=_touch_session_remote,
+        args=(session_id,),
+        name=f"session-touch-{session_id[:8]}",
+        daemon=True,
+    ).start()
 
 
 def revoke_session(session_id: str) -> None:
     if not session_id:
         return
-    patch_rows(TABLE, {"id": session_id}, {"revoked_at": _iso(_utcnow())})
+    _invalidate_session_cache(session_id)
+    try:
+        patch_rows(TABLE, {"id": session_id}, {"revoked_at": _iso(_utcnow())})
+    except RuntimeError:
+        pass
 
 
 def delete_session(session_id: str) -> None:
     if not session_id:
         return
-    delete_rows(TABLE, {"id": session_id})
+    _invalidate_session_cache(session_id)
+    try:
+        delete_rows(TABLE, {"id": session_id})
+    except RuntimeError:
+        pass
 
 
 def is_session_active(record: dict | None) -> bool:

@@ -2,11 +2,14 @@
 from __future__ import annotations
 
 import json
+import os
 import urllib.error
 import urllib.parse
 import urllib.request
 
 from .supabase_config import get_api_key, get_url, is_configured as _configured
+
+_DEFAULT_TIMEOUT = float(os.environ.get("SUPABASE_HTTP_TIMEOUT", "8"))
 
 
 def is_configured():
@@ -27,7 +30,9 @@ def _base():
     return get_url().rstrip("/") + "/rest/v1"
 
 
-def _request(method, url, body=None, *, prefer=None, timeout=20):
+def _request(method, url, body=None, *, prefer=None, timeout=None):
+    if timeout is None:
+        timeout = _DEFAULT_TIMEOUT
     if not is_configured():
         return None
     data = None

@@ -26,8 +26,8 @@ class RuntimeApp:
     def __init__(self):
         self.repo = AppRepository.bootstrap(self)
 
-    def save_state(self):
-        self.repo.persist()
+    def save_state(self, *, background: bool = True):
+        self.repo.persist(background=background)
 
 
 def bootstrap_production_services(app):
@@ -36,7 +36,7 @@ def bootstrap_production_services(app):
     portal_changed = ensure_portal_security(app)
     rede_changed = ensure_partner_networks(app)
     if network_changed or portal_changed or rede_changed:
-        app.save_state()
+        app.save_state(background=False)
     start_automation_webhook_server(app)
     gateway_url = start_api_gateway_server(app)
     start_driver_portal_server(app)

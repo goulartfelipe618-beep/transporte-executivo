@@ -1,6 +1,9 @@
 """Facade de repositorios — ponto unico para UI e servicos."""
 from __future__ import annotations
 
+import os
+import threading
+
 from ..storage import STATE_KEYS, load_state, save_state
 from .ids import ensure_entity_ids
 from .json_repository import JsonListRepository
@@ -17,6 +20,9 @@ class AppRepository:
 
     def __init__(self, app):
         self.app = app
+        self._persist_lock = threading.Lock()
+        self._persist_timer: threading.Timer | None = None
+        self._persist_debounce = float(os.environ.get("SUPABASE_PERSIST_DEBOUNCE", "2"))
         repo_cls = SupabaseListRepository if self.BACKEND == "supabase" else JsonListRepository
         self.reservations = repo_cls(app, "reservations")
         self.clients = repo_cls(app, "clients")
@@ -39,11 +45,31 @@ class AppRepository:
             setattr(app, key, list(state.get(key, [])))
         repo = cls(app)
         if ensure_entity_ids(app):
-            repo.persist()
+            repo.persist_now()
         return repo
 
-    def persist(self):
+    def persist(self, *, background: bool = True):
+        if background and self.BACKEND == "supabase":
+            self._schedule_persist()
+            return
+        self.persist_now()
+
+    def persist_now(self):
         save_state(self.app)
+
+    def _schedule_persist(self):
+        with self._persist_lock:
+            if self._persist_timer:
+                self._persist_timer.cancel()
+            self._persist_timer = threading.Timer(self._persist_debounce, self._run_background_persist)
+            self._persist_timer.daemon = True
+            self._persist_timer.start()
+
+    def _run_background_persist(self):
+        try:
+            save_state(self.app)
+        except RuntimeError:
+            pass
 
     def reservations_for_company(self, company_id):
         company_id = str(company_id or "")
