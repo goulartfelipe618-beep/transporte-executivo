@@ -52,7 +52,7 @@
           <th>Motorista</th>
           <th>Valor</th>
           <th>Status</th>
-          <th>Acoes</th>
+          <th class="col-actions">Acoes</th>
         </tr>
       </thead>
       <tbody>
@@ -71,8 +71,8 @@
             {% set st = (item.status or '')|lower|replace('í','i') %}
             <span class="status-pill status-{{ st }}">{{ item.status }}</span>
           </td>
-          <td>
-            <div class="actions">
+          <td class="col-actions">
+            <div class="actions table-row-actions">
               <a class="btn btn-secondary btn-sm" href="/reservas/{{ numero_slug }}/editar">Editar</a>
               <a class="btn btn-secondary btn-sm" href="/reservas/{{ numero_slug }}">Ver</a>
               <a class="btn btn-primary btn-sm" href="/reservas/{{ numero_slug }}#pdf">PDF</a>
