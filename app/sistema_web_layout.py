@@ -96,7 +96,7 @@ def panel_page(admin, active_key, content_html, *, brand_name=None):
 .nav-link{{display:flex;align-items:center;gap:8px;padding:9px 12px;margin:2px 0;border-radius:8px;color:#cbd5e1;text-decoration:none;font-size:.82rem}}
 .nav-link:hover{{background:var(--sidebar-hover);color:#fff}}
 .nav-link.active{{background:var(--sidebar-active);color:#fff;font-weight:600}}
-.nav-sub{{padding-left:22px;font-size:.78rem}}
+.nav-sub{{padding:8px 12px 8px 44px;font-size:.76rem}}
 .nav-icon{{width:18px;text-align:center}}
 .sidebar-foot{{padding:12px 16px;border-top:1px solid var(--sidebar-soft);font-size:.72rem;color:#94a3b8}}
 .main{{display:flex;flex-direction:column;min-width:0}}
