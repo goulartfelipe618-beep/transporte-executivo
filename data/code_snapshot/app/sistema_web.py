@@ -10,7 +10,7 @@ from urllib.parse import parse_qs, urlparse
 
 from .admin_auth import authenticate_admin
 from .bind_host import bind_host
-from .branding import brand_display_name, brand_initials
+from .branding import brand_display_name
 from .sistema_web_layout import panel_page
 from .sistema_web_modules import normalize_module_key, render_module
 from .cdn.urls import static_url
@@ -67,7 +67,7 @@ def _login_html(error="", *, email="", captcha_key="", captcha_code=""):
     if not captcha_key or not captcha_code:
         captcha_key, captcha_code = _issue_login_captcha()
     key_value = captcha_key.replace('"', "&quot;")
-    hero_bg = static_url("master/images/login/hero-bg.png")
+    hero_bg = static_url("master/images/login/login-background.jpg")
     return f"""<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Login — {brand}</title>
@@ -104,7 +104,7 @@ button[type=submit]:hover{{background:#2563eb;color:#fff}}
 <button type="submit">Enviar</button>
 </form>
 <p class="note">Nunca compartilhe sua senha. Verifique o código antes de entrar.</p>
-</div><p class="foot">© 2026 {brand}</p></main>
+</div><p class="foot">© 2026 {brand} · Build {APP_BUILD}</p></main>
 </body></html>"""
 
 

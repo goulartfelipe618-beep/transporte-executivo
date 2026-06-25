@@ -109,7 +109,7 @@ def require_admin_login():
     def _draw_background(_event=None):
         width = max(root.winfo_width(), 900)
         height = max(root.winfo_height(), 600)
-        photo = _load_login_photo(_LOGIN_IMAGES / "hero-bg.png", tk)
+        photo = _load_login_photo(_LOGIN_IMAGES / "login-background.jpg", tk)
         if photo is None:
             canvas.delete("bg")
             canvas.create_rectangle(0, 0, width, height, fill="#0f172a", outline="", tags="bg")
@@ -117,7 +117,7 @@ def require_admin_login():
         try:
             from PIL import Image, ImageTk
 
-            path = _LOGIN_IMAGES / "hero-bg.png"
+            path = _LOGIN_IMAGES / "login-background.jpg"
             if path.is_file():
                 image = Image.open(path).resize((width, height), Image.Resampling.LANCZOS)
                 bg_holder["photo"] = ImageTk.PhotoImage(image)
