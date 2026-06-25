@@ -56,4 +56,9 @@ def normalize_vehicle_type(tipo: Any) -> str:
 
 
 def type_icon(vehicle_type: str) -> str:
-    return TYPE_ICONS.get(vehicle_type, "/static/images/vehicles/sedan.svg")
+    from app.cdn.urls import static_url
+
+    path = TYPE_ICONS.get(vehicle_type, "/static/images/vehicles/sedan.svg")
+    if path.startswith("/static/images/"):
+        return static_url(path.replace("/static/images/", "images/"))
+    return static_url(path.lstrip("/"))

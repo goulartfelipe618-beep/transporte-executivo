@@ -158,13 +158,15 @@ def build_public_locations(app, *, type_filter=None, state_filter=None, city_fil
 
 
 def build_public_vehicles(app) -> list:
+    from .cdn.urls import resolve_media_url
+
     items = []
     for vehicle in getattr(app, "vehicles", []):
         if str(vehicle.get("status", "Ativo")).lower() not in {"ativo", "operando"}:
             continue
         if str(vehicle.get("portal_publicado", True)).lower() in {"nao", "false", "0"}:
             continue
-        imagem = vehicle.get("capa") or vehicle.get("foto") or vehicle.get("imagem") or ""
+        imagem = resolve_media_url(vehicle.get("capa") or vehicle.get("foto") or vehicle.get("imagem") or "")
         items.append(
             {
                 "id": vehicle.get("id") or vehicle.get("placa", ""),

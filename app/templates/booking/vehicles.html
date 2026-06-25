@@ -21,7 +21,7 @@
         {% for v in vehicles %}
         <article class="vehicle-card-premium">
           <div class="vehicle-card-image">
-            <img src="{{ v.image_url or '/static/images/vehicles/suv.svg' }}" alt="{{ v.name }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <img src="{{ v.image_url or static_url('images/vehicles/suv.svg') }}" alt="{{ v.name }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
             <span class="placeholder-icon" style="display:none">🚗</span>
           </div>
           <div class="vehicle-card-body">

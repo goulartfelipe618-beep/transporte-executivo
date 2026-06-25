@@ -445,9 +445,16 @@ def _mask_driver_name(name):
 
 
 def _valid_logo(path):
-    if not path:
+    from .cdn.urls import materialize_media_file, resolve_media_url
+
+    resolved = resolve_media_url(str(path or "").strip())
+    if not resolved:
         return ""
-    candidate = Path(str(path))
+    candidate = Path(resolved)
     if candidate.is_file() and candidate.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"}:
         return str(candidate)
+    if resolved.startswith(("http://", "https://", "r2private:")):
+        temp_path = materialize_media_file(resolved, suffix=candidate.suffix or ".png")
+        if temp_path:
+            return temp_path
     return ""

@@ -175,11 +175,12 @@ def dashboard_dto(app, driver, session):
 
 def portal_branding(app):
     from .settings_store import load_settings
+    from .cdn.urls import resolve_media_url
     from .version import APP_BUILD
 
     settings = load_settings()
     return {
         "empresa": settings.get("nome_projeto") or settings.get("empresa") or "Nexus Transfer",
-        "logo_url": settings.get("logo_global") or "",
+        "logo_url": resolve_media_url(settings.get("logo_global") or ""),
         "build": APP_BUILD,
     }

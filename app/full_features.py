@@ -14,6 +14,7 @@ from .portal_auth import is_password_hash, prepare_password_field
 from .company_portal import company_portal_url
 from .components import apply_input_rules, resolve_widget_value, setup_placeholder
 from .settings_store import load_settings, save_settings
+from .cdn.storage import sync_settings_media
 from .branding import apply_branding, resolve_font_family
 from .table_ui import render_action_buttons
 from .theme import COLORS, FONTS, badge_label, panel_frame, styled_button
@@ -396,6 +397,7 @@ def _save_settings_form(app, fields, on_done=None):
             payload[key] = resolve_widget_value(widget)
     requested_font = payload.get("fonte_global", "")
     resolved_font = resolve_font_family(requested_font)
+    sync_settings_media(payload)
     save_settings(payload)
     apply_branding(payload)
     if requested_font and resolved_font == "Segoe UI" and requested_font.lower() not in {"segoe ui", "segoe"}:

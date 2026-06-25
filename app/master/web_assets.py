@@ -15,6 +15,8 @@ def load_master_css() -> str:
     except OSError:
         return "/* master.css ausente */"
     if _css_cache is None or _css_mtime != mtime:
-        _css_cache = MASTER_CSS_FILE.read_text(encoding="utf-8")
+        from app.cdn.urls import patch_css_static_urls
+
+        _css_cache = patch_css_static_urls(MASTER_CSS_FILE.read_text(encoding="utf-8"))
         _css_mtime = mtime
     return _css_cache

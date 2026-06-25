@@ -1,1 +1,1 @@
-APP_BUILD = "2026.06.23"
+APP_BUILD = "2026.06.23-login"

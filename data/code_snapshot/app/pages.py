@@ -22,6 +22,7 @@ from .portal_auth import (
 )
 from .portal_server import driver_key, start_driver_portal_server
 from .repository.ids import next_entity_id
+from .cdn.storage import sync_driver_media, sync_vehicle_media
 from .vehicles_model import (
     VEHICLE_OPERATIONAL_FIELDS,
     VEHICLE_TYPES,
@@ -1428,6 +1429,15 @@ def add_file_selector(parent, fields, key, label, driver):
     styled_button(line, "Selecionar (max. 5MB)", style="outline_primary", size="sm", command=lambda: select_driver_file(value)).pack(side="right", padx=10)
 
 
+def _is_media_reference(value):
+    raw = str(value or "").strip()
+    if not raw:
+        return False
+    if raw.startswith(("http://", "https://", "r2private:")):
+        return True
+    return os.path.exists(raw)
+
+
 def select_driver_file(value):
     filename = filedialog.askopenfilename(filetypes=[("Imagem ou PDF", "*.png *.jpg *.jpeg *.pdf"), ("Todos os arquivos", "*.*")])
     if filename:
@@ -1452,9 +1462,11 @@ def save_driver_form(app, window, fields, driver=None):
         values["data"] = datetime.now().strftime("%d/%m/%Y")
         values = normalize_driver_record(values, app.drivers)
         values["link"] = f"{start_driver_portal_server(app)}/driver/{driver_key(values)}"
+        sync_driver_media(values)
         app.drivers.insert(0, values)
     else:
         values = normalize_driver_record({**driver, **values}, app.drivers)
+        sync_driver_media(values)
         driver.update(values)
 
     values["endereco_completo"] = ", ".join(
@@ -1838,18 +1850,20 @@ def save_vehicle_form(app, window, fields, vehicle=None):
 
     for key, label in labels.items():
         if key == "capa" or key.startswith("img_"):
-            if not os.path.exists(values[key]):
+            if not _is_media_reference(values[key]):
                 messagebox.showwarning("Imagem obrigatoria", f"Selecione uma imagem valida para: {label}.", parent=window)
                 return
-            if os.path.getsize(values[key]) > 10 * 1024 * 1024:
+            if os.path.isfile(values[key]) and os.path.getsize(values[key]) > 10 * 1024 * 1024:
                 messagebox.showwarning("Arquivo muito grande", f"A imagem de {label} deve ter no maximo 10 MB.", parent=window)
                 return
 
-    cover_size = read_image_size(values["capa"])
-    if cover_size and cover_size != (1220, 880):
-        messagebox.showwarning("Capa invalida", "A capa deve ter exatamente 1220x880 px.", parent=window)
-        return
+    if os.path.isfile(values["capa"]):
+        cover_size = read_image_size(values["capa"])
+        if cover_size and cover_size != (1220, 880):
+            messagebox.showwarning("Capa invalida", "A capa deve ter exatamente 1220x880 px.", parent=window)
+            return
 
+    sync_vehicle_media(values)
     if vehicle is None:
         values["id"] = next_entity_id("veh", getattr(app, "vehicles", []))
         app.vehicles.insert(0, values)

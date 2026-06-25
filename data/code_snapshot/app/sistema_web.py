@@ -13,6 +13,7 @@ from .bind_host import bind_host
 from .branding import brand_display_name, brand_initials
 from .sistema_web_layout import panel_page
 from .sistema_web_modules import normalize_module_key, render_module
+from .cdn.urls import static_url
 from .version import APP_BUILD
 
 SISTEMA_WEB_PORT = 8772
@@ -63,69 +64,48 @@ def _login_html(error="", *, email="", captcha_key="", captcha_code=""):
     )
     email_value = email.replace('"', "&quot;")
     brand = brand_display_name()
-    initials = brand_initials(brand)
     if not captcha_key or not captcha_code:
         captcha_key, captcha_code = _issue_login_captcha()
     key_value = captcha_key.replace('"', "&quot;")
+    hero_bg = static_url("master/images/login/hero-bg.png")
     return f"""<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Acesso — {brand}</title>
+<title>Login — {brand}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
-:root{{--panel:#fff;--primary:#2563eb;--primary-soft:#dbeafe;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;--danger:#dc2626;--danger-soft:#fef2f2;--panel-alt:#f8fafc}}
-*{{box-sizing:border-box}}body{{margin:0;min-height:100vh;font-family:Segoe UI,system-ui,sans-serif;background:#fff}}
-.shell{{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}}
-.visual{{display:flex;flex-direction:column;background:#111827;min-height:100vh}}
-.visual-top,.visual-bottom{{flex:1;background-size:cover;background-position:center;min-height:180px}}
-.visual-top{{background-image:linear-gradient(rgba(0,0,0,.15),rgba(0,0,0,.15)),url("/static/login/hero-top.jpg")}}
-.visual-bottom{{background-image:linear-gradient(rgba(0,0,0,.2),rgba(0,0,0,.2)),url("/static/login/hero-bottom.jpg")}}
-.tagline{{background:#1f2937;color:#f9fafb;padding:28px 32px;text-align:center;font-size:.95rem;line-height:1.55}}
-.main{{display:flex;align-items:center;justify-content:center;padding:32px 24px}}
-.inner{{width:100%;max-width:420px}}
-.badge{{display:inline-block;padding:4px 10px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-size:.68rem;font-weight:700}}
-h1{{margin:10px 0 6px;font-size:1.45rem;color:var(--text)}}
-.sub{{margin:0 0 18px;color:var(--muted);font-size:.88rem}}
-.card{{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px}}
-.card h2{{margin:0 0 4px;font-size:1.05rem}}
-.card-sub{{margin:0 0 18px;color:var(--muted);font-size:.84rem}}
-label{{display:block;font-size:.78rem;font-weight:600;margin:0 0 6px;color:var(--text)}}
-.field{{margin-bottom:14px}}
-input{{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-size:.92rem}}
-input:focus{{outline:2px solid #93c5fd;border-color:var(--primary)}}
-.captcha-row{{display:flex;gap:8px;margin-bottom:8px}}
-.captcha-code{{flex:1;padding:10px;border:1px dashed var(--line);border-radius:8px;background:var(--panel-alt);font-family:Consolas,monospace;font-size:1.1rem;font-weight:700;text-align:center}}
-button[type=submit]{{width:100%;margin-top:16px;padding:12px;border:0;border-radius:8px;background:var(--primary);color:#fff;font-weight:600;font-size:.94rem;cursor:pointer}}
-.error-box{{margin:0 0 12px;padding:10px 12px;border-radius:8px;background:var(--danger-soft);color:var(--danger);font-size:.84rem}}
-.security{{margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--panel-alt);font-size:.8rem;color:var(--muted)}}
-.security h3{{margin:0 0 8px;font-size:.88rem;color:var(--text)}}
-.foot{{margin-top:14px;text-align:center;color:var(--muted);font-size:.74rem}}
-@media(max-width:900px){{.shell{{grid-template-columns:1fr}}.visual{{min-height:240px;max-height:320px;flex-direction:row}}}}
+*{{box-sizing:border-box}}body{{margin:0;min-height:100vh;font-family:Inter,Segoe UI,system-ui,sans-serif}}
+.backdrop{{position:fixed;inset:0;background:url("{hero_bg}") center/cover no-repeat;transform:scale(1.02)}}
+.overlay{{position:fixed;inset:0;background:linear-gradient(180deg,rgba(8,12,22,.35),rgba(8,12,22,.55))}}
+.stage{{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px}}
+.panel{{width:100%;max-width:420px;background:#fff;border-radius:14px;padding:36px 34px 28px;box-shadow:0 28px 80px rgba(0,0,0,.38)}}
+.title{{margin:0 0 4px;text-align:center;font-size:1.75rem;font-weight:700;color:#374151}}
+.brand{{margin:0 0 26px;text-align:center;font-size:.82rem;color:#6b7280}}
+.field{{margin-bottom:18px}}label{{display:block;margin-bottom:7px;font-size:.88rem;font-weight:600;color:#374151}}
+input{{width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:.95rem}}
+input:focus{{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)}}
+.captcha-row{{display:flex;gap:8px;margin-bottom:8px}}.captcha-code{{flex:1;padding:10px;border:1px dashed #d1d5db;border-radius:8px;background:#f9fafb;font-family:Consolas,monospace;font-size:1.05rem;font-weight:700;text-align:center}}
+.forgot{{text-align:right;margin:-4px 0 20px}}.forgot a{{color:#2563eb;font-size:.84rem;text-decoration:underline}}
+button[type=submit]{{display:block;width:100%;max-width:200px;margin:0 auto;padding:11px 20px;border:2px solid #2563eb;border-radius:8px;background:#fff;color:#2563eb;font-weight:700;text-transform:uppercase;cursor:pointer}}
+button[type=submit]:hover{{background:#2563eb;color:#fff}}
+.error-box{{margin:0 0 16px;padding:11px 14px;border-radius:8px;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;font-size:.84rem}}
+.note{{margin-top:22px;padding-top:18px;border-top:1px solid #f3f4f6;text-align:center;font-size:.76rem;color:#9ca3af}}
+.foot{{margin:18px 0 0;text-align:center;color:rgba(255,255,255,.82);font-size:.74rem}}
 </style></head><body>
-<div class="shell">
-<aside class="visual" aria-hidden="true">
-<div class="visual-top"></div>
-<div class="tagline">Gerencie reservas, motoristas, clientes e operações em um único sistema moderno, rápido e inteligente.</div>
-<div class="visual-bottom"></div>
-</aside>
-<main class="main"><div class="inner">
-<span class="badge">{initials}</span>
-<h1>Painel {brand}</h1>
-<p class="sub">Acesse com segurança para gerir sua operação</p>
-<div class="card">
-<h2>Faça seu login</h2>
-<p class="card-sub">Use seu usuário e senha para entrar no painel.</p>
+<div class="backdrop"></div><div class="overlay"></div>
+<main class="stage"><div class="panel">
+<h1 class="title">Login</h1><p class="brand">{brand}</p>
 {err}
 <form method="post" action="/login">
-<div class="field"><label>Usuário</label><input name="email" type="text" required autocomplete="username" placeholder="E-mail ou usuário" value="{email_value}"/></div>
-<div class="field"><label>Senha</label><input name="password" type="password" required autocomplete="current-password" placeholder="Senha"/></div>
+<div class="field"><label>E-mail</label><input name="email" type="text" required autocomplete="username" placeholder="Digite seu e-mail" value="{email_value}"/></div>
+<div class="field"><label>Senha</label><input name="password" type="password" required autocomplete="current-password" placeholder="Digite sua senha"/></div>
 <div class="field"><label>Código de segurança</label><div class="captcha-row"><div class="captcha-code">{captcha_code}</div></div><input name="captcha" type="text" required autocomplete="off" placeholder="Digite o código acima"/></div>
 <input type="hidden" name="captcha_key" value="{key_value}"/>
-<button type="submit">→ Iniciar sessão</button>
+<div class="forgot"><a href="#">Esqueceu a senha?</a></div>
+<button type="submit">Enviar</button>
 </form>
-</div>
-<div class="security"><h3>Checkup de segurança</h3><ul><li>Nunca compartilhe sua senha com terceiros.</li><li>Verifique o código de segurança antes de entrar.</li><li>Ative 2FA no menu Sistema &gt; Configurações.</li></ul></div>
-<p class="foot">© 2026 — Todos os direitos reservados.</p>
-</div></main>
-</div></body></html>"""
+<p class="note">Nunca compartilhe sua senha. Verifique o código antes de entrar.</p>
+</div><p class="foot">© 2026 {brand}</p></main>
+</body></html>"""
 
 
 def _render_panel(app, admin, module_key):

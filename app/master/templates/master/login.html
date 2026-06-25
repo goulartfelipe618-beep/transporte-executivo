@@ -4,85 +4,57 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="nexus-service" content="master-web"/>
-  <title>Acesso — {{ brand_name }}</title>
-  <script>(function(){var t=localStorage.getItem("nexus-master-theme")||"light";document.documentElement.setAttribute("data-theme",t);})();</script>
+  <title>Login — {{ brand_name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>{{ master_css()|safe }}</style>
 </head>
 <body class="login-page">
-  <div class="login-shell">
-    <aside class="login-visual" aria-hidden="true">
-      <div class="login-visual-top"></div>
-      <div class="login-visual-tagline">
-        <p>Gerencie reservas, motoristas, clientes e operações em um único sistema moderno, rápido e inteligente.</p>
-      </div>
-      <div class="login-visual-bottom"></div>
-    </aside>
+  <div class="login-backdrop" style="background-image:url('{{ static_url("master/images/login/hero-bg.png") }}')"></div>
+  <div class="login-overlay" aria-hidden="true"></div>
 
-    <main class="login-main">
-      <div class="login-main-inner">
-        <header class="login-header">
-          <span class="login-badge">{{ brand_initials }}</span>
-          <h1>Painel {{ brand_name }}</h1>
-          <p class="login-header-sub">Acesse com segurança para gerir sua operação</p>
-        </header>
+  <main class="login-stage">
+    <div class="login-panel">
+      <h1 class="login-panel-title">Login</h1>
+      <p class="login-panel-brand">{{ brand_name }}</p>
 
-        <div class="login-card">
-          <h2>Faça seu login</h2>
-          <p class="login-card-sub">Use seu usuário e senha para entrar no painel.</p>
+      {% if error %}<div class="login-alert">{{ error }}</div>{% endif %}
 
-          {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
-
-          <form method="post" action="/login" class="login-form">
-            <div class="field-icon">
-              <label for="email">Usuário</label>
-              <div class="input-wrap">
-                <span class="input-icon" aria-hidden="true">✉</span>
-                <input id="email" name="email" type="text" required autocomplete="username" placeholder="E-mail ou usuário" value="{{ email }}"/>
-              </div>
-            </div>
-
-            <div class="field-icon">
-              <label for="password">Senha</label>
-              <div class="input-wrap">
-                <span class="input-icon" aria-hidden="true">🔒</span>
-                <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="Senha"/>
-              </div>
-            </div>
-
-            <div class="field-icon">
-              <label for="captcha">Código de segurança</label>
-              <div class="captcha-row">
-                <div class="captcha-code" id="captcha-display">{{ captcha_code }}</div>
-                <button type="button" class="captcha-refresh" id="captcha-refresh" title="Gerar novo código" aria-label="Gerar novo código">↻</button>
-              </div>
-              <div class="input-wrap">
-                <span class="input-icon" aria-hidden="true">🔑</span>
-                <input id="captcha" name="captcha" type="text" required autocomplete="off" placeholder="Digite o código acima" maxlength="6"/>
-              </div>
-            </div>
-
-            <div class="login-forgot">
-              <a href="#" onclick="return false;">Esqueci minha senha</a>
-            </div>
-
-            <button type="submit" class="login-submit">→ Iniciar sessão</button>
-          </form>
+      <form method="post" action="/login" class="login-form">
+        <div class="login-field">
+          <label for="email">E-mail</label>
+          <input id="email" name="email" type="text" required autocomplete="username" placeholder="Digite seu e-mail" value="{{ email }}"/>
         </div>
 
-        <div class="login-security-box">
-          <h3>Checkup de segurança</h3>
-          <ul>
-            <li>Nunca compartilhe sua senha com terceiros.</li>
-            <li>Verifique o código de segurança antes de entrar.</li>
-            <li>Ative 2FA no menu Sistema &gt; Configurações.</li>
-          </ul>
+        <div class="login-field">
+          <label for="password">Senha</label>
+          <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="Digite sua senha"/>
         </div>
 
-        <p class="login-copyright">© 2026 — Todos os direitos reservados.</p>
-        <p class="login-foot">Build {{ app_build }} · master-web</p>
+        <div class="login-field">
+          <label for="captcha">Código de segurança</label>
+          <div class="login-captcha-row">
+            <div class="login-captcha-code" id="captcha-display">{{ captcha_code }}</div>
+            <button type="button" class="login-captcha-refresh" id="captcha-refresh" title="Gerar novo código" aria-label="Gerar novo código">↻</button>
+          </div>
+          <input id="captcha" name="captcha" type="text" required autocomplete="off" placeholder="Digite o código acima" maxlength="6"/>
+        </div>
+
+        <div class="login-forgot">
+          <a href="#" onclick="return false;">Esqueceu a senha?</a>
+        </div>
+
+        <button type="submit" class="login-submit">Enviar</button>
+      </form>
+
+      <div class="login-security">
+        <p>Nunca compartilhe sua senha. Verifique o código antes de entrar.</p>
       </div>
-    </main>
-  </div>
+    </div>
+
+    <p class="login-foot">© 2026 {{ brand_name }} · Build {{ app_build }}</p>
+  </main>
+
   <script>
   (function () {
     var display = document.getElementById("captcha-display");

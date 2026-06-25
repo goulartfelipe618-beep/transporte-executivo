@@ -5,7 +5,7 @@ from tkinter import filedialog, messagebox, ttk
 
 import qrcode
 
-from .components import resolve_widget_value
+from .cdn.storage import is_r2_configured, upload_qr_png
 from .full_features import scrollable_form, settings_field, settings_section
 from .partner_network import (
     booking_url,
@@ -244,7 +244,17 @@ def _ensure_qr_file(partner):
     qr = qrcode.QRCode(version=None, error_correction=qrcode.constants.ERROR_CORRECT_H, box_size=8, border=2)
     qr.add_data(link)
     qr.make(fit=True)
-    qr.make_image(fill_color="black", back_color="white").save(path)
+    image = qr.make_image(fill_color="black", back_color="white")
+    image.save(path)
+    if is_r2_configured():
+        try:
+            from io import BytesIO
+
+            buffer = BytesIO()
+            image.save(buffer, format="PNG")
+            partner["qr_cdn_url"] = upload_qr_png(buffer.getvalue(), str(partner.get("id", "rede")))
+        except Exception:
+            pass
     return path
 
 

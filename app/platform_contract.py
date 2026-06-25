@@ -339,6 +339,8 @@ def map_operational_point_to_public_location(point: dict) -> dict:
 
 
 def map_vehicle_to_public_vehicle(vehicle: dict) -> dict:
+    from .cdn.urls import resolve_media_url
+
     vehicle = dict(vehicle or {})
     return {
         "id": vehicle.get("id") or vehicle.get("placa", ""),
@@ -349,7 +351,7 @@ def map_vehicle_to_public_vehicle(vehicle: dict) -> dict:
         "aplicacao": vehicle.get("aplicacao", vehicle.get("tipo_veiculo", "")),
         "marca": vehicle.get("marca", ""),
         "modelo": vehicle.get("modelo", ""),
-        "foto": vehicle.get("capa", ""),
+        "foto": resolve_media_url(vehicle.get("capa", "")),
         "id_admin": vehicle.get("id") or vehicle.get("placa", ""),
     }
 

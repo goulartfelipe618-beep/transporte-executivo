@@ -9,6 +9,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from app.branding import brand_display_name, brand_initials
+from app.cdn.urls import cdn_base, static_url
 
 from .config import get_settings
 from .services.auth_service import resolve_admin
@@ -21,6 +22,8 @@ MASTER_STATIC_DIR = STATIC_DIR / "master"
 
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 templates.env.globals["master_css"] = load_master_css
+templates.env.globals["static_url"] = static_url
+templates.env.globals["cdn_base"] = cdn_base
 
 NAV_TITLES = {
     "dashboard": "Dashboard",

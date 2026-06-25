@@ -1,6 +1,15 @@
 (function () {
   "use strict";
 
+  function staticAsset(path) {
+    var base = window.NEXUS_CDN_BASE || "";
+    var clean = String(path || "").replace(/^\/+/, "");
+    if (base) {
+      return base.replace(/\/+$/, "") + "/static/motor/" + clean.replace(/^static\//, "");
+    }
+    return "/static/" + clean.replace(/^static\//, "");
+  }
+
   function qs(s, r) { return (r || document).querySelector(s); }
   function qsa(s, r) { return Array.from((r || document).querySelectorAll(s)); }
   function t(key) { return window.ExpressI18n ? ExpressI18n.t(key) : key; }
@@ -231,7 +240,7 @@
         data-vehicle-type="${item.type}"
         data-type-label="${item.label}">
         <div class="vehicle-card-inner">
-          <img src="${item.image_url || "/static/images/vehicles/sedan.svg"}" alt="" class="vehicle-img" loading="lazy">
+          <img src="${item.image_url || staticAsset("images/vehicles/sedan.svg")}" alt="" class="vehicle-img" loading="lazy">
           <div class="vehicle-info">
             <h2>${item.label}</h2>
             <p class="vehicle-meta">${countLabel}</p>
@@ -244,7 +253,7 @@
 
   function renderVehicleCard(v) {
     const name = v.name || v.category || "";
-    const img = v.image_url || "/static/images/vehicles/sedan.svg";
+    const img = v.image_url || staticAsset("images/vehicles/sedan.svg");
     const brand = v.brand ? `<p class="vehicle-type">${v.brand}${v.model ? " " + v.model : ""}${v.year ? " · " + v.year : ""}</p>` : "";
     return `
       <article class="vehicle-card" tabindex="0" role="button"

@@ -23,11 +23,14 @@ from app.web.booking import router as booking_web_router
 from app.web.express import router as express_web_router
 from app.web.panels import router as panels_router
 from app.web.partner_entry import router as partner_entry_router
+from app.cdn.urls import cdn_base, static_url
 
 settings = get_settings()
 limiter = Limiter(key_func=get_remote_address, default_limits=[f"{settings.rate_limit_per_minute}/minute"])
 
 templates = Jinja2Templates(directory="app/templates")
+templates.env.globals["static_url"] = static_url
+templates.env.globals["cdn_base"] = cdn_base
 
 
 @asynccontextmanager

@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>{% block title %}Reserve seu transporte{% endblock %}</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/express.css?v=4">
+  <link rel="stylesheet" href="{{ static_url('css/express.css') }}?v=4">
   <style>:root{--brand-primary:{{ colors.primary or '#0D1B2A' }};--brand-accent:{{ colors.accent or '#D4AF37' }};--brand-bg:{{ colors.background or '#F8F9FA' }};}</style>
   {% block head %}{% endblock %}
 </head>
@@ -32,9 +32,10 @@
     {% include "partials/timeline_express.html" %}
     <main class="express-main">{% block content %}{% endblock %}</main>
   </div>
-  <script src="/static/js/config.js"></script>
-  <script src="/static/js/express-i18n.js?v=4"></script>
-  <script src="/static/js/express.js?v=4" defer></script>
+  <script>window.NEXUS_CDN_BASE={{ cdn_base()|tojson }};</script>
+  <script src="{{ static_url('js/config.js') }}"></script>
+  <script src="{{ static_url('js/express-i18n.js') }}?v=4"></script>
+  <script src="{{ static_url('js/express.js') }}?v=4" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
