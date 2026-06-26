@@ -6,7 +6,8 @@ from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from .config import get_settings
+from .middleware.no_cache import NoCacheHtmlMiddleware
+from .routers.web.legacy_redirects import router as legacy_redirects_router
 from .dependencies import MASTER_STATIC_DIR
 from .routers.api.health import router as health_router
 from .routers.web.auth import router as auth_router
@@ -38,6 +39,7 @@ def create_master_app(runtime_app) -> FastAPI:
     )
     app.state.runtime = runtime_app
 
+    app.add_middleware(NoCacheHtmlMiddleware)
     app.add_middleware(
         SessionMiddleware,
         secret_key=settings.secret_key,
@@ -65,6 +67,7 @@ def create_master_app(runtime_app) -> FastAPI:
     if MASTER_STATIC_DIR.is_dir():
         app.mount("/static/master", StaticFiles(directory=str(MASTER_STATIC_DIR)), name="master_static")
 
+    app.include_router(legacy_redirects_router)
     app.include_router(health_router)
     app.include_router(auth_router)
     app.include_router(dashboard_router)
