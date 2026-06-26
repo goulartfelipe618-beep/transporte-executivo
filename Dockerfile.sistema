@@ -1,6 +1,6 @@
 FROM python:3.12-slim
 
-# deploy-bump: 2026-06-26-reservas-edit3 — forcar rebuild EasyPanel
+# deploy-bump: 2026-06-26-reservas-edit4 — formulario editar = criar reserva
 ARG NEXUS_GIT_COMMIT=dev
 
 WORKDIR /app
@@ -25,6 +25,18 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . .
+
+RUN python -c "\
+from pathlib import Path;\
+res = Path('app/master/templates/master/reservations');\
+assert (res / 'form.html').is_file(), 'FALTA form.html';\
+assert not (res / 'form_edit.html').is_file(), 'REMOVER form_edit.html';\
+src = Path('app/master/routers/web/reservations.py').read_text(encoding='utf-8');\
+assert 'master/reservations/form.html' in src, 'router deve usar form.html';\
+assert 'form_edit.html' not in src, 'router nao pode usar form_edit.html';\
+assert 'reservation_to_form_dict' in src, 'router precisa reservation_to_form_dict';\
+print('OK: formulario reserva unificado')\
+"
 
 RUN python -c "import re; p=open('app/version.py', encoding='utf-8').read(); m=re.search(r'APP_BUILD\\s*=\\s*[\"\\']([^\"\\']+)[\"\\']', p); open('.nexus_app_build','w', encoding='utf-8').write(m.group(1) if m else 'unknown')" \
     && echo "${NEXUS_GIT_COMMIT}" > /app/.nexus_git_commit

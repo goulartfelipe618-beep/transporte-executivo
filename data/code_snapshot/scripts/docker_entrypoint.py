@@ -31,6 +31,26 @@ def _verify_sistema_bundle():
     if not stamp_file.is_file() or stamp_file.read_text(encoding="utf-8").strip() != "web-only":
         print("[Nexus] ERRO: .nexus_sistema_ui ausente — imagem anterior ao modo WEB-only.")
         sys.exit(1)
+    res_tpl = app_dir / "master" / "templates" / "master" / "reservations"
+    form_unified = res_tpl / "form.html"
+    form_legacy = res_tpl / "form_edit.html"
+    if not form_unified.is_file():
+        print("[Nexus] ERRO: form.html unificado ausente — rebuild com branch main atual.")
+        sys.exit(1)
+    if form_legacy.is_file():
+        print("[Nexus] ERRO: form_edit.html legado ainda presente — rebuild obrigatorio.")
+        sys.exit(1)
+    router_file = app_dir / "master" / "routers" / "web" / "reservations.py"
+    try:
+        router_src = router_file.read_text(encoding="utf-8")
+    except OSError:
+        router_src = ""
+    if "form_edit.html" in router_src:
+        print("[Nexus] ERRO: reservations.py ainda referencia form_edit.html — codigo desatualizado.")
+        sys.exit(1)
+    if "reservation_to_form_dict" not in router_src:
+        print("[Nexus] ERRO: reservations.py sem reservation_to_form_dict — codigo desatualizado.")
+        sys.exit(1)
     build = _read_app_build()
     commit = os.environ.get("NEXUS_GIT_COMMIT", "").strip()
     stamp = f"{build}" + (f" ({commit[:7]})" if commit else "")

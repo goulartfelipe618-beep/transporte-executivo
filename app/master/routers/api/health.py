@@ -38,7 +38,7 @@ def _deploy_payload():
         "title": settings.app_title,
         "css_inline": True,
         "reservation_form_unified": form_unified and not form_legacy,
-        "expected_build": "2026.06.26-reservas-edit3",
+        "expected_build": "2026.06.26-reservas-edit4",
     }
 
 

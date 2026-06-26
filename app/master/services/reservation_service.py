@@ -337,7 +337,7 @@ def reservation_to_form_dict(app, reservation):
         source = reservation
 
     form["motorista"] = _motorista_label_from_reservation(source)
-    form["valor_base"] = source.get("valor_base", "")
+    form["valor_base"] = source.get("valor_base", "") or str(source.get("valor", "") or "").replace("R$", "").strip()
     form["desconto"] = source.get("desconto", "0")
     form["pagamento"] = source.get("pagamento", "")
     form["status"] = source.get("status", "Pendente")
