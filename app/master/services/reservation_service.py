@@ -220,7 +220,168 @@ def _reservation_location_meta(values, embarque_key, desembarque_key=None):
     return meta
 
 
-def _validate_create_payload(values, *, client_mode="novo"):
+def _split_data_hora(value, fallback_hora=""):
+    raw = str(value or "").strip()
+    for fmt in ("%d/%m/%Y %H:%M", "%d/%m/%Y %H:%M:%S"):
+        try:
+            dt = datetime.strptime(raw, fmt)
+            return dt.strftime("%d/%m/%Y"), dt.strftime("%H:%M")
+        except ValueError:
+            pass
+    return raw, str(fallback_hora or "").strip()
+
+
+def _parse_trajeto_endpoints(trajeto):
+    parts = str(trajeto or "").split("->")
+    if len(parts) >= 2:
+        return parts[0].strip(), parts[1].strip()
+    return str(trajeto or "").strip(), ""
+
+
+def _find_pair_sibling(app, reservation):
+    par_id = reservation.get("par_id")
+    if not par_id:
+        return None
+    numero = reservation.get("numero")
+    for item in getattr(app, "reservations", []) or []:
+        if item.get("par_id") == par_id and item.get("numero") != numero:
+            return item
+    return None
+
+
+def _match_client_mode(app, reservation):
+    cadastro_id = str(reservation.get("cliente_cadastro_id", "") or "").strip()
+    cadastro_tipo = str(reservation.get("cliente_cadastro_tipo", "") or "").strip()
+    if cadastro_id and cadastro_tipo:
+        prefix = "emp" if cadastro_tipo == "empresa" else "cli"
+        return "cadastrado", f"{prefix}:{cadastro_id}"
+    from .client_service import booking_customer_options
+
+    nome = str(reservation.get("cliente", "")).strip().lower()
+    for opt in booking_customer_options(app):
+        if str(opt.get("nome", "")).strip().lower() == nome:
+            return "cadastrado", opt["value"]
+    return "novo", ""
+
+
+def _motorista_label_from_reservation(reservation):
+    motorista = str(reservation.get("motorista", "") or "").strip()
+    driver_id = str(reservation.get("driver_id", "") or "").strip()
+    if motorista in {"", "-"}:
+        return UNASSIGNED_DRIVER
+    if driver_id and f"({driver_id})" not in motorista:
+        return f"{motorista} ({driver_id})"
+    return motorista
+
+
+def _apply_po_fields_to_form(form, reservation, embarque_key, desembarque_key=None):
+    form[f"{embarque_key}_modo"] = reservation.get(f"{embarque_key}_modo", "manual")
+    form[f"{embarque_key}_po_id"] = reservation.get(f"{embarque_key}_po_id", "")
+    if desembarque_key:
+        form[f"{desembarque_key}_modo"] = reservation.get(f"{desembarque_key}_modo", "manual")
+        form[f"{desembarque_key}_po_id"] = reservation.get(f"{desembarque_key}_po_id", "")
+
+
+def _apply_reservation_client_to_form(app, form, reservation):
+    client_mode, cliente_cadastrado = _match_client_mode(app, reservation)
+    form["client_mode"] = client_mode
+    form["cliente_cadastrado"] = cliente_cadastrado
+    form["nome"] = reservation.get("cliente", "")
+    form["telefone"] = reservation.get("contato", "")
+    form["email"] = reservation.get("email", "")
+    form["documento"] = reservation.get("documento", "")
+
+
+def reservation_to_form_dict(app, reservation):
+    """Converte reserva persistida para o mesmo formato do formulario de criacao."""
+    form = {}
+    _apply_reservation_client_to_form(app, form, reservation)
+
+    sibling = _find_pair_sibling(app, reservation)
+    perna = reservation.get("perna")
+    stored_tipo = str(reservation.get("tipo", "") or "").strip()
+
+    if sibling and perna in {"ida", "volta"}:
+        ida_res = reservation if perna == "ida" else sibling
+        volta_res = sibling if perna == "ida" else reservation
+        form["tipo"] = "Ida e Volta"
+        form["embarque"], form["desembarque"] = _parse_trajeto_endpoints(ida_res.get("trajeto"))
+        form["data"], form["hora"] = _split_data_hora(ida_res.get("data"), ida_res.get("hora"))
+        form["passageiros"] = ida_res.get("passageiros", "")
+        _apply_po_fields_to_form(form, ida_res, "embarque", "desembarque")
+        form["volta_embarque"], form["volta_desembarque"] = _parse_trajeto_endpoints(volta_res.get("trajeto"))
+        form["volta_data"], form["volta_hora"] = _split_data_hora(volta_res.get("data"), volta_res.get("hora"))
+        form["volta_passageiros"] = volta_res.get("passageiros", "")
+        _apply_po_fields_to_form(form, volta_res, "volta_embarque", "volta_desembarque")
+        repasse_total = parse_amount(ida_res.get("repasse")) + parse_amount(volta_res.get("repasse"))
+        form["repasse"] = format_amount(repasse_total) if repasse_total > 0 else "0,00"
+        form["observacoes"] = ida_res.get("observacoes", "")
+        form["mensagem"] = ""
+        form["volta_mensagem"] = ""
+        source = ida_res
+    elif stored_tipo == "Por Hora":
+        form["tipo"] = "Por Hora"
+        form["hora_inicio"], form["hora_fim"] = _parse_trajeto_endpoints(reservation.get("trajeto"))
+        form["hora_data"], form["hora_horario"] = _split_data_hora(reservation.get("data"), reservation.get("hora"))
+        form["hora_passageiros"] = reservation.get("passageiros", "")
+        form["hora_observacoes"] = reservation.get("observacoes", "")
+        _apply_po_fields_to_form(form, reservation, "hora_inicio", "hora_fim")
+        source = reservation
+    else:
+        form["tipo"] = stored_tipo if stored_tipo in {"Somente Ida", "Ida e Volta", "Por Hora"} else "Somente Ida"
+        form["embarque"], form["desembarque"] = _parse_trajeto_endpoints(reservation.get("trajeto"))
+        form["data"], form["hora"] = _split_data_hora(reservation.get("data"), reservation.get("hora"))
+        form["passageiros"] = reservation.get("passageiros", "")
+        form["observacoes"] = reservation.get("observacoes", "")
+        _apply_po_fields_to_form(form, reservation, "embarque", "desembarque")
+        source = reservation
+
+    form["motorista"] = _motorista_label_from_reservation(source)
+    form["valor_base"] = source.get("valor_base", "")
+    form["desconto"] = source.get("desconto", "0")
+    form["pagamento"] = source.get("pagamento", "")
+    form["status"] = source.get("status", "Pendente")
+    form["faturado"] = "sim" if source.get("faturado") else "nao"
+    form["esconder_valores"] = source.get("esconder_valores", "")
+    if "repasse" not in form:
+        form["repasse"] = source.get("repasse", "0,00")
+    form["quem_faz"] = "Motorista"
+    return form
+
+
+def _prepare_values_from_form(app, form_data):
+    values = {key: str(form_data.get(key, "") or "").strip() for key in form_data.keys()}
+    values.update(collect_address_values_from_form(app, form_data, ADDRESS_KEYS))
+    client_mode = str(form_data.get("client_mode", "novo") or "novo").strip().lower()
+    if client_mode == "cadastrado":
+        from .client_service import resolve_booking_customer
+
+        selected = str(form_data.get("cliente_cadastrado", "") or "").strip()
+        customer = resolve_booking_customer(app, selected)
+        if customer:
+            values["nome"] = customer["nome"]
+            values["telefone"] = customer["telefone"]
+            values["email"] = customer["email"]
+            values["documento"] = customer["documento"]
+            values["cliente_cadastro_id"] = customer.get("id", "")
+            values["cliente_cadastro_tipo"] = customer.get("kind", "")
+    return values, client_mode
+
+
+def _replace_reservation_data(existing, new_data):
+    preserved = {
+        "numero": existing.get("numero"),
+        "par_id": existing.get("par_id"),
+        "perna": existing.get("perna"),
+    }
+    existing.clear()
+    existing.update(new_data)
+    for key, value in preserved.items():
+        if value is not None:
+            existing[key] = value
+
+
+def _validate_create_payload(values, *, client_mode="novo", is_edit=False):
     required = {"valor_base": "Valor Base"}
     if str(client_mode or "novo").strip().lower() != "cadastrado":
         required.update(
@@ -283,43 +444,29 @@ def _validate_create_payload(values, *, client_mode="novo"):
         if len(telefone) < 10:
             return False, "Informe um telefone completo no formato (XX) X XXXX-XXXX."
 
-    if trip_type == "Por Hora":
-        ok, msg = validate_future_datetime(values.get("hora_data"), values.get("hora_horario"), label="Data/hora do servico")
-        if not ok:
-            return False, msg
-    else:
-        ok, msg = validate_future_datetime(values.get("data"), values.get("hora"), label="Data/hora de embarque (IDA)")
-        if not ok:
-            return False, msg
-        if trip_type == "Ida e Volta":
-            ok, msg = validate_future_datetime(values.get("volta_data"), values.get("volta_hora"), label="Data/hora de embarque (VOLTA)")
+    if not is_edit:
+        if trip_type == "Por Hora":
+            ok, msg = validate_future_datetime(values.get("hora_data"), values.get("hora_horario"), label="Data/hora do servico")
             if not ok:
                 return False, msg
-            ida_dt = parse_br_datetime(values.get("data"), values.get("hora"))
-            volta_dt = parse_br_datetime(values.get("volta_data"), values.get("volta_hora"))
-            if ida_dt and volta_dt and volta_dt < ida_dt:
-                return False, "A volta nao pode ser anterior a ida."
+        else:
+            ok, msg = validate_future_datetime(values.get("data"), values.get("hora"), label="Data/hora de embarque (IDA)")
+            if not ok:
+                return False, msg
+            if trip_type == "Ida e Volta":
+                ok, msg = validate_future_datetime(values.get("volta_data"), values.get("volta_hora"), label="Data/hora de embarque (VOLTA)")
+                if not ok:
+                    return False, msg
+                ida_dt = parse_br_datetime(values.get("data"), values.get("hora"))
+                volta_dt = parse_br_datetime(values.get("volta_data"), values.get("volta_hora"))
+                if ida_dt and volta_dt and volta_dt < ida_dt:
+                    return False, "A volta nao pode ser anterior a ida."
 
     return True, ""
 
 
 def create_reservation(app, form_data):
-    values = {key: str(form_data.get(key, "") or "").strip() for key in form_data.keys()}
-    values.update(collect_address_values_from_form(app, form_data, ADDRESS_KEYS))
-
-    client_mode = str(form_data.get("client_mode", "novo") or "novo").strip().lower()
-    if client_mode == "cadastrado":
-        from .client_service import resolve_booking_customer
-
-        selected = str(form_data.get("cliente_cadastrado", "") or "").strip()
-        customer = resolve_booking_customer(app, selected)
-        if customer:
-            values["nome"] = customer["nome"]
-            values["telefone"] = customer["telefone"]
-            values["email"] = customer["email"]
-            values["documento"] = customer["documento"]
-            values["cliente_cadastro_id"] = customer.get("id", "")
-            values["cliente_cadastro_tipo"] = customer.get("kind", "")
+    values, client_mode = _prepare_values_from_form(app, form_data)
 
     ok, error = _validate_create_payload(values, client_mode=client_mode)
     if not ok:
@@ -345,6 +492,9 @@ def create_reservation(app, form_data):
         "repasse": values.get("repasse", "0,00"),
         **_billing_flags(form_data),
     }
+    if values.get("cliente_cadastro_id"):
+        common["cliente_cadastro_id"] = values["cliente_cadastro_id"]
+        common["cliente_cadastro_tipo"] = values["cliente_cadastro_tipo"]
 
     created = []
     trip_type = values.get("tipo", "Somente Ida")
@@ -449,18 +599,127 @@ def update_reservation(app, numero, form_data):
     if not reservation:
         return False, "Reserva nao encontrada."
 
-    values = {key: str(form_data.get(key, reservation.get(key, "")) or "").strip() for key in EDIT_FIELDS}
-    if not values.get("cliente"):
-        return False, "Informe o cliente da reserva."
-
-    ok, msg = validate_email_value(values.get("email"), label="E-mail")
+    values, client_mode = _prepare_values_from_form(app, form_data)
+    ok, error = _validate_create_payload(values, client_mode=client_mode, is_edit=True)
     if not ok:
-        return False, msg
+        return False, error
 
-    reservation.update(values)
-    reservation.update(_billing_flags(form_data))
-    motorista = reservation.get("motorista") or "-"
-    apply_finance_fields(reservation, motorista)
+    total_value = calculate_total_amount(values.get("valor_base"), values.get("desconto"))
+    valor = format_amount(total_value)
+    repasse_total = parse_amount(values.get("repasse"))
+    motorista, driver_id = resolve_driver_assignment(app, values.get("motorista"))
+
+    common = {
+        "cliente": values["nome"],
+        "contato": values["telefone"],
+        "email": values["email"],
+        "motorista": motorista,
+        "driver_id": driver_id,
+        "valor": valor,
+        "valor_base": values.get("valor_base", ""),
+        "desconto": values.get("desconto", "0"),
+        "status": values.get("status") or "Pendente",
+        "documento": values["documento"],
+        "pagamento": values.get("pagamento", ""),
+        "repasse": values.get("repasse", "0,00"),
+        **_billing_flags(form_data),
+    }
+    if values.get("cliente_cadastro_id"):
+        common["cliente_cadastro_id"] = values["cliente_cadastro_id"]
+        common["cliente_cadastro_tipo"] = values["cliente_cadastro_tipo"]
+
+    trip_type = values.get("tipo", "Somente Ida")
+    sibling = _find_pair_sibling(app, reservation)
+    repasse_ida = repasse_total
+    repasse_volta = 0.0
+    if trip_type == "Ida e Volta" and repasse_total > 0:
+        repasse_ida = round(repasse_total / 2, 2)
+        repasse_volta = round(repasse_total - repasse_ida, 2)
+
+    if trip_type == "Ida e Volta":
+        ida_res = reservation if reservation.get("perna") == "ida" else sibling
+        volta_res = sibling if reservation.get("perna") == "ida" else reservation
+        if not ida_res or not volta_res:
+            return False, "Par ida/volta incompleto — abra a reserva vinculada para editar."
+        ida_data = values["data"]
+        if values.get("hora"):
+            ida_data = f"{ida_data} {values['hora']}"
+        volta_data = values["volta_data"]
+        if values.get("volta_hora"):
+            volta_data = f"{volta_data} {values['volta_hora']}"
+        ida_payload = apply_finance_fields(
+            {
+                **common,
+                **_reservation_location_meta(values, "embarque", "desembarque"),
+                "tipo": "Ida",
+                "trajeto": f'{values["embarque"]} -> {values["desembarque"]}',
+                "data": ida_data,
+                "hora": values.get("hora", ""),
+                "passageiros": values["passageiros"],
+                "repasse": format_amount(repasse_ida) if repasse_ida > 0 else "0,00",
+                "observacoes": "\n".join(filter(None, [values.get("observacoes", ""), values.get("mensagem", "")])).strip(),
+                "par_id": ida_res.get("par_id"),
+                "perna": "ida",
+            },
+            motorista,
+        )
+        volta_payload = apply_finance_fields(
+            {
+                **common,
+                **_reservation_location_meta(values, "volta_embarque", "volta_desembarque"),
+                "tipo": "Volta",
+                "trajeto": f'{values["volta_embarque"]} -> {values["volta_desembarque"]}',
+                "data": volta_data,
+                "hora": values.get("volta_hora", ""),
+                "passageiros": values.get("volta_passageiros") or values["passageiros"],
+                "repasse": format_amount(repasse_volta) if repasse_volta > 0 else "0,00",
+                "observacoes": "\n".join(filter(None, [values.get("observacoes", ""), values.get("volta_mensagem", "")])).strip(),
+                "par_id": volta_res.get("par_id"),
+                "perna": "volta",
+            },
+            motorista,
+        )
+        _replace_reservation_data(ida_res, ida_payload)
+        _replace_reservation_data(volta_res, volta_payload)
+    elif trip_type == "Por Hora":
+        if sibling:
+            return False, "Esta reserva faz parte de um par ida/volta — altere o tipo apenas pelo par vinculado."
+        payload = apply_finance_fields(
+            {
+                **common,
+                **_reservation_location_meta(values, "hora_inicio", "hora_fim"),
+                "tipo": values["tipo"],
+                "trajeto": f'{values["hora_inicio"]} -> {values["hora_fim"]}',
+                "data": values["hora_data"],
+                "hora": values.get("hora_horario", ""),
+                "passageiros": values["hora_passageiros"],
+                "observacoes": values.get("hora_observacoes", ""),
+            },
+            motorista,
+        )
+        _replace_reservation_data(reservation, payload)
+    else:
+        if sibling:
+            app.reservations.remove(sibling)
+        data = values["data"]
+        hora = values.get("hora", "")
+        if hora:
+            data = f"{data} {hora}"
+        payload = apply_finance_fields(
+            {
+                **common,
+                **_reservation_location_meta(values, "embarque", "desembarque"),
+                "tipo": values["tipo"],
+                "trajeto": f'{values["embarque"]} -> {values["desembarque"]}',
+                "data": data,
+                "hora": hora,
+                "passageiros": values["passageiros"],
+                "observacoes": "\n".join(filter(None, [values.get("observacoes", ""), values.get("mensagem", "")])).strip(),
+            },
+            motorista,
+        )
+        _replace_reservation_data(reservation, payload)
+
     app.save_state()
     return True, ""
 

@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-25T21:06:56.284902",
+  "saved_at": "2026-06-25T21:15:49.183636",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "b6cc6dba6f92c51fc8cbd9e642590aa107dd09d3974d783b1aa5deb5df48907e",
@@ -181,7 +181,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "219ccef1569577ce60ee6917ecdc3867fb4cc9a4bf1c0315fc637068cc593a09",
+      "sha256": "3a7daeaa9a5cee6933fe03ef4e0210200874cc95324b276fcf04e6e6c913a452",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {

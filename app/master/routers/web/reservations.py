@@ -18,6 +18,7 @@ from ...services.reservation_service import (
     generate_pdf_bytes,
     pdf_filename,
     registered_drivers,
+    reservation_to_form_dict,
     update_reservation,
 )
 
@@ -26,6 +27,42 @@ router = APIRouter(prefix="/reservas", tags=["master-reservations"])
 PDF_VIAS = ("cliente", "motorista", "loja")
 TRIP_TYPES = ("Somente Ida", "Ida e Volta", "Por Hora")
 STATUS_OPTIONS = ("Pendente", "Confirmada", "Concluida", "Cancelada")
+
+
+def _reservation_form_context(
+    request,
+    admin,
+    runtime,
+    form,
+    *,
+    edit_numero: str = "",
+    error: str = "",
+    payable_notices=None,
+):
+    numero_slug = str(edit_numero or "").lstrip("#")
+    is_edit = bool(numero_slug)
+    return template_context(
+        request,
+        admin=admin,
+        active_nav="reservas",
+        booking_customers=booking_customer_options(runtime),
+        drivers=[UNASSIGNED_DRIVER] + registered_drivers(runtime),
+        po_options=operational_point_options(runtime),
+        trip_types=TRIP_TYPES,
+        status_options=STATUS_OPTIONS,
+        form=form,
+        error=error,
+        payable_notices=payable_notices or [],
+        page_heading="Editar Reserva" if is_edit else "Criar Nova Reserva",
+        page_subtitle=(
+            f"{edit_numero} — dados pre-preenchidos para alteracao."
+            if is_edit
+            else "Preencha os dados para criar uma nova reserva manual."
+        ),
+        form_action=f"/reservas/{numero_slug}/editar" if is_edit else "/reservas/nova",
+        submit_label="Salvar alteracoes" if is_edit else "Criar Reserva",
+        cancel_href=f"/reservas/{numero_slug}" if is_edit else "/reservas",
+    )
 
 
 @router.get("")
@@ -71,20 +108,8 @@ async def create_form(request: Request):
     runtime = get_runtime(request)
     return templates.TemplateResponse(
         request,
-        "master/reservations/form_create.html",
-        template_context(
-            request,
-            admin=admin,
-            active_nav="reservas",
-            booking_customers=booking_customer_options(runtime),
-            drivers=[UNASSIGNED_DRIVER] + registered_drivers(runtime),
-            po_options=operational_point_options(runtime),
-            trip_types=TRIP_TYPES,
-            status_options=STATUS_OPTIONS,
-            form={},
-            error="",
-            payable_notices=[],
-        ),
+        "master/reservations/form.html",
+        _reservation_form_context(request, admin, runtime, {}),
     )
 
 
@@ -100,20 +125,8 @@ async def create_submit(request: Request):
     if error:
         return templates.TemplateResponse(
             request,
-            "master/reservations/form_create.html",
-            template_context(
-                request,
-                admin=admin,
-                active_nav="reservas",
-                booking_customers=booking_customer_options(runtime),
-                drivers=[UNASSIGNED_DRIVER] + registered_drivers(runtime),
-                po_options=operational_point_options(runtime),
-                trip_types=TRIP_TYPES,
-                status_options=STATUS_OPTIONS,
-                form=form_data,
-                error=error,
-                payable_notices=[],
-            ),
+            "master/reservations/form.html",
+            _reservation_form_context(request, admin, runtime, form_data, error=error),
             status_code=400,
         )
     first = created[0] if created else None
@@ -159,16 +172,16 @@ async def edit_form(request: Request, numero: str):
     reservation = find_reservation(runtime, numero)
     if not reservation:
         return RedirectResponse("/reservas", status_code=303)
+    form_data = reservation_to_form_dict(runtime, reservation)
     return templates.TemplateResponse(
         request,
-        "master/reservations/form_edit.html",
-        template_context(
+        "master/reservations/form.html",
+        _reservation_form_context(
             request,
-            admin=admin,
-            active_nav="reservas",
-            reservation=reservation,
-            status_options=STATUS_OPTIONS,
-            error="",
+            admin,
+            runtime,
+            form_data,
+            edit_numero=reservation.get("numero", numero),
         ),
     )
 
@@ -184,15 +197,17 @@ async def edit_submit(request: Request, numero: str):
     ok, error = update_reservation(runtime, numero, form_data)
     reservation = find_reservation(runtime, numero)
     if not ok:
+        base = reservation_to_form_dict(runtime, reservation) if reservation else {}
+        merged = {**base, **form_data}
         return templates.TemplateResponse(
             request,
-            "master/reservations/form_edit.html",
-            template_context(
+            "master/reservations/form.html",
+            _reservation_form_context(
                 request,
-                admin=admin,
-                active_nav="reservas",
-                reservation=reservation or {"numero": numero},
-                status_options=STATUS_OPTIONS,
+                admin,
+                runtime,
+                merged,
+                edit_numero=(reservation or {}).get("numero", numero),
                 error=error,
             ),
             status_code=400,
