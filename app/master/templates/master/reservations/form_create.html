@@ -28,18 +28,21 @@
         <label><input type="radio" name="client_mode" value="novo" {% if form.client_mode != 'cadastrado' %}checked{% endif %}/> Novo cliente</label>
       </div>
       <div class="field field-full" id="client-selector">
-        <label>Cliente cadastrado</label>
+        <label>Cliente ou empresa cadastrada *</label>
         <select name="cliente_cadastrado">
           <option value="">— Selecione —</option>
-          {% for client in clients %}
-          <option value="{{ client.nome }}" {% if form.cliente_cadastrado == client.nome %}selected{% endif %}>{{ client.nome }}</option>
+          {% for item in booking_customers %}
+          <option value="{{ item.value }}" {% if form.cliente_cadastrado == item.value %}selected{% endif %}>{{ item.label }}</option>
           {% endfor %}
         </select>
+        <p class="hint">Empresas (menu Empresas) e clientes pessoa fisica (menu Clientes).</p>
       </div>
+      <div id="client-manual-fields" class="form-grid field-full" style="display:contents">
       <div class="field"><label>Nome completo *</label><input name="nome" value="{{ form.nome or '' }}"/></div>
       <div class="field"><label>CPF/CNPJ *</label><input name="documento" value="{{ form.documento or '' }}"/></div>
       <div class="field"><label>Email *</label><input name="email" type="email" value="{{ form.email or '' }}"/></div>
       <div class="field"><label>Telefone *</label><input name="telefone" value="{{ form.telefone or '' }}"/></div>
+      </div>
     </div>
   </div>
 
@@ -167,6 +170,16 @@
       <div class="field"><label>Valor base *</label><input name="valor_base" value="{{ form.valor_base or '' }}"/></div>
       <div class="field"><label>Desconto (%)</label><input name="desconto" value="{{ form.desconto or '0' }}"/></div>
       <div class="field"><label>Metodo de pagamento</label><input name="pagamento" value="{{ form.pagamento or '' }}"/></div>
+      <div class="field field-full">
+        <label>Faturado *</label>
+        <p class="hint">Indica se o servico sera cobrado em data posterior. Quando sim, entra em Financeiro &gt; Faturado e Contas a receber.</p>
+        <label><input type="radio" name="faturado" value="sim" {% if form.faturado == 'sim' or form.faturado == 'on' %}checked{% endif %}/> Sim — faturado</label>
+        <label><input type="radio" name="faturado" value="nao" {% if form.faturado not in ['sim','on'] %}checked{% endif %}/> Nao — nao faturado</label>
+      </div>
+      <div class="field field-full">
+        <label><input type="checkbox" name="esconder_valores" value="on" {% if form.esconder_valores %}checked{% endif %}/> Esconder valores</label>
+        <p class="hint">Oculta valores cobrados do cliente no PDF de confirmacao e valores de repasse na via do motorista.</p>
+      </div>
       <div class="field">
         <label>Status</label>
         <select name="status">
@@ -195,6 +208,7 @@
   const blocks = document.querySelectorAll('.trip-block');
   const clientModeRadios = document.querySelectorAll('input[name="client_mode"]');
   const clientSelector = document.getElementById('client-selector');
+  const clientManualFields = document.getElementById('client-manual-fields');
 
   function updateTripSections() {
     const v = tripType.value;
@@ -213,7 +227,11 @@
 
   function updateClientMode() {
     const mode = document.querySelector('input[name="client_mode"]:checked');
-    clientSelector.style.display = mode && mode.value === 'cadastrado' ? '' : 'none';
+    const isRegistered = mode && mode.value === 'cadastrado';
+    clientSelector.style.display = isRegistered ? '' : 'none';
+    if (clientManualFields) {
+      clientManualFields.style.display = isRegistered ? 'none' : 'contents';
+    }
   }
 
   tripType.addEventListener('change', updateTripSections);

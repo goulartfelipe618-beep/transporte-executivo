@@ -1,0 +1,40 @@
+{% extends "master/base.html" %}
+{% block title %}Cadastrar Cliente — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Cadastrar cliente</h2>
+    <p>Dados visiveis apenas para a sua conta. Documentos sao opcionais e ficam no seu espaco seguro.</p>
+  </div>
+  <a class="btn btn-secondary" href="/clientes">Cancelar</a>
+</div>
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+<form method="post" action="/clientes/novo">
+  <input type="hidden" name="tipo_pessoa" value="fisica"/>
+  <div class="form-section">
+    <h3>Tipo</h3>
+    <p class="hint">Somente pessoa fisica (PF). Empresas corporativas sao cadastradas em Empresas.</p>
+  </div>
+  <div class="form-section">
+    <h3>Dados pessoais</h3>
+    <div class="form-grid">
+      <div class="field field-full"><label>Nome completo *</label><input name="nome" placeholder="Nome e apelidos" value="{{ form.nome or '' }}"/></div>
+      <div class="field"><label>CPF (opcional)</label><input name="documento" placeholder="Opcional" value="{{ form.documento or '' }}"/></div>
+      <div class="field"><label>E-mail</label><input name="email" type="email" value="{{ form.email or '' }}"/></div>
+      <div class="field"><label>Telefone 1</label><input name="telefone" value="{{ form.telefone or '' }}"/></div>
+      <div class="field"><label>Telefone 2</label><input name="telefone_2" value="{{ form.telefone_2 or '' }}"/></div>
+      <div class="field"><label>Estado (UF)</label><input name="estado" value="{{ form.estado or '' }}"/></div>
+    </div>
+  </div>
+  <div class="form-section">
+    <h3>Enderecos</h3>
+    <p class="hint">Primeiro o tipo (ex.: casa, trabalho, escola), depois o endereco.</p>
+    <div class="form-grid">
+      <div class="field"><label>Tipo</label><input name="endereco_tipo" placeholder="casa..." value="{{ form.endereco_tipo or 'casa' }}"/></div>
+      <div class="field field-full"><label>Endereco</label><input name="endereco" placeholder="Rua, numero, cidade..." value="{{ form.endereco or '' }}"/></div>
+      <div class="field field-full"><label>Endereco adicional</label><input name="endereco_extra" placeholder="Linha extra (opcional)" value="{{ form.endereco_extra or '' }}"/></div>
+    </div>
+  </div>
+  <div class="form-actions"><button type="submit" class="btn btn-success">Cadastrar cliente</button></div>
+</form>
+{% endblock %}

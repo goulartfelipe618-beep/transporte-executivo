@@ -8,6 +8,7 @@ from fastapi.responses import RedirectResponse, Response
 
 from ...dependencies import get_runtime, resolve_admin_or_redirect, template_context, templates
 from ...services.address_po_service import operational_point_options
+from ...services.client_service import booking_customer_options
 from ...services.reservation_service import (
     UNASSIGNED_DRIVER,
     create_reservation,
@@ -16,7 +17,6 @@ from ...services.reservation_service import (
     find_reservation,
     generate_pdf_bytes,
     pdf_filename,
-    registered_clients,
     registered_drivers,
     update_reservation,
 )
@@ -76,7 +76,7 @@ async def create_form(request: Request):
             request,
             admin=admin,
             active_nav="reservas",
-            clients=registered_clients(runtime),
+            booking_customers=booking_customer_options(runtime),
             drivers=[UNASSIGNED_DRIVER] + registered_drivers(runtime),
             po_options=operational_point_options(runtime),
             trip_types=TRIP_TYPES,
@@ -105,7 +105,7 @@ async def create_submit(request: Request):
                 request,
                 admin=admin,
                 active_nav="reservas",
-                clients=registered_clients(runtime),
+                booking_customers=booking_customer_options(runtime),
                 drivers=[UNASSIGNED_DRIVER] + registered_drivers(runtime),
                 po_options=operational_point_options(runtime),
                 trip_types=TRIP_TYPES,

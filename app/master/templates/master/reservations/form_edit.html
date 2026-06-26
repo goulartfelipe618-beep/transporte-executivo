@@ -26,6 +26,20 @@
       <div class="field"><label>Data</label><input name="data" value="{{ reservation.data }}"/></div>
       <div class="field"><label>Motorista</label><input name="motorista" value="{{ reservation.motorista }}"/></div>
       <div class="field"><label>Valor</label><input name="valor" value="{{ reservation.valor }}"/></div>
+      <div class="field"><label>Valor base</label><input name="valor_base" value="{{ reservation.valor_base or '' }}"/></div>
+      <div class="field"><label>Desconto (%)</label><input name="desconto" value="{{ reservation.desconto or '0' }}"/></div>
+      <div class="field"><label>Metodo de pagamento</label><input name="pagamento" value="{{ reservation.pagamento or '' }}"/></div>
+      <div class="field"><label>Repasse motorista (R$)</label><input name="repasse" value="{{ reservation.repasse or '0,00' }}"/></div>
+      <div class="field field-full">
+        <label>Faturado *</label>
+        <p class="hint">Quando marcado como faturado, aparece em Financeiro &gt; Faturado e Contas a receber.</p>
+        <label><input type="radio" name="faturado" value="sim" {% if reservation.faturado %}checked{% endif %}/> Sim — faturado</label>
+        <label><input type="radio" name="faturado" value="nao" {% if not reservation.faturado %}checked{% endif %}/> Nao — nao faturado</label>
+      </div>
+      <div class="field field-full">
+        <label><input type="checkbox" name="esconder_valores" value="on" {% if reservation.esconder_valores %}checked{% endif %}/> Esconder valores</label>
+        <p class="hint">Oculta valores no PDF de confirmacao e na via/portal do motorista.</p>
+      </div>
       <div class="field">
         <label>Status</label>
         <select name="status">

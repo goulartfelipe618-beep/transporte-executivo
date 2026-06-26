@@ -167,6 +167,7 @@ def _build_context(reservation, app, via):
         "desconto": reservation.get("desconto", "0"),
         "repasse": reservation.get("repasse", ""),
         "conta_pagar": reservation.get("conta_pagar", ""),
+        "esconder_valores": _truthy(reservation.get("esconder_valores")),
         "observacoes": reservation.get("observacoes", "") or "Sem observacoes adicionais.",
         "criada_em": reservation.get("criado_em") or datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
     }
@@ -198,7 +199,7 @@ def _page_confirmation(ctx, styles, via):
     blocks.append(Spacer(1, 3 * mm))
     blocks.append(Paragraph(f'Horario Ida: {ctx["hora_ida"]}', styles["body"]))
 
-    if _show_price(via):
+    if _show_price(ctx, via):
         blocks.append(Spacer(1, 5 * mm))
         blocks.append(Paragraph("PRECO", styles["section"]))
         blocks.append(_price_table(ctx, via, styles))
@@ -206,7 +207,7 @@ def _page_confirmation(ctx, styles, via):
         blocks.append(Paragraph("INFORMACOES SOBRE PAGAMENTO", styles["section"]))
         blocks.append(Paragraph(f'Forma de pagamento: {str(ctx["pagamento"]).lower()}.', styles["body"]))
         blocks.append(Paragraph("O valor sera cobrado conforme acordo entre as partes.", styles["muted"]))
-    elif via == "motorista" and ctx["repasse"]:
+    elif via == "motorista" and ctx["repasse"] and not ctx["esconder_valores"]:
         blocks.append(Spacer(1, 5 * mm))
         blocks.append(Paragraph("REPASSE AO MOTORISTA", styles["section"]))
         blocks.append(Paragraph(f'<b>Valor de repasse:</b> {ctx["repasse"]}', styles["body"]))
@@ -231,14 +232,14 @@ def _page_details(ctx, styles, via):
         right.insert(0, ("Motorista", ctx["motorista"]))
     if via != "motorista":
         left.append(("Email", ctx["email"]))
-    if via == "loja":
+    if via == "loja" and not ctx["esconder_valores"]:
         left.extend([
             ("Valor base", ctx["valor_base"] or "—"),
             ("Desconto", f'{ctx["desconto"]}%' if ctx["desconto"] else "—"),
             ("Repasse", ctx["repasse"] or "—"),
             ("Conta a pagar", ctx["conta_pagar"] or "—"),
         ])
-    if via == "motorista" and ctx["repasse"]:
+    if via == "motorista" and ctx["repasse"] and not ctx["esconder_valores"]:
         right.append(("Repasse", ctx["repasse"]))
 
     rows = []
@@ -389,8 +390,12 @@ def _price_table(ctx, via, styles):
     return table
 
 
-def _show_price(via):
-    return via in {"cliente", "loja"}
+def _show_price(ctx, via):
+    return not ctx.get("esconder_valores") and via in {"cliente", "loja"}
+
+
+def _truthy(value):
+    return str(value or "").strip().lower() in {"1", "true", "yes", "sim", "on", "faturado"}
 
 
 def _reservation_number(reservation):

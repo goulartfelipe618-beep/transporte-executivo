@@ -1,0 +1,27 @@
+{% extends "master/base.html" %}
+{% block title %}{{ display_name }} — Clientes — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ display_name }}</h2>
+    <p>Cliente pessoa fisica · <code>{{ client.id }}</code></p>
+  </div>
+  <div>
+    <a class="btn btn-secondary" href="/clientes">Voltar</a>
+    <a class="btn btn-primary" href="/clientes/{{ client.id }}/editar">Editar</a>
+    <form method="post" action="/clientes/{{ client.id }}/excluir" style="display:inline" onsubmit="return confirm('Excluir cliente?')">
+      <button type="submit" class="btn btn-danger">Excluir</button>
+    </form>
+  </div>
+</div>
+<div class="card">
+  <div class="detail-grid">
+    <div><span class="muted">CPF</span><p>{{ document or '—' }}</p></div>
+    <div><span class="muted">E-mail</span><p>{{ client.email or '—' }}</p></div>
+    <div><span class="muted">Telefone</span><p>{{ client.telefone or '—' }}</p></div>
+    <div><span class="muted">Telefone 2</span><p>{{ client.telefone_2 or '—' }}</p></div>
+    <div><span class="muted">Estado</span><p>{{ client.estado or '—' }}</p></div>
+    <div class="field-full"><span class="muted">Endereco</span><p>{{ client.endereco or '—' }}{% if client.endereco_tipo %} ({{ client.endereco_tipo }}){% endif %}</p></div>
+  </div>
+</div>
+{% endblock %}

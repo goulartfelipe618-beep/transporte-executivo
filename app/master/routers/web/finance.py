@@ -19,6 +19,7 @@ def _base_context(request, admin, runtime, *, active_tab):
             "gross_revenue_display": money_display(ctx["summary"]["gross_revenue"]),
             "received_display": money_display(ctx["summary"]["received"]),
             "to_receive_display": money_display(ctx["summary"]["to_receive"]),
+            "billed_total_display": money_display(ctx["summary"]["billed_total"]),
             "to_pay_display": money_display(ctx["summary"]["to_pay"]),
             "net_result_display": money_display(ctx["summary"]["net_result"]),
             "total_repasse_display": money_display(ctx["summary"]["total_repasse"]),
@@ -66,6 +67,19 @@ async def finance_payables(request: Request):
         request,
         "master/financeiro/contas_a_pagar.html",
         _base_context(request, admin, runtime, active_tab="pagar"),
+    )
+
+
+@router.get("/faturado")
+async def finance_billed(request: Request):
+    admin, redirect = resolve_admin_or_redirect(request)
+    if redirect:
+        return redirect
+    runtime = get_runtime(request)
+    return templates.TemplateResponse(
+        request,
+        "master/financeiro/faturado.html",
+        _base_context(request, admin, runtime, active_tab="faturado"),
     )
 
 

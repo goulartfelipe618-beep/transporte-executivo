@@ -32,6 +32,8 @@
     <div class="detail-item"><div class="k">Status</div><div class="v">{{ reservation.status }}</div></div>
     <div class="detail-item"><div class="k">Pagamento</div><div class="v">{{ reservation.pagamento or '—' }}</div></div>
     <div class="detail-item"><div class="k">Repasse</div><div class="v">{{ reservation.repasse or '—' }}</div></div>
+    <div class="detail-item"><div class="k">Faturado</div><div class="v">{% if reservation.faturado %}Sim — Financeiro / Faturado{% else %}Nao{% endif %}</div></div>
+    <div class="detail-item"><div class="k">Esconder valores</div><div class="v">{% if reservation.esconder_valores %}Sim{% else %}Nao{% endif %}</div></div>
     {% if reservation.passageiros %}
     <div class="detail-item"><div class="k">Passageiros</div><div class="v">{{ reservation.passageiros }}</div></div>
     {% endif %}
@@ -57,7 +59,7 @@
       </a>
       {% endfor %}
     </div>
-    <p class="hint" style="margin-top:10px">Cliente: oculta repasse · Motorista: oculta valor cobrado · Loja: documento completo.</p>
+    <p class="hint" style="margin-top:10px">Cliente: oculta repasse · Motorista: oculta valor cobrado · Loja: documento completo. Se "Esconder valores" estiver ativo, nenhum valor monetario aparece nas vias publicas/motorista.</p>
   </div>
 </div>
 

@@ -31,6 +31,7 @@ NAV_TITLES = {
     "agenda": "Agenda",
     "reservas": "Reservas",
     "empresas": "Empresas",
+    "clientes": "Clientes",
     "motoristas": "Motoristas",
     "veiculos": "Veiculos",
     "abrangencia": "Abrangencia Operacional",

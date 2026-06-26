@@ -1,0 +1,32 @@
+{% extends "master/base.html" %}
+{% block title %}Editar Cliente — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h2>Editar cliente</h2><p>{{ display_name|default(client.nome or client.nome_completo) }} · <code>{{ client.id }}</code></p></div>
+  <a class="btn btn-secondary" href="/clientes/{{ client.id }}">Cancelar</a>
+</div>
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+<form method="post" action="/clientes/{{ client.id }}/editar">
+  <input type="hidden" name="tipo_pessoa" value="fisica"/>
+  <div class="form-section">
+    <h3>Dados pessoais</h3>
+    <div class="form-grid">
+      <div class="field field-full"><label>Nome completo *</label><input name="nome" value="{{ client.nome or client.nome_completo or '' }}"/></div>
+      <div class="field"><label>CPF (opcional)</label><input name="documento" value="{{ client.documento or client.cpf or '' }}"/></div>
+      <div class="field"><label>E-mail</label><input name="email" type="email" value="{{ client.email or '' }}"/></div>
+      <div class="field"><label>Telefone 1</label><input name="telefone" value="{{ client.telefone or '' }}"/></div>
+      <div class="field"><label>Telefone 2</label><input name="telefone_2" value="{{ client.telefone_2 or '' }}"/></div>
+      <div class="field"><label>Estado (UF)</label><input name="estado" value="{{ client.estado or '' }}"/></div>
+    </div>
+  </div>
+  <div class="form-section">
+    <h3>Enderecos</h3>
+    <div class="form-grid">
+      <div class="field"><label>Tipo</label><input name="endereco_tipo" value="{{ client.endereco_tipo or 'casa' }}"/></div>
+      <div class="field field-full"><label>Endereco</label><input name="endereco" value="{{ client.endereco or '' }}"/></div>
+      <div class="field field-full"><label>Endereco adicional</label><input name="endereco_extra" value=""/></div>
+    </div>
+  </div>
+  <div class="form-actions"><button type="submit" class="btn btn-success">Salvar</button></div>
+</form>
+{% endblock %}

@@ -35,6 +35,7 @@
           <div class="nav-submenu">
             <a href="/financeiro" class="nav-link nav-sub{% if active_nav == 'financeiro' and active_finance_tab|default('dashboard') == 'dashboard' %} active{% endif %}">DASHBOARD</a>
             <a href="/financeiro/lancamentos" class="nav-link nav-sub{% if active_finance_tab|default('') == 'lancamentos' %} active{% endif %}">LANCAMENTOS</a>
+            <a href="/financeiro/faturado" class="nav-link nav-sub{% if active_finance_tab|default('') == 'faturado' %} active{% endif %}">FATURADO</a>
             <a href="/financeiro/contas-a-pagar" class="nav-link nav-sub{% if active_finance_tab|default('') == 'pagar' %} active{% endif %}">CONTAS A PAGAR</a>
             <a href="/financeiro/contas-a-receber" class="nav-link nav-sub{% if active_finance_tab|default('') == 'receber' %} active{% endif %}">CONTAS A RECEBER</a>
             <a href="/financeiro/relatorios" class="nav-link nav-sub{% if active_finance_tab|default('') == 'relatorios' %} active{% endif %}">RELATORIOS</a>
@@ -53,6 +54,7 @@
 
         <a href="/motoristas" class="nav-link{% if active_nav == 'motoristas' %} active{% endif %}"><span class="nav-icon">◉</span><span>MOTORISTAS</span></a>
         <a href="/empresas" class="nav-link{% if active_nav == 'empresas' %} active{% endif %}"><span class="nav-icon">▣</span><span>EMPRESAS</span></a>
+        <a href="/clientes" class="nav-link{% if active_nav == 'clientes' %} active{% endif %}"><span class="nav-icon">◯</span><span>CLIENTES</span></a>
         <a href="/veiculos" class="nav-link{% if active_nav == 'veiculos' %} active{% endif %}"><span class="nav-icon">◈</span><span>VEICULOS</span></a>
 
         <div class="nav-section{% if nav_open.rede %} open{% endif %}" data-nav-group="rede">

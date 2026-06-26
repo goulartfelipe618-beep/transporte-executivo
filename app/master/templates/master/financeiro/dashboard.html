@@ -15,8 +15,9 @@
 </nav>
 <div class="cards-grid">
   <div class="metric-card"><span>Receita prevista</span><strong>{{ gross_revenue_display }}</strong><small>reservas nao canceladas</small></div>
-  <div class="metric-card"><span>Recebido</span><strong>{{ received_display }}</strong><small>reservas concluidas</small></div>
-  <div class="metric-card"><span>A receber</span><strong>{{ to_receive_display }}</strong><small>pendente/confirmado</small></div>
+  <div class="metric-card"><span>Recebido</span><strong>{{ received_display }}</strong><small>concluidas sem faturamento posterior</small></div>
+  <div class="metric-card"><span>Faturado</span><strong>{{ billed_total_display }}</strong><small>cobranca posterior</small></div>
+  <div class="metric-card"><span>A receber</span><strong>{{ to_receive_display }}</strong><small>inclui faturado</small></div>
   <div class="metric-card"><span>A pagar</span><strong>{{ to_pay_display }}</strong><small>repasses motoristas</small></div>
   <div class="metric-card"><span>Resultado</span><strong style="color:{% if net_positive %}#16a34a{% else %}#dc2626{% endif %}">{{ net_result_display }}</strong><small>receita - repasses</small></div>
 </div>

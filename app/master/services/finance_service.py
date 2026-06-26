@@ -8,40 +8,60 @@ def count_by_status(reservations, status):
     return sum(1 for item in reservations if item.get("status") == status)
 
 
+def is_truthy(value):
+    return str(value or "").strip().lower() in {"1", "true", "yes", "sim", "on", "faturado"}
+
+
 def build_finance_summary(reservations):
     reservations = list(reservations or [])
     active = [item for item in reservations if item.get("status") != "Cancelada"]
     entries = []
     payables = []
     receivables = []
+    billed = []
 
     for reservation in active:
         value = parse_money_value(reservation.get("valor"))
         repasse = parse_money_value(reservation.get("repasse"))
         status = reservation.get("status") or "Pendente"
-        received = status == "Concluida"
+        faturado = is_truthy(reservation.get("faturado"))
+        received = status == "Concluida" and not faturado
         number = reservation.get("numero", "")
         date_label = reservation.get("data") or "-"
+        client = reservation.get("cliente", "")
+        route = reservation.get("trajeto", "")
 
         entries.append(
             {
                 "date": date_label,
                 "type": "Entrada",
-                "description": f"Receita transfer {number} - {reservation.get('cliente', '')}",
-                "category": "Receita de transfer",
+                "description": f"Receita transfer {number} - {client}",
+                "category": "Faturado" if faturado else "Receita de transfer",
                 "value": value,
-                "status": "Recebido" if received else "Previsto",
+                "status": "Recebido" if received else ("Faturado" if faturado else "Previsto"),
             }
         )
-        if not received:
+        if faturado:
+            billed.append(
+                {
+                    "date": date_label,
+                    "client": client,
+                    "number": number,
+                    "route": route,
+                    "value": value,
+                    "status": status,
+                    "billing_status": "A cobrar",
+                }
+            )
+        if faturado or not received:
             receivables.append(
                 {
                     "date": date_label,
-                    "client": reservation.get("cliente", ""),
+                    "client": client,
                     "number": number,
-                    "route": reservation.get("trajeto", ""),
+                    "route": route,
                     "value": value,
-                    "status": status,
+                    "status": "Faturado" if faturado else status,
                 }
             )
         if repasse > 0:
@@ -72,10 +92,15 @@ def build_finance_summary(reservations):
             )
 
     gross_revenue = sum(parse_money_value(item.get("valor")) for item in active)
-    received_total = sum(parse_money_value(item.get("valor")) for item in active if item.get("status") == "Concluida")
+    received_total = sum(
+        parse_money_value(item.get("valor"))
+        for item in active
+        if item.get("status") == "Concluida" and not is_truthy(item.get("faturado"))
+    )
     total_repasse = sum(parse_money_value(item.get("repasse")) for item in active)
     to_pay = sum(item["value"] for item in payables if item["status"] == "A pagar")
     to_receive = sum(item["value"] for item in receivables)
+    billed_total = sum(item["value"] for item in billed)
     net_result = gross_revenue - total_repasse
     count = len(active)
 
@@ -84,6 +109,7 @@ def build_finance_summary(reservations):
         "gross_revenue": gross_revenue,
         "received": received_total,
         "to_receive": to_receive,
+        "billed_total": billed_total,
         "to_pay": to_pay,
         "total_repasse": total_repasse,
         "net_result": net_result,
@@ -92,6 +118,7 @@ def build_finance_summary(reservations):
         "entries": entries,
         "payables": payables,
         "receivables": receivables,
+        "billed": billed,
         "status_counts": {
             "Pendentes": count_by_status(active, "Pendente"),
             "Confirmadas": count_by_status(active, "Confirmada"),
@@ -114,6 +141,7 @@ def finance_flow_bars(summary):
     items = [
         ("Receita prevista", summary["gross_revenue"], "primary"),
         ("Recebido", summary["received"], "success"),
+        ("Faturado", summary["billed_total"], "warning"),
         ("A receber", summary["to_receive"], "warning"),
         ("A pagar", summary["to_pay"], "danger"),
         ("Resultado", summary["net_result"], "accent"),
@@ -143,7 +171,7 @@ def finance_health_items(summary):
         {"label": "Lancamentos", "value": str(len(summary["entries"])), "tone": "warning"},
         {
             "label": "Pendencias",
-            "value": str(len(summary["payables"]) + len(summary["receivables"])),
+            "value": str(len(summary["payables"]) + len(summary["receivables"]) + len(summary["billed"])),
             "tone": "danger",
         },
     ]
@@ -180,6 +208,7 @@ FINANCE_CHECKLIST = [
 FINANCE_NAV = [
     {"key": "dashboard", "label": "Dashboard", "href": "/financeiro"},
     {"key": "lancamentos", "label": "Lancamentos", "href": "/financeiro/lancamentos"},
+    {"key": "faturado", "label": "Faturado", "href": "/financeiro/faturado"},
     {"key": "pagar", "label": "Contas a pagar", "href": "/financeiro/contas-a-pagar"},
     {"key": "receber", "label": "Contas a receber", "href": "/financeiro/contas-a-receber"},
     {"key": "relatorios", "label": "Relatorios", "href": "/financeiro/relatorios"},

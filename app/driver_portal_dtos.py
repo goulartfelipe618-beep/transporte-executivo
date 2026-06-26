@@ -64,6 +64,7 @@ def find_company_name(app, reservation):
 
 def reservation_dto(app, reservation):
     origem, destino = parse_trajeto(reservation.get("trajeto"))
+    esconder_valores = str(reservation.get("esconder_valores") or "").strip().lower() in {"1", "true", "yes", "sim", "on"}
     return {
         "numero": reservation.get("numero"),
         "cliente": reservation.get("cliente"),
@@ -77,6 +78,7 @@ def reservation_dto(app, reservation):
         "observacoes": reservation.get("observacoes", ""),
         "tipo": reservation.get("tipo", ""),
         "driver_id": reservation.get("driver_id"),
+        "valores_ocultos": esconder_valores,
         "maps_url": maps_route_url(origem, destino if destino else None),
     }
 

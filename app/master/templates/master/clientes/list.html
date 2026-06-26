@@ -1,0 +1,44 @@
+{% extends "master/base.html" %}
+{% block title %}Clientes — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Clientes</h2>
+    <p>{{ summary.total }} cadastrados · pessoa fisica (PF)</p>
+  </div>
+  <div>
+    <a class="btn btn-secondary" href="/clientes">Atualizar</a>
+    <a class="btn btn-success" href="/clientes/novo">+ Cadastrar cliente</a>
+  </div>
+</div>
+<form class="filters" method="get" action="/clientes">
+  <div style="flex:1"><label>Buscar</label><input name="q" placeholder="Nome, CPF, telefone, e-mail ou ID..." value="{{ search }}"/></div>
+  <div style="align-self:end"><button type="submit" class="btn btn-primary">Filtrar</button></div>
+</form>
+<div class="card">
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Nome</th><th>CPF</th><th>ID</th><th>Contato</th><th>Acoes</th></tr></thead>
+      <tbody>
+        {% for item in clients %}
+        <tr>
+          <td>{{ item.nome or item.nome_completo }}</td>
+          <td>{{ item.documento or item.cpf or '—' }}</td>
+          <td><code>{{ item.id }}</code></td>
+          <td>{{ item.email or '—' }}<br/><span class="muted">{{ item.telefone or '' }}</span></td>
+          <td>
+            <div class="actions">
+              <a class="btn btn-secondary btn-sm" href="/clientes/{{ item.id }}">Detalhes</a>
+              <a class="btn btn-secondary btn-sm" href="/clientes/{{ item.id }}/editar">Editar</a>
+              <form method="post" action="/clientes/{{ item.id }}/excluir" onsubmit="return confirm('Excluir cliente?')"><button type="submit" class="btn btn-danger btn-sm">Excluir</button></form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted" style="text-align:center;padding:28px">Nenhum cliente pessoa fisica cadastrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

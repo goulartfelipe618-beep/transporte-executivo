@@ -38,6 +38,10 @@ EDIT_FIELDS = [
     "data",
     "motorista",
     "valor",
+    "valor_base",
+    "desconto",
+    "pagamento",
+    "repasse",
     "status",
 ]
 
@@ -97,6 +101,18 @@ def apply_finance_fields(payload, motorista):
         payload["conta_pagar"] = ""
         payload["conta_pagar_descricao"] = ""
     return payload
+
+
+def _truthy(value) -> bool:
+    return str(value or "").strip().lower() in {"1", "true", "yes", "sim", "on", "faturado"}
+
+
+def _billing_flags(form_data) -> dict:
+    faturado_raw = form_data.get("faturado", "")
+    return {
+        "faturado": _truthy(faturado_raw),
+        "esconder_valores": _truthy(form_data.get("esconder_valores", "")),
+    }
 
 
 def find_client(clients, name):
@@ -204,14 +220,17 @@ def _reservation_location_meta(values, embarque_key, desembarque_key=None):
     return meta
 
 
-def _validate_create_payload(values):
-    required = {
-        "nome": "Nome Completo",
-        "documento": "CPF/CNPJ",
-        "email": "Email",
-        "telefone": "Telefone",
-        "valor_base": "Valor Base",
-    }
+def _validate_create_payload(values, *, client_mode="novo"):
+    required = {"valor_base": "Valor Base"}
+    if str(client_mode or "novo").strip().lower() != "cadastrado":
+        required.update(
+            {
+                "nome": "Nome Completo",
+                "documento": "CPF/CNPJ",
+                "email": "Email",
+                "telefone": "Telefone",
+            }
+        )
     trip_type = values.get("tipo", "Somente Ida")
     if trip_type == "Por Hora":
         required.update(
@@ -248,17 +267,21 @@ def _validate_create_payload(values):
         if not str(values.get(key, "") or "").strip():
             return False, f"Informe: {label}."
 
-    ok, msg = validate_email_value(values.get("email"), label="Email")
-    if not ok:
-        return False, msg
+    if str(client_mode or "novo").strip().lower() == "cadastrado":
+        if not str(values.get("nome", "") or "").strip():
+            return False, "Selecione um cliente ou empresa cadastrada."
+    else:
+        ok, msg = validate_email_value(values.get("email"), label="Email")
+        if not ok:
+            return False, msg
 
-    documento = re.sub(r"\D", "", str(values.get("documento", "")))
-    if len(documento) not in {11, 14}:
-        return False, "Informe um CPF (11 digitos) ou CNPJ (14 digitos) valido."
+        documento = re.sub(r"\D", "", str(values.get("documento", "")))
+        if len(documento) not in {11, 14}:
+            return False, "Informe um CPF (11 digitos) ou CNPJ (14 digitos) valido."
 
-    telefone = re.sub(r"\D", "", str(values.get("telefone", "")))
-    if len(telefone) < 10:
-        return False, "Informe um telefone completo no formato (XX) X XXXX-XXXX."
+        telefone = re.sub(r"\D", "", str(values.get("telefone", "")))
+        if len(telefone) < 10:
+            return False, "Informe um telefone completo no formato (XX) X XXXX-XXXX."
 
     if trip_type == "Por Hora":
         ok, msg = validate_future_datetime(values.get("hora_data"), values.get("hora_horario"), label="Data/hora do servico")
@@ -286,16 +309,19 @@ def create_reservation(app, form_data):
 
     client_mode = str(form_data.get("client_mode", "novo") or "novo").strip().lower()
     if client_mode == "cadastrado":
-        clients = registered_clients(app)
-        selected = str(form_data.get("cliente_cadastrado", "") or "").strip()
-        client = find_client(clients, selected)
-        if client:
-            values["nome"] = client["nome"]
-            values["telefone"] = client["telefone"]
-            values["email"] = client["email"]
-            values["documento"] = client["documento"]
+        from .client_service import resolve_booking_customer
 
-    ok, error = _validate_create_payload(values)
+        selected = str(form_data.get("cliente_cadastrado", "") or "").strip()
+        customer = resolve_booking_customer(app, selected)
+        if customer:
+            values["nome"] = customer["nome"]
+            values["telefone"] = customer["telefone"]
+            values["email"] = customer["email"]
+            values["documento"] = customer["documento"]
+            values["cliente_cadastro_id"] = customer.get("id", "")
+            values["cliente_cadastro_tipo"] = customer.get("kind", "")
+
+    ok, error = _validate_create_payload(values, client_mode=client_mode)
     if not ok:
         return None, error, []
 
@@ -317,6 +343,7 @@ def create_reservation(app, form_data):
         "documento": values["documento"],
         "pagamento": values.get("pagamento", ""),
         "repasse": values.get("repasse", "0,00"),
+        **_billing_flags(form_data),
     }
 
     created = []
@@ -431,6 +458,9 @@ def update_reservation(app, numero, form_data):
         return False, msg
 
     reservation.update(values)
+    reservation.update(_billing_flags(form_data))
+    motorista = reservation.get("motorista") or "-"
+    apply_finance_fields(reservation, motorista)
     app.save_state()
     return True, ""
 
