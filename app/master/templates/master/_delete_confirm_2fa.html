@@ -4,7 +4,7 @@
 <div class="page-header">
   <div>
     <h2>{{ entity_title }}</h2>
-    <p><strong>{{ entity_name }}</strong> · <code>{{ entity_id }}</code></p>
+    <p><strong>{{ entity_name }}</strong>{% if entity_id and entity_id != entity_name %} · <code>{{ entity_id }}</code>{% endif %}</p>
   </div>
   <a class="btn btn-secondary" href="{{ cancel_url }}">Cancelar</a>
 </div>
@@ -29,8 +29,13 @@
       <input name="totp_code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required autocomplete="one-time-code"/>
     </div>
     <div class="field" style="margin-top:12px">
-      <label>Digite o identificador para confirmar</label>
-      <input name="confirm_id" placeholder="{{ entity_id }}" required/>
+      <label>{{ confirm_id_label or 'Confirme digitando o valor abaixo' }}</label>
+      {% if confirm_id_hint %}
+      <p class="hint">{{ confirm_id_hint }}</p>
+      {% else %}
+      <p class="hint">Copie e cole exatamente o valor indicado no topo desta pagina.</p>
+      {% endif %}
+      <input name="confirm_id" placeholder="{{ entity_id }}" required autocomplete="off"/>
     </div>
     <div class="form-actions">
       <button type="submit" class="btn btn-danger" onclick="return confirm('Confirma a exclusao permanente?')">Excluir permanentemente</button>

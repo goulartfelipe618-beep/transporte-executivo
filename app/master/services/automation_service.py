@@ -12,6 +12,7 @@ from app.automations import (
     normalize_domain,
     save_automations,
 )
+from app.portal_urls import website_public_base
 
 
 def _rows(runtime):
@@ -27,6 +28,7 @@ def automation_display(item):
         "url": automation_url(item.get("token", "")),
         "status_label": "Ativo" if item.get("ativo") else "Desativado",
         "domain_label": item.get("dominio_permitido") or "Bloqueado ate configurar",
+        "suggested_domain": website_public_base(),
         "tests_count": len(item.get("tests") or []),
     }
 

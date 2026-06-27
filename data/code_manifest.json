@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-27T18:33:25.150899",
+  "saved_at": "2026-06-27T19:53:09.024095",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "b6cc6dba6f92c51fc8cbd9e642590aa107dd09d3974d783b1aa5deb5df48907e",
@@ -9,7 +9,7 @@
       "sha256": "d2490f9693e9b0843f56c56e385713e248bf63b386ffc0fabeda95834fb70fe8"
     },
     ".env.sistema.example": {
-      "sha256": "744c84e4cfbb673e9214dd990757832b1671e7451b3aabf91ab83d97342d43ab"
+      "sha256": "c54b01207cc8ae5bdd8f1ebdaa141cd6ceda84c599b35be965b5a388f25bcba1"
     },
     "DEPLOY_EASYPANEL.md": {
       "sha256": "17a88d15ad8508e4b422bd770f5dc800628a514df70f85b8e155844609b11b54"
@@ -18,7 +18,7 @@
       "sha256": "c7bcd3babf67699275c8b5b23cd9628cb99ac57a766e9a3166e7a0109ef5d867"
     },
     "Dockerfile.sistema": {
-      "sha256": "de769be3d43af70e4a0ac1e68d1da8ca567a67d169506da66433f637c2f66e5f"
+      "sha256": "e0e856777fd8d81f4dcb786ce891ab750f2a3bd82f1b7ddf094b503fccbb74ac"
     },
     "INICIAR_VPS.bat": {
       "sha256": "8ee4622b90f2ebb28b52e824a951a25c7688456548711be377cc41f7ce041a1a"
@@ -32,7 +32,7 @@
       "marker": "require_admin_login"
     },
     "app/automations.py": {
-      "sha256": "3cc938078efd5ae16158679f68a35e59428df55463d42a7cb06a8ce5236b5444",
+      "sha256": "9e717e5663c0165cd7272d585dc92bef05b9c544ff66bbd412fd7554e6636584",
       "marker": "AUTOMACAO SOLICITACAO PARA SER MOTORISTA"
     },
     "app/bind_host.py": {
@@ -121,7 +121,7 @@
       "marker": "start_driver_portal_server"
     },
     "app/portal_urls.py": {
-      "sha256": "29a21e37767ffb20de9d2bcc15a72df0e351f10379a319807538dddf9e41ca49",
+      "sha256": "881c8194b84ae2c74b9f2d955fa2caf36e83f9e1fe50d0481b981de056f5a8e5",
       "marker": "company_portal_link"
     },
     "app/pricing_engine.py": {
@@ -196,7 +196,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "e9a4cd6be804f169a0029cbe35f1e5581e0acefe40d50caeb5ad356287cabf07",
+      "sha256": "0b5e66b9200b8836bdeb0a77ba8396d00a5ccf60721a7add7ae6c184fb7ddc1a",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {

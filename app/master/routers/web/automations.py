@@ -160,17 +160,19 @@ async def delete_form(request: Request, token: str):
     if not item:
         return RedirectResponse("/automacoes", status_code=303)
     name = str(item.get("nome") or "Webhook")
-    entity_id = str(item.get("token") or token)
+    confirm_text = name
     return delete_confirm_response(
         request,
         admin,
         active_nav="automacoes",
         entity_title="Excluir webhook",
         entity_name=name,
-        entity_id=entity_id,
+        entity_id=confirm_text,
         cancel_url=f"/automacoes/{token}",
         post_url=f"/automacoes/{token}/excluir",
         warning_message="Esta acao e irreversivel. O webhook e historico de testes serao removidos permanentemente.",
+        confirm_id_label="Nome do webhook",
+        confirm_id_hint=f'Digite exatamente o nome: {confirm_text}',
     )
 
 
@@ -186,8 +188,8 @@ async def delete_item(request: Request, token: str):
 
     form_data = _form_dict(await request.form())
     name = str(item.get("nome") or "Webhook")
-    entity_id = str(item.get("token") or token)
-    ok, err = verify_delete_confirmation(form_data, entity_id)
+    confirm_text = name
+    ok, err = verify_delete_confirmation(form_data, confirm_text)
     if not ok:
         return delete_confirm_response(
             request,
@@ -195,10 +197,12 @@ async def delete_item(request: Request, token: str):
             active_nav="automacoes",
             entity_title="Excluir webhook",
             entity_name=name,
-            entity_id=entity_id,
+            entity_id=confirm_text,
             cancel_url=f"/automacoes/{token}",
             post_url=f"/automacoes/{token}/excluir",
             warning_message="Esta acao e irreversivel. O webhook e historico de testes serao removidos permanentemente.",
+            confirm_id_label="Nome do webhook",
+            confirm_id_hint=f'Digite exatamente o nome: {confirm_text}',
             error=err,
             status_code=400,
         )

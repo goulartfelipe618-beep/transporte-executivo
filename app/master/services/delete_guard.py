@@ -19,6 +19,8 @@ def delete_confirm_response(
     warning_message: str,
     error: str = "",
     status_code: int = 200,
+    confirm_id_label: str = "",
+    confirm_id_hint: str = "",
     **extra_context,
 ):
     ctx = template_context(
@@ -33,6 +35,8 @@ def delete_confirm_response(
         warning_message=warning_message,
         totp_enabled=is_totp_enabled(),
         error=error,
+        confirm_id_label=confirm_id_label,
+        confirm_id_hint=confirm_id_hint,
         **extra_context,
     )
     return templates.TemplateResponse(
@@ -46,8 +50,9 @@ def delete_confirm_response(
 def verify_delete_confirmation(form_data, expected_id: str) -> tuple[bool, str]:
     confirm_id = str(form_data.get("confirm_id", "")).strip()
     totp_code = str(form_data.get("totp_code", "")).strip()
-    if confirm_id != str(expected_id):
-        return False, "Identificador nao confere. Digite exatamente o valor indicado para confirmar."
+    expected = str(expected_id).strip()
+    if confirm_id != expected:
+        return False, f"Confirmacao incorreta. Digite exatamente: {expected}"
     ok, err = verify_action_totp(totp_code)
     if not ok:
         return False, err

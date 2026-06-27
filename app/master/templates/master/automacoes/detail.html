@@ -28,6 +28,7 @@
 
 <div class="form-section">
   <h3>Webhook URL</h3>
+  <p class="muted">Use esta URL publica no site ou integracao. Em producao aponta para <strong>api.transporteexecutivo.com</strong>.</p>
   <div style="display:flex;gap:8px;align-items:center">
     <input id="webhook-url" readonly value="{{ automation.url }}" style="flex:1"/>
     <button type="button" class="btn btn-primary btn-sm" onclick="copyWebhookUrl()">Copiar URL</button>
@@ -36,11 +37,11 @@
 
 <div class="form-section">
   <h3>Dominio permitido</h3>
-  <p class="muted">Defina o unico dominio autorizado para enviar POST para este webhook.</p>
+  <p class="muted">Defina o unico dominio autorizado para enviar POST para este webhook (origem do site, ex.: {{ automation.suggested_domain }}).</p>
   <form method="post" action="/automacoes/{{ automation.token }}/dominio">
     <div class="field field-full">
-      <label>Dominio (ex: https://seudominio.com)</label>
-      <input name="dominio_permitido" value="{{ automation.dominio_permitido or '' }}" placeholder="https://seudominio.com"/>
+      <label>Dominio (ex: {{ automation.suggested_domain }})</label>
+      <input name="dominio_permitido" value="{{ automation.dominio_permitido or automation.suggested_domain }}" placeholder="{{ automation.suggested_domain }}"/>
     </div>
     <div class="form-actions">
       <button type="submit" class="btn btn-success">Salvar dominio</button>

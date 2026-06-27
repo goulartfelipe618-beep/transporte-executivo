@@ -54,7 +54,7 @@ def _verify_sistema_bundle():
     receptions_router = app_dir / "master" / "routers" / "web" / "receptions.py"
     reception_service = app_dir / "master" / "services" / "reception_service.py"
     if not receptions_router.is_file() or not reception_service.is_file():
-        print("[Nexus] ERRO: modulo Receptivos ausente — rebuild com commit 92955ed+ (Dockerfile.sistema).")
+        print("[Nexus] ERRO: modulo Receptivos ausente — rebuild com commit 51f698b+ (Dockerfile.sistema).")
         sys.exit(1)
     build = _read_app_build()
     commit = os.environ.get("NEXUS_GIT_COMMIT", "").strip()

@@ -461,6 +461,14 @@ def _build_handler(app):
                         payload.setdefault("persist_warning", "supabase_save_deferred")
                 return self._send_json(code, payload, cacheable=False)
 
+            if path.startswith("/webhook/") and path.count("/") >= 2:
+                from .automations import process_automation_webhook
+
+                token = path.rstrip("/").split("/")[-1]
+                raw_bytes = raw.encode("utf-8") if isinstance(raw, str) else (raw or b"{}")
+                code, payload = process_automation_webhook(app, token, self.headers, raw_bytes)
+                return self._send_json(code, payload, cacheable=False)
+
             if not _verify_secret(self.headers):
                 return self._send_json(401, {"ok": False, "error": "unauthorized"}, cacheable=False)
 

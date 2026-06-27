@@ -15,6 +15,14 @@ def _env(name, default):
     return os.environ.get(name, "").strip() or default
 
 
+DEFAULT_WEBSITE_BASE = "https://transporteexecutivo.com"
+
+
+def website_public_base():
+    """Dominio publico do site (origem permitida nos webhooks de automacao)."""
+    return _env("WEBSITE_PUBLIC_BASE_URL", DEFAULT_WEBSITE_BASE).rstrip("/")
+
+
 def api_base_url():
     return _env("INTEGRACAO_API_BASE_URL", _env("GATEWAY_API_BASE_URL", DEFAULT_API_BASE)).rstrip("/")
 

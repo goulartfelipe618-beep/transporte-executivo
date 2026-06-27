@@ -1,8 +1,8 @@
 FROM python:3.12-slim
 
-# deploy-bump: 2026-06-27-receptivos-deploy3 — forcar rebuild EasyPanel (nao e restart)
+# deploy-bump: 2026-06-27-automacoes-webhook1 — URL publica webhook + 2FA nome
 ARG NEXUS_GIT_COMMIT=dev
-ARG NEXUS_CACHE_BUST=2026.06.27-receptivos-deploy3
+ARG NEXUS_CACHE_BUST=2026.06.27-automacoes-webhook1
 
 WORKDIR /app
 

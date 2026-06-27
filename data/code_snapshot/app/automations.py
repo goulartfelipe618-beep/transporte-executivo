@@ -31,7 +31,51 @@ def _lazy_ui():
 
 
 def automation_url(token):
+    """URL publica exibida no painel (api.* em producao; localhost no desktop)."""
+    import os
+
+    from .portal_urls import api_base_url
+
+    token = str(token or "").strip()
+    if not token:
+        return ""
+    override = os.environ.get("AUTOMATION_WEBHOOK_BASE_URL", "").strip().rstrip("/")
+    if override:
+        return f"{override}/{token}"
+    if os.environ.get("APP_ENV", "").strip().lower() == "production":
+        return f"{api_base_url()}/webhook/{token}"
     return f"http://127.0.0.1:{AUTOMATION_PORT}/webhook/{token}"
+
+
+def process_automation_webhook(app, token, headers, raw_body: bytes):
+    """Processa POST de automacao — usado na porta 8771 e no gateway /webhook/{token}."""
+    ensure_automations_loaded(app)
+    item = next((a for a in app.automations if a.get("token") == token), None)
+    if not item:
+        return 404, {"ok": False, "error": "webhook_nao_encontrado"}
+    if not item.get("ativo"):
+        return 403, {"ok": False, "error": "webhook_desativado"}
+
+    allowed = normalize_domain(item.get("dominio_permitido"))
+    origin = _request_origin(headers or {})
+    if not allowed:
+        return 403, {"ok": False, "error": "dominio_nao_configurado"}
+    if origin != allowed:
+        return 403, {
+            "ok": False,
+            "error": "dominio_bloqueado",
+            "allowed_domain": allowed,
+        }
+
+    test = {
+        "received_at": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+        "origin": origin,
+        "body_preview": raw_body[:500].decode("utf-8", errors="replace"),
+    }
+    item.setdefault("tests", []).insert(0, test)
+    item["tests"] = item["tests"][:20]
+    save_automations(app)
+    return 200, {"ok": True, "tipo": item.get("tipo")}
 
 
 def normalize_domain(domain):
@@ -179,38 +223,10 @@ def start_automation_webhook_server(app):
 
         def do_POST(self):
             token = urlparse(self.path).path.rstrip("/").split("/")[-1]
-            ensure_automations_loaded(app)
-            item = next((a for a in app.automations if a.get("token") == token), None)
-            if not item:
-                return self._json(404, {"ok": False, "error": "webhook_nao_encontrado"})
-            if not item.get("ativo"):
-                return self._json(403, {"ok": False, "error": "webhook_desativado"})
-
-            allowed = normalize_domain(item.get("dominio_permitido"))
-            origin = _request_origin(self.headers)
-            if not allowed:
-                return self._json(403, {"ok": False, "error": "dominio_nao_configurado"})
-            if origin != allowed:
-                return self._json(
-                    403,
-                    {
-                        "ok": False,
-                        "error": "dominio_bloqueado",
-                        "allowed_domain": allowed,
-                    },
-                )
-
             length = int(self.headers.get("Content-Length", 0))
             raw_body = self.rfile.read(length) if length else b"{}"
-            test = {
-                "received_at": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                "origin": origin,
-                "body_preview": raw_body[:500].decode("utf-8", errors="replace"),
-            }
-            item.setdefault("tests", []).insert(0, test)
-            item["tests"] = item["tests"][:20]
-            save_automations(app)
-            return self._json(200, {"ok": True, "tipo": item.get("tipo")})
+            code, payload = process_automation_webhook(app, token, self.headers, raw_body)
+            return self._json(code, payload)
 
     from .bind_host import bind_host
 
