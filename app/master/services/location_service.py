@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from app import ibge
 from app.company_model import is_corporate_client
-from app.coverage_map import geocode_address
+from app.geocoding import geocode_address
 
 
 def states_options():
