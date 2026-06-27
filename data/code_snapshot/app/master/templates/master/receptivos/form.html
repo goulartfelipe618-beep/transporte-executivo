@@ -1,0 +1,109 @@
+{% extends "master/base.html" %}
+{% block title %}Novo Receptivo — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Novo receptivo</h2>
+    <p>Gere uma plaquinha em PDF A4 paisagem para recepcao de passageiros.</p>
+  </div>
+  <a class="btn btn-secondary" href="/receptivos">Cancelar</a>
+</div>
+
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+
+<form method="post" action="/receptivos/novo">
+  <div class="form-section">
+    <h3>Dados da plaquinha</h3>
+    <div class="form-grid">
+      <div class="field">
+        <label>Modelo do receptivo *</label>
+        <select name="model_id" required>
+          {% for model in models %}
+          <option value="{{ model.id }}" {% if (form.model_id or models[0].id) == model.id %}selected{% endif %}>{{ model.name }}</option>
+          {% endfor %}
+        </select>
+        <p class="hint">Ha mais de quatro modelos disponiveis para alternar a identidade visual da impressao.</p>
+      </div>
+
+      <div class="field">
+        <label>Reserva Transfer *</label>
+        <select name="reservation_numero" id="reception-reservation" required>
+          <option value="">Selecione uma reserva</option>
+          {% for reservation in reservations %}
+          <option
+            value="{{ reservation.numero }}"
+            data-cliente="{{ reservation.cliente }}"
+            data-embarque="{{ reservation.embarque }}"
+            data-desembarque="{{ reservation.desembarque }}"
+            data-tipo="{{ reservation.tipo }}"
+            data-data="{{ reservation.data }}"
+            {% if form.reservation_numero == reservation.numero %}selected{% endif %}
+          >{{ reservation.label }}</option>
+          {% endfor %}
+        </select>
+        <p class="hint">Obrigatorio: a plaquinha sempre fica vinculada a uma reserva existente.</p>
+      </div>
+
+      <div class="field">
+        <label>Nome do cliente *</label>
+        <input name="client_name" id="reception-client-name" value="{{ form.client_name or '' }}" required placeholder="Nome que aparecera em destaque"/>
+        <p class="hint">Ao selecionar a reserva, o nome do cliente e preenchido automaticamente e pode ser ajustado.</p>
+      </div>
+
+      <div class="field">
+        <label>Detalhes da reserva no PDF</label>
+        <select name="include_details">
+          <option value="1" {% if form.include_details != '0' %}selected{% endif %}>Sim, incluir reserva, embarque, desembarque e data</option>
+          <option value="0" {% if form.include_details == '0' %}selected{% endif %}>Nao, gerar somente nome e identidade visual</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>Enderecos da reserva</h3>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="k">Tipo</div><div class="v" id="reception-preview-tipo">—</div></div>
+      <div class="detail-item"><div class="k">Data/hora</div><div class="v" id="reception-preview-data">—</div></div>
+      <div class="detail-item"><div class="k">Embarque</div><div class="v" id="reception-preview-embarque">—</div></div>
+      <div class="detail-item"><div class="k">Desembarque</div><div class="v" id="reception-preview-desembarque">—</div></div>
+    </div>
+    <p class="hint" style="margin-top:10px">Os enderecos sao lidos da reserva e nao sao editados manualmente nesta tela.</p>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-success">Gerar PDF e salvar</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+(function () {
+  var select = document.getElementById("reception-reservation");
+  var nameInput = document.getElementById("reception-client-name");
+  if (!select) return;
+
+  function text(id, value) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = value || "—";
+  }
+
+  function updatePreview(fillName) {
+    var option = select.options[select.selectedIndex];
+    if (!option) return;
+    text("reception-preview-tipo", option.dataset.tipo);
+    text("reception-preview-data", option.dataset.data);
+    text("reception-preview-embarque", option.dataset.embarque);
+    text("reception-preview-desembarque", option.dataset.desembarque);
+    if (fillName && nameInput && !nameInput.value.trim()) {
+      nameInput.value = option.dataset.cliente || "";
+    }
+  }
+
+  select.addEventListener("change", function () { updatePreview(true); });
+  updatePreview(true);
+})();
+</script>
+{% endblock %}

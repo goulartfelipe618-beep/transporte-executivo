@@ -31,6 +31,7 @@ NAV_TITLES = {
     "metricas": "Metricas",
     "agenda": "Agenda",
     "reservas": "Reservas",
+    "receptivos": "Receptivos",
     "empresas": "Empresas",
     "clientes": "Clientes",
     "motoristas": "Motoristas",
@@ -60,7 +61,7 @@ def template_context(request: Request, admin=None, **extra):
     active_nav = extra.get("active_nav", "")
     nav_open = {
         "financeiro": active_nav == "financeiro" or bool(extra.get("active_finance_tab")),
-        "transfer": active_nav in {"solicitacoes", "reservas", "geolocalizador"},
+        "transfer": active_nav in {"solicitacoes", "reservas", "receptivos", "geolocalizador"},
         "rede": active_nav == "rede" or bool(extra.get("rede_tab")),
         "sistema": active_nav in {"configuracoes", "automacoes", "leads_empresas", "leads_motoristas"},
     }

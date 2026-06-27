@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-27T16:47:29.752308",
+  "saved_at": "2026-06-27T18:13:47.132538",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "b6cc6dba6f92c51fc8cbd9e642590aa107dd09d3974d783b1aa5deb5df48907e",
@@ -40,7 +40,7 @@
       "marker": "bind_host"
     },
     "app/code_guard.py": {
-      "sha256": "deaafda66003ba991736d24d5dcd7aebcb06a331544ebc23b2601cad9ce75f67",
+      "sha256": "05e0a2f4617ab4c0ab8bba21d7c91d882b04163e5e8498a56c6b9f0474b6ec42",
       "marker": "ensure_code_integrity"
     },
     "app/company_portal.py": {
@@ -63,6 +63,9 @@
       "sha256": "f6a55c8e7f0dae380bda1a27e0f30dfddaffe5e20888be704305d368a6052ff9",
       "marker": "render_settings"
     },
+    "app/geocoding.py": {
+      "sha256": "19913ae043dcfd8b9af1442d93a245219a48278fbf8013fb6665810782586145"
+    },
     "app/geography.py": {
       "sha256": "d4d15b2b519fba320433c500c57a4fc91442a36e7b2c3a22e8c440f45e962ae9",
       "marker": "operational_points"
@@ -74,6 +77,18 @@
     "app/main_window.py": {
       "sha256": "56b3b04836a3c83a89b3040c002e4c4c8bc9f7be5b30cfac3007197d89ea2691",
       "marker": "APP_BUILD"
+    },
+    "app/master/routers/web/receptions.py": {
+      "sha256": "86fe58248f372990a11dcfb39356abf3fadfd32e2fdbf691861e4f1b78480215"
+    },
+    "app/master/services/reception_service.py": {
+      "sha256": "4312832821394bb020d5f7e11412013aff9439ee310fe3ed57a31017818e0d18"
+    },
+    "app/master/templates/master/receptivos/form.html": {
+      "sha256": "eda80231b47dfc80bfd68fd19ad998abd437a688b61bd86fde33007c7da42544"
+    },
+    "app/master/templates/master/receptivos/list.html": {
+      "sha256": "70eb03e1ada78c32a0d11909960f7fc1415ab71ca346c4a29c7615349eb455f5"
     },
     "app/middleware/trusted_host.py": {
       "sha256": "9e86cb67d2bc60ffd8596c5c68d04dda3b35bbe892dd2e1c52c2b571cb349d79"
@@ -181,7 +196,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "08b60b11bd1e813e62be1c1fcec62d89e7c996e5dc209acdfa6d2098b9ee7849",
+      "sha256": "8b00689adb4fd6e2bdf89065a466710ed4a8ecaa0723b8a6e9675c38b00734e8",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {

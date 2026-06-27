@@ -1,1 +1,1 @@
-APP_BUILD = "2026.06.27-headless-geocode1"
+APP_BUILD = "2026.06.27-receptivos1"
