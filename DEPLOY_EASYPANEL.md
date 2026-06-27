@@ -74,7 +74,7 @@ Copiar base: `.env.motor.example`
 
 ## Implantar Sistema (EasyPanel)
 
-1. Repositório branch `main`, commit ≥ `055a36e`, build ≥ `2026.09.09`
+1. Repositório branch `main`, commit ≥ `7926ffd`, build ≥ `2026.06.27-rastreio-deploy1`
 2. **Dockerfile:** `Dockerfile.sistema` (não usar `Dockerfile` padrão)
 3. **Build args (opcional):** `NEXUS_GIT_COMMIT=<sha>`
 4. Mapear domínios → portas conforme tabela acima
@@ -88,7 +88,7 @@ Copiar base: `.env.motor.example`
 ```bash
 # Build e health Sistema
 curl -s https://sistema.transporteexecutivo.com/api/deploy-info
-# build >= 2026.09.09, mode: web, vnc_removed: true
+# build >= 2026.06.27-rastreio-deploy1, mode: web, vnc_removed: true
 
 curl -s https://api.transporteexecutivo.com/api/v1/public/statistics
 curl -s https://engine.transporteexecutivo.com/health
