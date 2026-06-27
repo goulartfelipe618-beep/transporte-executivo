@@ -74,12 +74,22 @@ Copiar base: `.env.motor.example`
 
 ## Implantar Sistema (EasyPanel)
 
-1. Repositório branch `main`, commit ≥ `7926ffd`, build ≥ `2026.06.27-rastreio-deploy1`
+1. Repositório branch `main`, commit ≥ `92955ed`, build ≥ `2026.06.27-receptivos-deploy2`
 2. **Dockerfile:** `Dockerfile.sistema` (não usar `Dockerfile` padrão)
-3. **Build args (opcional):** `NEXUS_GIT_COMMIT=<sha>`
+3. **Build args (opcional):** `NEXUS_GIT_COMMIT=<sha>`, `NEXUS_CACHE_BUST=2026.06.27-receptivos-deploy2`
 4. Mapear domínios → portas conforme tabela acima
-5. **Implantar / Rebuild** (force new container)
-6. Cloudflare: **Purge cache** nos 5 domínios
+5. **Implantar / Rebuild** com **Rebuild without cache** (não basta Restart)
+6. Apague **Comando** e **Argumentos** customizados no serviço (deve usar ENTRYPOINT do Dockerfile)
+7. Cloudflare: **Purge cache** nos 5 domínios
+
+### Build antigo no painel (ex.: `headless-geocode1`)
+
+Se `https://sistema.transporteexecutivo.com/api/deploy-info` mostrar build antigo e `git_commit: "dev"`:
+
+- O container **não rebuildou** com o código novo (cache Docker ou só restart)
+- Logs do **WordPress** (`wp-admin`, `elementor`) **não são** do Sistema Master — use os logs do app **sistema** no EasyPanel
+- Confirme repositório `goulartfelipe618-beep/transporte-executivo`, branch `main`
+- Force rebuild; após subir, `deploy-info` deve ter `receptivos_module: true` e build `2026.06.27-receptivos-deploy2`
 
 ---
 
@@ -88,7 +98,7 @@ Copiar base: `.env.motor.example`
 ```bash
 # Build e health Sistema
 curl -s https://sistema.transporteexecutivo.com/api/deploy-info
-# build >= 2026.06.27-rastreio-deploy1, mode: web, vnc_removed: true
+# build >= 2026.06.27-receptivos-deploy2, mode: web, receptivos_module: true
 
 curl -s https://api.transporteexecutivo.com/api/v1/public/statistics
 curl -s https://engine.transporteexecutivo.com/health

@@ -26,6 +26,11 @@ def _deploy_payload():
         git_commit = ""
     form_unified = Path("/app/app/master/templates/master/reservations/form.html").is_file()
     form_legacy = Path("/app/app/master/templates/master/reservations/form_edit.html").is_file()
+    receptivos = Path("/app/app/master/routers/web/receptions.py").is_file()
+    try:
+        cache_bust = Path("/app/.nexus_cache_bust").read_text(encoding="utf-8").strip()
+    except OSError:
+        cache_bust = ""
     return {
         "ok": True,
         "service": "master-web",
@@ -33,12 +38,15 @@ def _deploy_payload():
         "build": APP_BUILD,
         "git_commit": git_commit,
         "stamp": stamp,
+        "cache_bust": cache_bust,
         "vnc_removed": True,
         "login_url": "/login",
         "title": settings.app_title,
         "css_inline": True,
         "reservation_form_unified": form_unified and not form_legacy,
+        "receptivos_module": receptivos,
         "expected_build": APP_BUILD,
+        "required_commit_min": "92955ed",
     }
 
 

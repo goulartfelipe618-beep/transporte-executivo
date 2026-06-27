@@ -51,6 +51,11 @@ def _verify_sistema_bundle():
     if "reservation_to_form_dict" not in router_src:
         print("[Nexus] ERRO: reservations.py sem reservation_to_form_dict — codigo desatualizado.")
         sys.exit(1)
+    receptions_router = app_dir / "master" / "routers" / "web" / "receptions.py"
+    reception_service = app_dir / "master" / "services" / "reception_service.py"
+    if not receptions_router.is_file() or not reception_service.is_file():
+        print("[Nexus] ERRO: modulo Receptivos ausente — rebuild com commit 92955ed+ (Dockerfile.sistema).")
+        sys.exit(1)
     build = _read_app_build()
     commit = os.environ.get("NEXUS_GIT_COMMIT", "").strip()
     stamp = f"{build}" + (f" ({commit[:7]})" if commit else "")

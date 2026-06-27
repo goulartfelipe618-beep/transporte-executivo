@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-27T18:13:47.132538",
+  "saved_at": "2026-06-27T18:25:03.389946",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "b6cc6dba6f92c51fc8cbd9e642590aa107dd09d3974d783b1aa5deb5df48907e",
@@ -12,13 +12,13 @@
       "sha256": "744c84e4cfbb673e9214dd990757832b1671e7451b3aabf91ab83d97342d43ab"
     },
     "DEPLOY_EASYPANEL.md": {
-      "sha256": "0116b921edb0213666ba86fa0713434ef5147e2937157b84c67f300026bf059c"
+      "sha256": "17a88d15ad8508e4b422bd770f5dc800628a514df70f85b8e155844609b11b54"
     },
     "Dockerfile": {
       "sha256": "c7bcd3babf67699275c8b5b23cd9628cb99ac57a766e9a3166e7a0109ef5d867"
     },
     "Dockerfile.sistema": {
-      "sha256": "4dd015f143a99d7b411abfc46dad666a7df21b9502267e6fbc03163b0f748c95"
+      "sha256": "4b4021e976434acb69e33d0d2a77ad3ed3565211445b6c29680431f834a1aa73"
     },
     "INICIAR_VPS.bat": {
       "sha256": "8ee4622b90f2ebb28b52e824a951a25c7688456548711be377cc41f7ce041a1a"
@@ -196,7 +196,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "8b00689adb4fd6e2bdf89065a466710ed4a8ecaa0723b8a6e9675c38b00734e8",
+      "sha256": "b27b87647de6b396f429c91b9f944523f5684a3952801bb3110a1bd9c322e8d5",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {
@@ -213,7 +213,7 @@
       "sha256": "c3db47675bb28c276fa26c9ed52b2dedf59318c324766333bd4972fb5ed108a1"
     },
     "scripts/docker_entrypoint.py": {
-      "sha256": "79ab10915c84224a5cecb4902b0e2282c96f582cb859e8d37930519dcf323317"
+      "sha256": "71980876bf05d92563b99aa568993d7df9b05cda00e681e23876949a77f93240"
     },
     "scripts/run_production_server.py": {
       "sha256": "48af6afe18622daec695a87456f24fc90f47e945f78e02e2510ef384a6124c19"
