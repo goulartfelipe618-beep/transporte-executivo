@@ -7,7 +7,7 @@ from pathlib import Path
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from app.version import APP_BUILD
+from app.version import APP_BUILD, APP_BUILD_REQUIRED
 
 from ...config import get_settings
 
@@ -31,11 +31,14 @@ def _deploy_payload():
         cache_bust = Path("/app/.nexus_cache_bust").read_text(encoding="utf-8").strip()
     except OSError:
         cache_bust = ""
+    stale = (APP_BUILD != APP_BUILD_REQUIRED) or (not receptivos)
     return {
-        "ok": True,
+        "ok": not stale,
+        "deploy_status": "STALE" if stale else "CURRENT",
         "service": "master-web",
         "mode": "web",
         "build": APP_BUILD,
+        "build_required": APP_BUILD_REQUIRED,
         "git_commit": git_commit,
         "stamp": stamp,
         "cache_bust": cache_bust,
@@ -45,8 +48,13 @@ def _deploy_payload():
         "css_inline": True,
         "reservation_form_unified": form_unified and not form_legacy,
         "receptivos_module": receptivos,
-        "expected_build": APP_BUILD,
-        "required_commit_min": "92955ed",
+        "expected_build": APP_BUILD_REQUIRED,
+        "required_commit_min": "51f698b",
+        "fix_if_stale": (
+            "EasyPanel: app sistema → Source branch main → Dockerfile.sistema → "
+            "Rebuild SEM cache (nao basta Restart). Build log deve mostrar "
+            "'OK: modulo Receptivos' e APP_BUILD receptivos-deploy3."
+        ),
     }
 
 
@@ -67,11 +75,14 @@ async def health():
 
 @router.get("/api/deploy-info")
 async def deploy_info():
-    body = json.dumps(_deploy_payload(), ensure_ascii=False).encode("utf-8")
+    payload = _deploy_payload()
     return JSONResponse(
-        content=json.loads(body),
+        content=payload,
         headers={
             "X-Nexus-Deploy": f"web-{APP_BUILD}",
+            "X-Nexus-Deploy-Status": payload.get("deploy_status", "UNKNOWN"),
+            "Cache-Control": "no-store, no-cache, must-revalidate",
+            "Pragma": "no-cache",
             "Content-Type": "application/json; charset=utf-8",
         },
     )
