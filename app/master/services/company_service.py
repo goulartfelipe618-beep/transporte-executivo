@@ -8,9 +8,32 @@ from app.company_model import (
     ensure_company_portal_structure,
     is_corporate_client,
 )
-from app.portal_urls import company_portal_base, company_portal_link
+from app.portal_urls import company_portal_base, company_portal_first_access_link, company_portal_link
+
+from app.company_portal_access import (
+    first_access_pending,
+    generate_first_access_token,
+    mask_first_access_token,
+)
 
 from .company_user_service import portal_last_access, provision_auto_admin
+from .location_service import apply_location_payload
+
+COMPANY_PORTAL_LOCKED_KEYS = (
+    "id",
+    "uuid",
+    "portal_key",
+    "portal_codigo",
+    "portal_link",
+    "portal_criado_em",
+    "portal_first_access_token",
+    "portal_first_access_consumed_em",
+    "portal_ativo",
+    "usuarios",
+    "centros_custo",
+    "passageiros",
+    "portal_activity",
+)
 
 DONE_STATUSES = {"concluida", "concluído", "concluido", "finalizada"}
 CANCEL_STATUSES = {"cancelada", "cancelado", "rejeitada"}
@@ -89,8 +112,6 @@ def _build_company_payload(form_data, *, existing=None):
         "telefone",
         "telefone_2",
         "responsavel",
-        "estado",
-        "cidade",
         "status_empresa",
     ]
     for key in fields:
@@ -101,11 +122,9 @@ def _build_company_payload(form_data, *, existing=None):
     portal_ativo = form_data.get("portal_ativo")
     if portal_ativo is not None:
         payload["portal_ativo"] = portal_ativo in {"1", "true", "on", True, "Ativo", "ativo"}
-    enderecos = _collect_addresses(form_data)
-    if enderecos:
-        payload["endereco"] = enderecos[0]["endereco"]
-        payload["endereco_tipo"] = enderecos[0]["tipo"]
-        payload["enderecos"] = enderecos
+    apply_location_payload(payload, form_data, existing=existing)
+    payload["endereco_tipo"] = str(form_data.get("endereco_tipo", existing.get("endereco_tipo", "comercial"))).strip() or "comercial"
+    payload["enderecos"] = _collect_addresses(payload)
     if payload.get("status_empresa") not in COMPANY_STATUSES:
         payload["status_empresa"] = existing.get("status_empresa") or "Ativa"
     return payload
@@ -115,6 +134,8 @@ def create_company(app, form_data):
     clients = getattr(app, "clients", []) or []
     payload = _build_company_payload(form_data)
     payload = ensure_company_portal_structure(payload, company_portal_base(), clients)
+    if not str(payload.get("portal_first_access_token", "")).strip():
+        payload["portal_first_access_token"] = generate_first_access_token()
     clients.append(payload)
     app.clients = clients
     admin_user, temp_password = provision_auto_admin(app, payload)
@@ -127,13 +148,94 @@ def update_company(app, company_id, form_data):
     company = find_company_by_id(app, company_id)
     if not company:
         raise ValueError("empresa_nao_encontrada")
-    payload = _build_company_payload(form_data, existing=company)
-    payload = ensure_company_portal_structure(payload, company_portal_base(), getattr(app, "clients", []) or [])
-    company.update(payload)
-    admin_user, temp_password = provision_auto_admin(app, company)
+    locked = {key: company.get(key) for key in COMPANY_PORTAL_LOCKED_KEYS if key in company}
+    patch = _build_company_payload(form_data, existing=company)
+    for key in COMPANY_PORTAL_LOCKED_KEYS:
+        patch.pop(key, None)
+    company.update(patch)
+    company.update(locked)
+    if company.get("portal_codigo"):
+        company["portal_link"] = company_portal_link(company)
     if hasattr(app, "save_state"):
         app.save_state()
-    return company, admin_user, temp_password
+    return company, None, ""
+
+
+def _company_matches_record(company, record):
+    company_id = str(company.get("id", ""))
+    company_name = company_display_name(company)
+    if str(record.get("company_id", "")) == company_id:
+        return True
+    if company_name and str(record.get("cliente", "")).strip() == company_name:
+        return True
+    if company_name and str(record.get("empresa", "")).strip() == company_name:
+        return True
+    return False
+
+
+def _purge_company_supabase(company):
+    from app.repository import supabase_client as db
+
+    if not db.is_configured():
+        return
+    company_uuid = str(company.get("uuid") or "")
+    legacy_id = str(company.get("id") or "")
+    if company_uuid:
+        db.delete_rows("company_users", {"company_id": company_uuid})
+        for table in ("reservations", "transport_requests", "audit_log"):
+            try:
+                db.delete_rows(table, {"company_id": company_uuid})
+            except Exception:
+                pass
+        db.delete_rows("companies", {"id": company_uuid})
+    elif legacy_id:
+        try:
+            db.delete_rows("companies", {"legacy_admin_id": legacy_id})
+        except Exception:
+            pass
+
+
+def delete_company(app, company_id):
+    from app.company_model import company_key
+    from app.portal_auth import USER_TYPE_COMPANY
+
+    company = find_company_by_id(app, company_id)
+    if not company:
+        raise ValueError("empresa_nao_encontrada")
+
+    company_id = str(company.get("id", ""))
+    slug = company_key(company)
+    user_ids = {str(u.get("id", "")) for u in company.get("usuarios") or []}
+
+    app.clients = [c for c in getattr(app, "clients", []) or [] if str(c.get("id", "")) != company_id]
+    app.reservations = [r for r in getattr(app, "reservations", []) or [] if not _company_matches_record(company, r)]
+    app.transport_requests = [
+        t for t in getattr(app, "transport_requests", []) or [] if not _company_matches_record(company, t)
+    ]
+    app.portal_sessions = [
+        s
+        for s in getattr(app, "portal_sessions", []) or []
+        if not (
+            s.get("user_type") == USER_TYPE_COMPANY
+            and (
+                str(s.get("tenant_id", "")) == company_id
+                or str(s.get("slug", "")) == slug
+                or str(s.get("user_id", "")) in user_ids
+            )
+        )
+    ]
+    app.event_log = [
+        e
+        for e in getattr(app, "event_log", []) or []
+        if str(e.get("referencia_id", "")) != company_id
+        and company_id not in str(e.get("payload", {}))
+    ]
+
+    _purge_company_supabase(company)
+
+    if hasattr(app, "save_state"):
+        app.save_state()
+    return True
 
 
 def block_company(app, company_id):
@@ -154,13 +256,23 @@ def get_portal_link(company):
 def portal_info(company):
     from app.company_model import company_key
 
+    token = str(company.get("portal_first_access_token", "")).strip()
+    consumed = bool(company.get("portal_first_access_consumed_em"))
+    pending = first_access_pending(company)
+    base_link = get_portal_link(company)
     return {
         "portal_ativo": bool(company.get("portal_ativo", True)),
         "portal_key": company_key(company),
         "portal_codigo": str(company.get("portal_codigo", "")),
-        "portal_link": get_portal_link(company),
+        "portal_link": company_portal_first_access_link(company, token) if pending else base_link,
+        "portal_link_permanent": base_link,
         "portal_criado_em": company.get("portal_criado_em", ""),
         "status_empresa": company.get("status_empresa", "Ativa"),
+        "first_access_token": token,
+        "first_access_token_masked": mask_first_access_token(token),
+        "first_access_consumed": consumed,
+        "first_access_consumed_em": company.get("portal_first_access_consumed_em", ""),
+        "first_access_pending": pending,
     }
 
 

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="nexus-service" content="master-web"/>
+  <title>Verificacao 2FA — {{ brand_name }}</title>
+  <link rel="icon" type="image/png" href="{{ static_url('master/images/favicon.png') }}" sizes="32x32"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>{{ master_css()|safe }}</style>
+</head>
+<body class="login-page">
+  <div class="login-backdrop" style="background-image:url('{{ static_url("master/images/login/login-background.jpg") }}')"></div>
+  <div class="login-overlay" aria-hidden="true"></div>
+
+  <main class="login-stage">
+    <div class="login-panel">
+      <h1 class="login-panel-title">Verificacao 2FA</h1>
+      <p class="login-panel-brand">{{ brand_name }}</p>
+      <p class="muted" style="margin:0 0 16px;font-size:.9rem">Informe o codigo de 6 digitos do autenticador para acessar o sistema.</p>
+
+      {% if error %}<div class="login-alert">{{ error }}</div>{% endif %}
+
+      <form method="post" action="/login/2fa" class="login-form">
+        <div class="login-field">
+          <label for="totp_code">Codigo 2FA</label>
+          <input id="totp_code" name="totp_code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="one-time-code" placeholder="000000"/>
+        </div>
+        <button type="submit" class="login-submit">Entrar no sistema</button>
+      </form>
+
+      <form method="post" action="/logout" style="margin-top:12px;text-align:center">
+        <button type="submit" class="btn btn-secondary btn-sm" style="width:100%">Sair</button>
+      </form>
+    </div>
+
+    <p class="login-foot">© 2026 {{ brand_name }} · Build {{ app_build }}</p>
+  </main>
+</body>
+</html>

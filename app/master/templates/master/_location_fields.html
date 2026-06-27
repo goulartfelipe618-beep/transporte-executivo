@@ -1,0 +1,41 @@
+{% set loc = location_value %}
+<div class="field">
+  <label>Estado (IBGE) *</label>
+  <select name="estado_uf" data-geo-state required>
+    <option value="">Selecione o Estado</option>
+    {% for state in location_states %}
+    <option value="{{ state.sigla }}" {% if (loc.estado_uf or loc.estado or '') == state.sigla %}selected{% endif %}>{{ state.nome }} ({{ state.sigla }})</option>
+    {% endfor %}
+  </select>
+</div>
+<div class="field">
+  <label>Cidade (IBGE) *</label>
+  <select name="cidade_ibge_id" data-geo-city required {% if not (loc.estado_uf or loc.estado) %}disabled{% endif %}>
+    <option value="">Selecione a Cidade</option>
+    {% for city in location_cities %}
+    <option value="{{ city.id }}" data-name="{{ city.nome }}" {% if (loc.cidade_ibge_id|string) == (city.id|string) %}selected{% endif %}>{{ city.nome }}</option>
+    {% endfor %}
+  </select>
+  <input type="hidden" name="cidade_nome" data-geo-city-name value="{{ loc.cidade_nome or loc.cidade or '' }}"/>
+</div>
+<div class="field">
+  <label>Bairro/Regiao (IBGE) *</label>
+  <select name="bairro" data-geo-district required {% if not loc.cidade_ibge_id %}disabled{% endif %}>
+    <option value="">Selecione o Bairro/Regiao</option>
+    {% for district in location_districts %}
+    <option value="{{ district.nome }}" {% if (loc.bairro or '') == district.nome %}selected{% endif %}>{{ district.nome }}</option>
+    {% endfor %}
+  </select>
+</div>
+<div class="field">
+  <label>Rua *</label>
+  <input name="logradouro" required placeholder="Digite manualmente a rua" value="{{ loc.logradouro or '' }}"/>
+</div>
+<div class="field">
+  <label>Numero *</label>
+  <input name="numero" required placeholder="Numero" value="{{ loc.numero or '' }}"/>
+</div>
+<div class="field">
+  <label>Complemento</label>
+  <input name="complemento" placeholder="Opcional" value="{{ loc.complemento or '' }}"/>
+</div>

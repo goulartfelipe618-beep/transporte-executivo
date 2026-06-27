@@ -5,11 +5,13 @@ from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 
 from ...dependencies import get_runtime, resolve_admin_or_redirect, template_context, templates
+from ...services.delete_guard import delete_confirm_response, verify_delete_confirmation
 from ...services.driver_portal_service import driver_reservations, portal_info, refresh_activation_token
 from ...services.driver_service import (
     activate_driver,
     block_driver,
     create_driver,
+    delete_driver,
     driver_display_name,
     driver_stats,
     find_driver_by_id_local,
@@ -193,6 +195,71 @@ async def edit_submit(request: Request, driver_id: str):
             status_code=400,
         )
     return RedirectResponse(f"/motoristas/{driver.get('id')}?success=Motorista+atualizado", status_code=303)
+
+
+@router.get("/{driver_id}/excluir")
+async def delete_form(request: Request, driver_id: str):
+    admin, redirect = resolve_admin_or_redirect(request)
+    if redirect:
+        return redirect
+    runtime = get_runtime(request)
+    driver = find_driver_by_id_local(runtime, driver_id)
+    if not driver:
+        return RedirectResponse("/motoristas", status_code=303)
+    name = driver_display_name(driver)
+    entity_id = str(driver.get("id", ""))
+    return delete_confirm_response(
+        request,
+        admin,
+        active_nav="motoristas",
+        entity_title="Excluir motorista",
+        entity_name=name,
+        entity_id=entity_id,
+        cancel_url=f"/motoristas/{driver_id}",
+        post_url=f"/motoristas/{driver_id}/excluir",
+        warning_message=(
+            "Esta acao e irreversivel. O cadastro, portal, sessoes e vinculos do motorista serao removidos. "
+            "Reservas existentes permanecem, mas ficam sem motorista atribuido."
+        ),
+    )
+
+
+@router.post("/{driver_id}/excluir")
+async def delete_submit(request: Request, driver_id: str):
+    admin, redirect = resolve_admin_or_redirect(request)
+    if redirect:
+        return redirect
+    runtime = get_runtime(request)
+    driver = find_driver_by_id_local(runtime, driver_id)
+    if not driver:
+        return RedirectResponse("/motoristas", status_code=303)
+
+    form_data = _form_dict(await request.form())
+    name = driver_display_name(driver)
+    entity_id = str(driver.get("id", ""))
+    ok, err = verify_delete_confirmation(form_data, entity_id)
+    if not ok:
+        return delete_confirm_response(
+            request,
+            admin,
+            active_nav="motoristas",
+            entity_title="Excluir motorista",
+            entity_name=name,
+            entity_id=entity_id,
+            cancel_url=f"/motoristas/{driver_id}",
+            post_url=f"/motoristas/{driver_id}/excluir",
+            warning_message=(
+                "Esta acao e irreversivel. O cadastro, portal, sessoes e vinculos do motorista serao removidos. "
+                "Reservas existentes permanecem, mas ficam sem motorista atribuido."
+            ),
+            error=err,
+            status_code=400,
+        )
+    try:
+        delete_driver(runtime, driver_id)
+    except ValueError:
+        pass
+    return RedirectResponse("/motoristas?success=Motorista+excluido", status_code=303)
 
 
 @router.post("/{driver_id}/bloquear")

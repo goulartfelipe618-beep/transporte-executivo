@@ -30,7 +30,7 @@
             <td>{{ row.route or '—' }}</td>
             <td>{{ money_display(row.value) }}</td>
             <td>{{ row.status }}</td>
-            <td>{% if numero_slug %}<a class="btn btn-secondary btn-sm" href="/reservas/{{ numero_slug }}">Reserva</a>{% endif %}</td>
+            <td>{% if numero_slug %}<a class="btn btn-secondary btn-sm" href="/reservas/{{ numero_slug }}/editar">Editar</a> <a class="btn btn-secondary btn-sm" href="/reservas/{{ numero_slug }}">Ver</a>{% endif %}</td>
           </tr>
           {% else %}
           <tr><td colspan="7" class="muted" style="text-align:center;padding:28px">Nenhuma conta a receber pendente.</td></tr>

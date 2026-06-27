@@ -4,6 +4,7 @@ from __future__ import annotations
 import re
 
 from .input import is_valid_email
+from ..services.location_service import validate_location_fields
 
 COMPANY_ERROR_MESSAGES = {
     "email_obrigatorio": "Informe o e-mail do usuario.",
@@ -28,6 +29,7 @@ def validate_company_form(data, *, is_create=False):
     email = str(data.get("email", "")).strip()
     if email and not is_valid_email(email):
         errors.append("E-mail corporativo invalido.")
+    errors.extend(validate_location_fields(data))
     return errors
 
 

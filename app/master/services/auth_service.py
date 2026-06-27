@@ -18,6 +18,9 @@ from ..repositories.session_repository import (
 )
 
 
+TOTP_SESSION_KEY = "totp_verified"
+
+
 def login_admin(email, password):
     return authenticate_admin(email, password)
 
@@ -43,6 +46,28 @@ def create_web_session(request, admin: dict) -> str:
     return session_id
 
 
+def is_totp_session_verified(request) -> bool:
+    return bool(request.session.get(TOTP_SESSION_KEY))
+
+
+def mark_totp_session_verified(request) -> None:
+    request.session[TOTP_SESSION_KEY] = True
+
+
+def clear_totp_session_verified(request) -> None:
+    request.session.pop(TOTP_SESSION_KEY, None)
+
+
+def post_login_redirect(request) -> str:
+    from app.totp_auth import is_totp_enabled
+
+    if not is_totp_enabled():
+        return "/configuracoes/2fa?obrigatorio=1"
+    if not is_totp_session_verified(request):
+        return "/login/2fa"
+    return "/dashboard"
+
+
 def resolve_admin(request):
     session_id = str(request.session.get("sid", "") or "").strip()
     if not session_id:
@@ -64,6 +89,7 @@ def logout_admin(request):
     if session_id:
         revoke_session(session_id)
         delete_session(session_id)
+    clear_totp_session_verified(request)
     request.session.clear()
     if admin:
         audit_login_event(

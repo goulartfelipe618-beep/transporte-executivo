@@ -34,6 +34,21 @@ def _local_static_url(path: str) -> str:
     return f"/static/{path}"
 
 
+def _static_file_on_disk(path: str) -> Path | None:
+    """Retorna arquivo estatico local quando existir no disco."""
+    rel = str(path or "").strip().lstrip("/")
+    if rel.startswith("static/"):
+        rel = rel[7:]
+    app_dir = Path(__file__).resolve().parents[1]
+    if rel.startswith("master/"):
+        candidate = app_dir / "master" / "static" / "master" / rel[7:]
+    elif rel.startswith("motor/"):
+        candidate = app_dir / "static" / rel[6:]
+    else:
+        candidate = app_dir / "master" / "static" / "master" / rel
+    return candidate if candidate.is_file() else None
+
+
 def static_r2_key(path: str) -> str:
     path = path.strip().lstrip("/")
     if path.startswith("static/"):
@@ -49,11 +64,34 @@ def static_url(path: str) -> str:
         return ""
     if path.startswith(("http://", "https://")):
         return path
-    cfg = get_r2_config()
     local = _local_static_url(path)
+    if _static_file_on_disk(path) is not None:
+        return local
+    cfg = get_r2_config()
     if not cfg["configured"]:
         return local
     return public_url_for_key(static_r2_key(path))
+
+
+def web_media_url(value: str, *, branding_slug: str = "logo") -> str:
+    """URL HTTP servivel pelo navegador para midia de configuracao."""
+    raw = str(value or "").strip()
+    if not raw:
+        return ""
+    if raw.startswith(("http://", "https://")):
+        return raw
+    cfg = get_r2_config()
+    if raw.startswith("r2private:"):
+        return f"/media/branding/{branding_slug}"
+    if raw.startswith("r2key:"):
+        if not cfg["configured"]:
+            return ""
+        return public_url_for_key(raw[len("r2key:"):].lstrip("/"))
+    if cfg["configured"] and cfg["public_base"] in raw:
+        return raw
+    if os.path.isfile(raw):
+        return f"/media/branding/{branding_slug}"
+    return ""
 
 
 def resolve_media_url(value: str) -> str:

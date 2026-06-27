@@ -15,6 +15,9 @@ IBGE_STATES_URL = "https://servicodados.ibge.gov.br/api/v1/localidades/estados?o
 IBGE_MUNICIPALITIES_URL = (
     "https://servicodados.ibge.gov.br/api/v1/localidades/estados/{uf}/municipios?orderBy=nome"
 )
+IBGE_DISTRICTS_URL = (
+    "https://servicodados.ibge.gov.br/api/v1/localidades/municipios/{municipality_id}/distritos?orderBy=nome"
+)
 
 FALLBACK_STATES = [
     {"id": 12, "sigla": "AC", "nome": "Acre"},
@@ -65,13 +68,14 @@ def _fetch_json(url):
 
 def _load_cache():
     if not os.path.exists(CACHE_FILE):
-        return {"states": None, "states_updated": None, "municipalities": {}}
+        return {"states": None, "states_updated": None, "municipalities": {}, "districts": {}}
     try:
         with open(CACHE_FILE, encoding="utf-8") as handle:
             data = json.load(handle)
     except (json.JSONDecodeError, OSError):
         return {"states": None, "states_updated": None, "municipalities": {}}
     data.setdefault("municipalities", {})
+    data.setdefault("districts", {})
     return data
 
 
@@ -107,6 +111,15 @@ def _normalize_municipality(raw, uf):
         "id": int(raw["id"]),
         "nome": str(raw.get("nome", "")).strip(),
         "uf": str(state.get("sigla") or uf).upper(),
+    }
+
+
+def _normalize_district(raw):
+    municipality = raw.get("municipio") or {}
+    return {
+        "id": int(raw["id"]),
+        "nome": str(raw.get("nome", "")).strip(),
+        "municipio_id": int(municipality.get("id") or 0),
     }
 
 
@@ -151,6 +164,37 @@ def get_municipalities(uf, force_refresh=False):
     }
     _save_cache(cache)
     return list(municipalities)
+
+
+def get_districts(municipality_id, force_refresh=False):
+    """Retorna distritos oficiais do IBGE para uso como bairro/regiao obrigatoria."""
+    try:
+        municipality_id = int(municipality_id or 0)
+    except (TypeError, ValueError):
+        municipality_id = 0
+    if municipality_id <= 0:
+        return []
+
+    cache = _load_cache()
+    districts_cache = cache.setdefault("districts", {})
+    key = str(municipality_id)
+    entry = districts_cache.get(key) or {}
+    if not force_refresh and entry.get("items") and _cache_is_fresh(entry.get("updated")):
+        return list(entry["items"])
+
+    url = IBGE_DISTRICTS_URL.format(municipality_id=municipality_id)
+    try:
+        payload = _fetch_json(url)
+        districts = [_normalize_district(item) for item in payload]
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError, KeyError, ValueError):
+        districts = list(entry.get("items") or [])
+
+    districts_cache[key] = {
+        "updated": datetime.now().isoformat(timespec="seconds"),
+        "items": districts,
+    }
+    _save_cache(cache)
+    return list(districts)
 
 
 def find_state_by_sigla(states, sigla):

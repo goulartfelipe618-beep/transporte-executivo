@@ -199,3 +199,78 @@ def list_summary(app):
     blocked = sum(1 for d in drivers if str(d.get("frota", "")).lower() in {"bloqueado", "inativo"})
     portal_ok = sum(1 for d in drivers if d.get("password_hash") and d.get("portal_ativo"))
     return {"total": len(drivers), "ativos": active, "bloqueados": blocked, "portal_ativado": portal_ok}
+
+
+def _purge_driver_supabase(driver):
+    from app.repository import supabase_client as db
+
+    if not db.is_configured():
+        return
+    driver_uuid = str(driver.get("uuid") or driver.get("supabase_id") or "")
+    legacy_id = str(driver.get("id") or "")
+    if driver_uuid:
+        try:
+            db.delete_rows("drivers", {"id": driver_uuid})
+        except Exception:
+            pass
+    elif legacy_id:
+        try:
+            db.delete_rows("drivers", {"legacy_admin_id": legacy_id})
+        except Exception:
+            pass
+
+
+def delete_driver(app, driver_id):
+    from app.portal_auth import USER_TYPE_DRIVER
+    from app.portal_server import driver_key
+
+    driver = find_driver_by_id(app, driver_id)
+    if not driver:
+        raise ValueError("motorista_nao_encontrado")
+
+    driver_id = str(driver.get("id", ""))
+    slug = driver_key(driver)
+    identity_ids = {driver_id}
+    for key in ("uuid", "supabase_id"):
+        value = str(driver.get(key, "") or "").strip()
+        if value:
+            identity_ids.add(value)
+
+    unassigned = "-- Nao atribuir ainda --"
+    for reservation in getattr(app, "reservations", []) or []:
+        reservation_ids = {
+            str(reservation.get("driver_id", "") or "").strip(),
+            str(reservation.get("driver_uuid", "") or "").strip(),
+        }
+        reservation_ids.discard("")
+        if reservation_ids & identity_ids:
+            reservation["driver_id"] = ""
+            reservation["driver_uuid"] = ""
+            reservation["motorista"] = unassigned
+
+    app.drivers = [
+        row for row in getattr(app, "drivers", []) or [] if str(row.get("id", "")) != driver_id
+    ]
+    app.portal_sessions = [
+        session
+        for session in getattr(app, "portal_sessions", []) or []
+        if not (
+            session.get("user_type") == USER_TYPE_DRIVER
+            and (
+                str(session.get("user_id", "")) in identity_ids
+                or str(session.get("slug", "")) == slug
+            )
+        )
+    ]
+    app.event_log = [
+        event
+        for event in getattr(app, "event_log", []) or []
+        if str(event.get("referencia_id", "")) != driver_id
+        and driver_id not in str(event.get("payload", {}))
+    ]
+
+    _purge_driver_supabase(driver)
+
+    if hasattr(app, "save_state"):
+        app.save_state()
+    return True

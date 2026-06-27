@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from app.branding import apply_branding, brand_display_name, resolve_font_family
 from app.settings_store import DEFAULT_SETTINGS, SETTINGS_FIELDS, load_settings, save_settings
+from app.totp_auth import is_totp_enabled, totp_status
 
 from ..validators.input import validate_email_value
 
@@ -129,4 +130,6 @@ def settings_page_context(*, editing=False, form=None, error="", saved=False, wa
         "preview_text": f"Preview: {preview_name} — fonte {preview_font}",
         "preview_font": preview_font,
         "brand_name": brand_display_name(data),
+        "totp": totp_status(data),
+        "totp_enabled": is_totp_enabled(data),
     }

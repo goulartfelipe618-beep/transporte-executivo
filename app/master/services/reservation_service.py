@@ -47,6 +47,37 @@ EDIT_FIELDS = [
 
 UNASSIGNED_DRIVER = "-- Nao atribuir ainda --"
 
+_TRIP_TYPE_LABELS = {
+    "one_way": "Somente Ida",
+    "round_trip": "Ida e Volta",
+    "hourly": "Por Hora",
+    "ida": "Ida",
+    "volta": "Volta",
+}
+
+_PRESERVED_RESERVATION_KEYS = (
+    "id",
+    "uuid",
+    "numero",
+    "par_id",
+    "perna",
+    "source",
+    "flow",
+    "partner_id",
+    "partner_slug",
+    "partner_code",
+    "contributor_id",
+    "contributor_code",
+    "canal_origem",
+    "via_qr",
+    "transport_request_legacy_id",
+    "draft_id",
+    "quote_id",
+    "vehicle_name",
+    "company_id",
+    "cost_center_id",
+)
+
 
 def registered_clients(app):
     clients = []
@@ -103,6 +134,16 @@ def apply_finance_fields(payload, motorista):
     return payload
 
 
+def _route_fields(embarque, desembarque):
+    origem = str(embarque or "").strip()
+    destino = str(desembarque or "").strip()
+    return {
+        "trajeto": f"{origem} -> {destino}",
+        "origem": origem,
+        "destino": destino,
+    }
+
+
 def _truthy(value) -> bool:
     return str(value or "").strip().lower() in {"1", "true", "yes", "sim", "on", "faturado"}
 
@@ -124,15 +165,25 @@ def find_client(clients, name):
 
 def normalize_numero(numero):
     raw = str(numero or "").strip()
-    if raw and not raw.startswith("#"):
-        return f"#{raw.lstrip('#')}"
-    return raw
+    if not raw:
+        return raw
+    plain = raw.lstrip("#")
+    if plain.isdigit():
+        return f"#{plain}"
+    return plain
+
+
+def reservation_numero_slug(numero):
+    return str(numero or "").strip().lstrip("#")
 
 
 def find_reservation(app, numero):
-    target = normalize_numero(numero)
+    query = reservation_numero_slug(numero)
+    if not query:
+        return None
     for reservation in getattr(app, "reservations", []) or []:
-        if str(reservation.get("numero", "")).strip() == target:
+        stored = reservation_numero_slug(reservation.get("numero", ""))
+        if stored and stored.upper() == query.upper():
             return reservation
     return None
 
@@ -231,11 +282,39 @@ def _split_data_hora(value, fallback_hora=""):
     return raw, str(fallback_hora or "").strip()
 
 
-def _parse_trajeto_endpoints(trajeto):
-    parts = str(trajeto or "").split("->")
-    if len(parts) >= 2:
-        return parts[0].strip(), parts[1].strip()
-    return str(trajeto or "").strip(), ""
+def _parse_trajeto_endpoints(trajeto, reservation=None):
+    text = str(trajeto or "")
+    for sep in (" -> ", " → ", "→", "->"):
+        if sep in text:
+            parts = text.split(sep, 1)
+            return parts[0].strip(), parts[1].strip()
+    if reservation:
+        origem = str(reservation.get("origem", "") or "").strip()
+        destino = str(reservation.get("destino", "") or "").strip()
+        if origem or destino:
+            return origem, destino
+    return text.strip(), ""
+
+
+def _normalize_trip_type(tipo):
+    raw = str(tipo or "").strip()
+    if raw in {"Somente Ida", "Ida e Volta", "Por Hora", "Ida", "Volta"}:
+        return raw
+    return _TRIP_TYPE_LABELS.get(raw.lower(), "Somente Ida")
+
+
+def _normalize_reservation_datetime(value, hora=""):
+    raw = str(value or "").strip()
+    hora_value = str(hora or "").strip()
+    if not raw:
+        return "", hora_value
+    if re.match(r"^\d{4}-\d{2}-\d{2}", raw):
+        try:
+            dt = datetime.strptime(raw[:10], "%Y-%m-%d")
+            return dt.strftime("%d/%m/%Y"), hora_value
+        except ValueError:
+            pass
+    return _split_data_hora(raw, hora_value)
 
 
 def _find_pair_sibling(app, reservation):
@@ -267,7 +346,7 @@ def _match_client_mode(app, reservation):
 def _motorista_label_from_reservation(reservation):
     motorista = str(reservation.get("motorista", "") or "").strip()
     driver_id = str(reservation.get("driver_id", "") or "").strip()
-    if motorista in {"", "-"}:
+    if motorista.lower() in {"", "-", "none", "null"}:
         return UNASSIGNED_DRIVER
     if driver_id and f"({driver_id})" not in motorista:
         return f"{motorista} ({driver_id})"
@@ -305,11 +384,11 @@ def reservation_to_form_dict(app, reservation):
         ida_res = reservation if perna == "ida" else sibling
         volta_res = sibling if perna == "ida" else reservation
         form["tipo"] = "Ida e Volta"
-        form["embarque"], form["desembarque"] = _parse_trajeto_endpoints(ida_res.get("trajeto"))
-        form["data"], form["hora"] = _split_data_hora(ida_res.get("data"), ida_res.get("hora"))
-        form["passageiros"] = ida_res.get("passageiros", "")
+        form["embarque"], form["desembarque"] = _parse_trajeto_endpoints(ida_res.get("trajeto"), ida_res)
+        form["data"], form["hora"] = _normalize_reservation_datetime(ida_res.get("data"), ida_res.get("hora"))
+        form["passageiros"] = ida_res.get("passageiros") or "1"
         _apply_po_fields_to_form(form, ida_res, "embarque", "desembarque")
-        form["volta_embarque"], form["volta_desembarque"] = _parse_trajeto_endpoints(volta_res.get("trajeto"))
+        form["volta_embarque"], form["volta_desembarque"] = _parse_trajeto_endpoints(volta_res.get("trajeto"), volta_res)
         form["volta_data"], form["volta_hora"] = _split_data_hora(volta_res.get("data"), volta_res.get("hora"))
         form["volta_passageiros"] = volta_res.get("passageiros", "")
         _apply_po_fields_to_form(form, volta_res, "volta_embarque", "volta_desembarque")
@@ -321,23 +400,29 @@ def reservation_to_form_dict(app, reservation):
         source = ida_res
     elif stored_tipo == "Por Hora":
         form["tipo"] = "Por Hora"
-        form["hora_inicio"], form["hora_fim"] = _parse_trajeto_endpoints(reservation.get("trajeto"))
-        form["hora_data"], form["hora_horario"] = _split_data_hora(reservation.get("data"), reservation.get("hora"))
+        form["hora_inicio"], form["hora_fim"] = _parse_trajeto_endpoints(reservation.get("trajeto"), reservation)
+        form["hora_data"], form["hora_horario"] = _normalize_reservation_datetime(
+            reservation.get("data"),
+            reservation.get("hora"),
+        )
         form["hora_passageiros"] = reservation.get("passageiros", "")
         form["hora_observacoes"] = reservation.get("observacoes", "")
         _apply_po_fields_to_form(form, reservation, "hora_inicio", "hora_fim")
         source = reservation
     else:
-        form["tipo"] = stored_tipo if stored_tipo in {"Somente Ida", "Ida e Volta", "Por Hora"} else "Somente Ida"
-        form["embarque"], form["desembarque"] = _parse_trajeto_endpoints(reservation.get("trajeto"))
-        form["data"], form["hora"] = _split_data_hora(reservation.get("data"), reservation.get("hora"))
-        form["passageiros"] = reservation.get("passageiros", "")
+        form["tipo"] = _normalize_trip_type(stored_tipo)
+        form["embarque"], form["desembarque"] = _parse_trajeto_endpoints(reservation.get("trajeto"), reservation)
+        form["data"], form["hora"] = _normalize_reservation_datetime(reservation.get("data"), reservation.get("hora"))
+        form["passageiros"] = reservation.get("passageiros") or "1"
         form["observacoes"] = reservation.get("observacoes", "")
         _apply_po_fields_to_form(form, reservation, "embarque", "desembarque")
         source = reservation
 
     form["motorista"] = _motorista_label_from_reservation(source)
-    form["valor_base"] = source.get("valor_base", "") or str(source.get("valor", "") or "").replace("R$", "").strip()
+    form["valor_base"] = (
+        source.get("valor_base", "")
+        or str(source.get("valor", "") or "").replace("R$", "").strip()
+    )
     form["desconto"] = source.get("desconto", "0")
     form["pagamento"] = source.get("pagamento", "")
     form["status"] = source.get("status", "Pendente")
@@ -369,29 +454,24 @@ def _prepare_values_from_form(app, form_data):
 
 
 def _replace_reservation_data(existing, new_data):
-    preserved = {
-        "numero": existing.get("numero"),
-        "par_id": existing.get("par_id"),
-        "perna": existing.get("perna"),
-    }
+    preserved = {key: existing.get(key) for key in _PRESERVED_RESERVATION_KEYS if existing.get(key) is not None}
     existing.clear()
     existing.update(new_data)
-    for key, value in preserved.items():
-        if value is not None:
-            existing[key] = value
+    existing.update(preserved)
 
 
 def _validate_create_payload(values, *, client_mode="novo", is_edit=False):
     required = {"valor_base": "Valor Base"}
     if str(client_mode or "novo").strip().lower() != "cadastrado":
-        required.update(
-            {
-                "nome": "Nome Completo",
-                "documento": "CPF/CNPJ",
-                "email": "Email",
-                "telefone": "Telefone",
-            }
-        )
+        required["nome"] = "Nome Completo"
+        if not is_edit:
+            required.update(
+                {
+                    "documento": "CPF/CNPJ",
+                    "email": "Email",
+                    "telefone": "Telefone",
+                }
+            )
     trip_type = values.get("tipo", "Somente Ida")
     if trip_type == "Por Hora":
         required.update(
@@ -399,30 +479,39 @@ def _validate_create_payload(values, *, client_mode="novo", is_edit=False):
                 "hora_inicio": "Endereco de Inicio",
                 "hora_fim": "Ponto de Encerramento",
                 "hora_data": "Data",
-                "hora_horario": "Hora de inicio",
                 "hora_passageiros": "Passageiros",
                 "qtd_horas": "Qtd. Horas",
             }
         )
+        if not is_edit:
+            required["hora_horario"] = "Hora de inicio"
     else:
         required.update(
             {
                 "embarque": "Local de Embarque",
                 "desembarque": "Local de Desembarque",
                 "data": "Data do Embarque",
-                "hora": "Hora do Embarque",
-                "passageiros": "Passageiros",
             }
         )
+        if not is_edit:
+            required.update(
+                {
+                    "hora": "Hora do Embarque",
+                    "passageiros": "Passageiros",
+                }
+            )
+        elif not str(values.get("passageiros", "") or "").strip():
+            values["passageiros"] = "1"
         if trip_type == "Ida e Volta":
             required.update(
                 {
                     "volta_embarque": "Local de Embarque (Volta)",
                     "volta_desembarque": "Local de Desembarque (Volta)",
                     "volta_data": "Data da Volta",
-                    "volta_hora": "Hora da Volta",
                 }
             )
+            if not is_edit:
+                required["volta_hora"] = "Hora da Volta"
 
     for key, label in required.items():
         if not str(values.get(key, "") or "").strip():
@@ -431,7 +520,7 @@ def _validate_create_payload(values, *, client_mode="novo", is_edit=False):
     if str(client_mode or "novo").strip().lower() == "cadastrado":
         if not str(values.get("nome", "") or "").strip():
             return False, "Selecione um cliente ou empresa cadastrada."
-    else:
+    elif not is_edit:
         ok, msg = validate_email_value(values.get("email"), label="Email")
         if not ok:
             return False, msg
@@ -442,6 +531,18 @@ def _validate_create_payload(values, *, client_mode="novo", is_edit=False):
 
         telefone = re.sub(r"\D", "", str(values.get("telefone", "")))
         if len(telefone) < 10:
+            return False, "Informe um telefone completo no formato (XX) X XXXX-XXXX."
+    else:
+        email = str(values.get("email", "") or "").strip()
+        if email:
+            ok, msg = validate_email_value(email, label="Email")
+            if not ok:
+                return False, msg
+        documento = re.sub(r"\D", "", str(values.get("documento", "")))
+        if documento and len(documento) not in {11, 14}:
+            return False, "Informe um CPF (11 digitos) ou CNPJ (14 digitos) valido."
+        telefone = re.sub(r"\D", "", str(values.get("telefone", "")))
+        if telefone and len(telefone) < 10:
             return False, "Informe um telefone completo no formato (XX) X XXXX-XXXX."
 
     if not is_edit:
@@ -520,7 +621,7 @@ def create_reservation(app, form_data):
                 **_reservation_location_meta(values, "embarque", "desembarque"),
                 "numero": ida_num,
                 "tipo": "Ida",
-                "trajeto": f'{values["embarque"]} -> {values["desembarque"]}',
+                **_route_fields(values["embarque"], values["desembarque"]),
                 "data": ida_data,
                 "hora": values.get("hora", ""),
                 "passageiros": values["passageiros"],
@@ -537,7 +638,7 @@ def create_reservation(app, form_data):
                 **_reservation_location_meta(values, "volta_embarque", "volta_desembarque"),
                 "numero": volta_num,
                 "tipo": "Volta",
-                "trajeto": f'{values["volta_embarque"]} -> {values["volta_desembarque"]}',
+                **_route_fields(values["volta_embarque"], values["volta_desembarque"]),
                 "data": volta_data,
                 "hora": values.get("volta_hora", ""),
                 "passageiros": values.get("volta_passageiros") or values["passageiros"],
@@ -558,7 +659,7 @@ def create_reservation(app, form_data):
                 **_reservation_location_meta(values, "hora_inicio", "hora_fim"),
                 "numero": next_reservation_number(app),
                 "tipo": values["tipo"],
-                "trajeto": f'{values["hora_inicio"]} -> {values["hora_fim"]}',
+                **_route_fields(values["hora_inicio"], values["hora_fim"]),
                 "data": values["hora_data"],
                 "hora": values.get("hora_horario", ""),
                 "passageiros": values["hora_passageiros"],
@@ -579,7 +680,7 @@ def create_reservation(app, form_data):
                 **_reservation_location_meta(values, "embarque", "desembarque"),
                 "numero": next_reservation_number(app),
                 "tipo": values["tipo"],
-                "trajeto": f'{values["embarque"]} -> {values["desembarque"]}',
+                **_route_fields(values["embarque"], values["desembarque"]),
                 "data": data,
                 "hora": hora,
                 "passageiros": values["passageiros"],
@@ -652,7 +753,7 @@ def update_reservation(app, numero, form_data):
                 **common,
                 **_reservation_location_meta(values, "embarque", "desembarque"),
                 "tipo": "Ida",
-                "trajeto": f'{values["embarque"]} -> {values["desembarque"]}',
+                **_route_fields(values["embarque"], values["desembarque"]),
                 "data": ida_data,
                 "hora": values.get("hora", ""),
                 "passageiros": values["passageiros"],
@@ -668,7 +769,7 @@ def update_reservation(app, numero, form_data):
                 **common,
                 **_reservation_location_meta(values, "volta_embarque", "volta_desembarque"),
                 "tipo": "Volta",
-                "trajeto": f'{values["volta_embarque"]} -> {values["volta_desembarque"]}',
+                **_route_fields(values["volta_embarque"], values["volta_desembarque"]),
                 "data": volta_data,
                 "hora": values.get("volta_hora", ""),
                 "passageiros": values.get("volta_passageiros") or values["passageiros"],
@@ -689,7 +790,7 @@ def update_reservation(app, numero, form_data):
                 **common,
                 **_reservation_location_meta(values, "hora_inicio", "hora_fim"),
                 "tipo": values["tipo"],
-                "trajeto": f'{values["hora_inicio"]} -> {values["hora_fim"]}',
+                **_route_fields(values["hora_inicio"], values["hora_fim"]),
                 "data": values["hora_data"],
                 "hora": values.get("hora_horario", ""),
                 "passageiros": values["hora_passageiros"],
@@ -710,7 +811,7 @@ def update_reservation(app, numero, form_data):
                 **common,
                 **_reservation_location_meta(values, "embarque", "desembarque"),
                 "tipo": values["tipo"],
-                "trajeto": f'{values["embarque"]} -> {values["desembarque"]}',
+                **_route_fields(values["embarque"], values["desembarque"]),
                 "data": data,
                 "hora": hora,
                 "passageiros": values["passageiros"],

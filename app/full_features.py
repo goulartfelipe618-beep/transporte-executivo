@@ -301,8 +301,22 @@ def render_settings(parent, app):
     sec_body = _settings_card(body, "Seguranca", "Credenciais de acesso e autenticacao em dois fatores", COLORS["danger"])
     sec_actions = tk.Frame(sec_body, bg=COLORS["panel"])
     sec_actions.pack(fill="x")
+    from .totp_auth import totp_status
+    from .totp_ui import open_totp_settings_dialog
+
+    totp = totp_status(data)
+    totp_label = tk.Label(
+        sec_body,
+        text=f"2FA: {'Ativo' if totp['enabled'] else 'Desativado'}",
+        bg=COLORS["success_soft"] if totp["enabled"] else COLORS["warning_soft"],
+        fg=COLORS["success"] if totp["enabled"] else COLORS["warning"],
+        font=FONTS["small"],
+        padx=12,
+        pady=8,
+    )
+    totp_label.pack(anchor="w", pady=(0, 8))
     styled_button(sec_actions, "Alterar senha de acesso", style="primary", command=lambda: messagebox.showinfo("Seguranca", "Alteracao de senha em breve.", parent=app)).pack(side="left", padx=(0, 8))
-    styled_button(sec_actions, "Configurar 2FA (TOTP)", style="secondary", command=lambda: messagebox.showinfo("2FA", "Autenticacao em 2 fatores em breve.", parent=app)).pack(side="left")
+    styled_button(sec_actions, "Configurar 2FA (TOTP)", style="secondary", command=lambda: open_totp_settings_dialog(app)).pack(side="left")
 
     hint = tk.Label(
         body,
@@ -389,7 +403,8 @@ def _pick_file(var):
 
 
 def _save_settings_form(app, fields, on_done=None):
-    payload = {}
+    existing = load_settings()
+    payload = dict(existing)
     for key, widget in fields.items():
         if isinstance(widget, tk.StringVar):
             payload[key] = widget.get().strip()

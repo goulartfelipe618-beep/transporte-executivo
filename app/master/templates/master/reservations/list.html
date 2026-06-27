@@ -76,9 +76,6 @@
               <a class="btn btn-secondary btn-sm" href="/reservas/{{ numero_slug }}/editar">Editar</a>
               <a class="btn btn-secondary btn-sm" href="/reservas/{{ numero_slug }}">Ver</a>
               <a class="btn btn-primary btn-sm" href="/reservas/{{ numero_slug }}#pdf">PDF</a>
-              <form method="post" action="/reservas/{{ numero_slug }}/excluir" onsubmit="return confirm('Excluir reserva {{ item.numero }}?')">
-                <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-              </form>
             </div>
           </td>
         </tr>

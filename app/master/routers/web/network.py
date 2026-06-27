@@ -5,6 +5,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 
 from ...dependencies import get_runtime, resolve_admin_or_redirect, template_context, templates
+from ...services.delete_guard import delete_confirm_response, verify_delete_confirmation
 from ...services.network_service import (
     COMMISSION_STATUS_OPTIONS,
     commissions_summary,
@@ -12,6 +13,7 @@ from ...services.network_service import (
     create_partner,
     dashboard_context,
     delete_contributor,
+    delete_partner,
     find_contributor,
     find_partner,
     list_commissions,
@@ -23,6 +25,7 @@ from ...services.network_service import (
     update_partner,
     toggle_partner,
 )
+from ...services.location_service import location_form_context
 
 router = APIRouter(prefix="/rede", tags=["master-network"])
 
@@ -81,6 +84,7 @@ async def partner_create_form(request: Request):
             error="",
             is_edit=False,
             fields=fields,
+            **location_form_context({}),
             **_nav("parceiros"),
         ),
     )
@@ -106,6 +110,7 @@ async def partner_create_submit(request: Request):
                 error="; ".join(errors),
                 is_edit=False,
                 fields=partner_form_fields(),
+                **location_form_context(form_data),
                 **_nav("parceiros"),
             ),
             status_code=400,
@@ -155,6 +160,7 @@ async def partner_edit_form(request: Request, partner_id: str):
             error="",
             is_edit=True,
             fields=partner_form_fields(),
+            **location_form_context(partner),
             **_nav("parceiros"),
         ),
     )
@@ -180,6 +186,7 @@ async def partner_edit_submit(request: Request, partner_id: str):
                 error="; ".join(errors),
                 is_edit=True,
                 fields=partner_form_fields(),
+                **location_form_context(form_data),
                 **_nav("parceiros"),
             ),
             status_code=400,
@@ -195,6 +202,68 @@ async def partner_toggle(request: Request, partner_id: str):
     runtime = get_runtime(request)
     toggle_partner(runtime, partner_id)
     return RedirectResponse(f"/rede/parceiros/{partner_id}", status_code=303)
+
+
+@router.get("/parceiros/{partner_id}/excluir")
+async def partner_delete_form(request: Request, partner_id: str):
+    admin, redirect = resolve_admin_or_redirect(request)
+    if redirect:
+        return redirect
+    runtime = get_runtime(request)
+    partner = find_partner(runtime, partner_id)
+    if not partner:
+        return RedirectResponse("/rede/parceiros", status_code=303)
+    name = str(partner.get("nome_rede") or partner.get("nome") or "Parceiro")
+    entity_id = str(partner.get("id", ""))
+    return delete_confirm_response(
+        request,
+        admin,
+        active_nav="rede",
+        entity_title="Excluir parceiro da rede",
+        entity_name=name,
+        entity_id=entity_id,
+        cancel_url=f"/rede/parceiros/{partner_id}",
+        post_url=f"/rede/parceiros/{partner_id}/excluir",
+        warning_message=(
+            "Esta acao e irreversivel. O parceiro, contribuidores vinculados e comissoes associadas serao removidos."
+        ),
+        rede_tab="parceiros",
+    )
+
+
+@router.post("/parceiros/{partner_id}/excluir")
+async def partner_delete_submit(request: Request, partner_id: str):
+    admin, redirect = resolve_admin_or_redirect(request)
+    if redirect:
+        return redirect
+    runtime = get_runtime(request)
+    partner = find_partner(runtime, partner_id)
+    if not partner:
+        return RedirectResponse("/rede/parceiros", status_code=303)
+
+    form_data = _form_dict(await request.form())
+    name = str(partner.get("nome_rede") or partner.get("nome") or "Parceiro")
+    entity_id = str(partner.get("id", ""))
+    ok, err = verify_delete_confirmation(form_data, entity_id)
+    if not ok:
+        return delete_confirm_response(
+            request,
+            admin,
+            active_nav="rede",
+            entity_title="Excluir parceiro da rede",
+            entity_name=name,
+            entity_id=entity_id,
+            cancel_url=f"/rede/parceiros/{partner_id}",
+            post_url=f"/rede/parceiros/{partner_id}/excluir",
+            warning_message=(
+                "Esta acao e irreversivel. O parceiro, contribuidores vinculados e comissoes associadas serao removidos."
+            ),
+            error=err,
+            status_code=400,
+            rede_tab="parceiros",
+        )
+    delete_partner(runtime, partner_id)
+    return RedirectResponse("/rede/parceiros?success=Parceiro+excluido", status_code=303)
 
 
 @router.get("/contribuidores")
@@ -266,6 +335,28 @@ async def contributor_create_submit(request: Request):
     return RedirectResponse(f"/rede/contribuidores/{item['id']}/editar", status_code=303)
 
 
+@router.get("/contribuidores/{contributor_id}")
+async def contributor_detail(request: Request, contributor_id: str):
+    admin, redirect = resolve_admin_or_redirect(request)
+    if redirect:
+        return redirect
+    runtime = get_runtime(request)
+    contributor, partner = find_contributor(runtime, contributor_id)
+    if not contributor:
+        return RedirectResponse("/rede/contribuidores", status_code=303)
+    return templates.TemplateResponse(
+        request,
+        "master/rede/contribuidores/detail.html",
+        template_context(
+            request,
+            admin=admin,
+            contributor=contributor,
+            partner=partner,
+            **_nav("contribuidores"),
+        ),
+    )
+
+
 @router.get("/contribuidores/{contributor_id}/editar")
 async def contributor_edit_form(request: Request, contributor_id: str):
     admin, redirect = resolve_admin_or_redirect(request)
@@ -316,17 +407,65 @@ async def contributor_edit_submit(request: Request, contributor_id: str):
             ),
             status_code=400,
         )
-    return RedirectResponse(f"/rede/contribuidores/{item['id']}/editar", status_code=303)
+    return RedirectResponse(f"/rede/contribuidores/{item['id']}", status_code=303)
 
 
-@router.post("/contribuidores/{contributor_id}/excluir")
-async def contributor_delete(request: Request, contributor_id: str):
+@router.get("/contribuidores/{contributor_id}/excluir")
+async def contributor_delete_form(request: Request, contributor_id: str):
     admin, redirect = resolve_admin_or_redirect(request)
     if redirect:
         return redirect
     runtime = get_runtime(request)
+    contributor, partner = find_contributor(runtime, contributor_id)
+    if not contributor:
+        return RedirectResponse("/rede/contribuidores", status_code=303)
+    name = str(contributor.get("nome") or "Contribuidor")
+    entity_id = str(contributor.get("id", ""))
+    return delete_confirm_response(
+        request,
+        admin,
+        active_nav="rede",
+        entity_title="Excluir contribuidor",
+        entity_name=name,
+        entity_id=entity_id,
+        cancel_url=f"/rede/contribuidores/{contributor_id}",
+        post_url=f"/rede/contribuidores/{contributor_id}/excluir",
+        warning_message="Esta acao e irreversivel. O contribuidor sera removido do parceiro vinculado.",
+        rede_tab="contribuidores",
+    )
+
+
+@router.post("/contribuidores/{contributor_id}/excluir")
+async def contributor_delete_submit(request: Request, contributor_id: str):
+    admin, redirect = resolve_admin_or_redirect(request)
+    if redirect:
+        return redirect
+    runtime = get_runtime(request)
+    contributor, _partner = find_contributor(runtime, contributor_id)
+    if not contributor:
+        return RedirectResponse("/rede/contribuidores", status_code=303)
+
+    form_data = _form_dict(await request.form())
+    name = str(contributor.get("nome") or "Contribuidor")
+    entity_id = str(contributor.get("id", ""))
+    ok, err = verify_delete_confirmation(form_data, entity_id)
+    if not ok:
+        return delete_confirm_response(
+            request,
+            admin,
+            active_nav="rede",
+            entity_title="Excluir contribuidor",
+            entity_name=name,
+            entity_id=entity_id,
+            cancel_url=f"/rede/contribuidores/{contributor_id}",
+            post_url=f"/rede/contribuidores/{contributor_id}/excluir",
+            warning_message="Esta acao e irreversivel. O contribuidor sera removido do parceiro vinculado.",
+            error=err,
+            status_code=400,
+            rede_tab="contribuidores",
+        )
     delete_contributor(runtime, contributor_id)
-    return RedirectResponse("/rede/contribuidores", status_code=303)
+    return RedirectResponse("/rede/contribuidores?success=Contribuidor+excluido", status_code=303)
 
 
 @router.get("/comissoes")

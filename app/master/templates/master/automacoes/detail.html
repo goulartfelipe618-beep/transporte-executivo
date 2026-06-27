@@ -13,9 +13,7 @@
         {% if automation.ativo %}Desativar{% else %}Ativar{% endif %}
       </button>
     </form>
-    <form method="post" action="/automacoes/{{ automation.token }}/excluir" onsubmit="return confirm('Excluir {{ automation.nome }}?')">
-      <button type="submit" class="btn btn-danger">Excluir</button>
-    </form>
+    <a class="btn btn-danger" href="/automacoes/{{ automation.token }}/excluir">Excluir</a>
   </div>
 </div>
 

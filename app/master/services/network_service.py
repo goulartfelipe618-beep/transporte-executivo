@@ -12,6 +12,8 @@ from app.partner_network import (
 from app.domain.formatters import money_display
 from app.partner_network_schema import NETWORK_BRANDING_DEFAULTS, TIPO_REDE_OPTIONS
 
+from .location_service import apply_location_payload, validate_location_fields
+
 REDE_STATUSES = ("Ativo", "Inativo")
 COMMISSION_STATUS_OPTIONS = ("pendente", "pago", "cancelado")
 
@@ -122,6 +124,7 @@ def validate_partner_form(form_data, *, is_create=False):
     status = str(form_data.get("status", "Ativo")).strip()
     if status not in REDE_STATUSES:
         errors.append("Status invalido.")
+    errors.extend(validate_location_fields(form_data))
     return errors
 
 
@@ -158,8 +161,10 @@ def create_partner(runtime, form_data):
     errors = validate_partner_form(form_data, is_create=True)
     if errors:
         return None, errors
+    payload_data = dict(form_data)
+    apply_location_payload(payload_data, form_data)
     payload = normalize_partner_network(
-        {**form_data, "nome": form_data.get("nome_rede")},
+        {**payload_data, "nome": form_data.get("nome_rede")},
         _partners(runtime),
     )
     runtime.partner_networks.insert(0, payload)
@@ -175,8 +180,10 @@ def update_partner(runtime, partner_id, form_data):
     current = find_partner_raw(runtime, partner_id)
     if not current:
         return None, ["Parceiro nao encontrado."]
+    payload_data = {**current, **form_data}
+    apply_location_payload(payload_data, form_data, existing=current)
     payload = normalize_partner_network(
-        {**current, **form_data, "nome": form_data.get("nome_rede"), "id": current.get("id")},
+        {**payload_data, "nome": form_data.get("nome_rede"), "id": current.get("id")},
         [p for p in _partners(runtime) if str(p.get("id")) != str(partner_id)],
     )
     payload["contribuidores"] = current.get("contribuidores") or []
@@ -201,6 +208,19 @@ def toggle_partner(runtime, partner_id):
     sync_partner_state(runtime)
     _persist(runtime)
     return partner_display(runtime.partner_networks[index]), []
+
+
+def delete_partner(runtime, partner_id):
+    partner_id = str(partner_id or "").strip()
+    before = len(_partners(runtime))
+    runtime.partner_networks = [
+        row for row in _partners(runtime) if str(row.get("id")) != partner_id
+    ]
+    if len(runtime.partner_networks) == before:
+        return False, ["Parceiro nao encontrado."]
+    sync_partner_state(runtime)
+    _persist(runtime)
+    return True, []
 
 
 def list_contributors(runtime, *, partner_id: str = ""):

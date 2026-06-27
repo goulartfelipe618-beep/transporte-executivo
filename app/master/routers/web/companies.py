@@ -8,12 +8,14 @@ from app.company_model import COMPANY_STATUSES, COMPANY_USER_PROFILES, COMPANY_U
 from app.portal_auth import COMPANY_PERMISSIONS
 
 from ...dependencies import get_runtime, resolve_admin_or_redirect, template_context, templates
+from ...services.delete_guard import delete_confirm_response, verify_delete_confirmation
 from ...services.company_service import (
     block_company,
     company_display_name,
     company_document,
     company_stats,
     create_company,
+    delete_company,
     find_company_by_id,
     list_corporate_companies,
     list_summary,
@@ -21,6 +23,7 @@ from ...services.company_service import (
     update_company,
 )
 from ...services.company_user_service import create_user, deactivate_user, find_user, list_users, update_user
+from ...services.location_service import location_form_context
 from ...validators.company import validate_company_form, validate_company_user_form
 
 router = APIRouter(prefix="/empresas", tags=["master-companies"])
@@ -65,6 +68,7 @@ async def create_form(request: Request):
             company_statuses=COMPANY_STATUSES,
             form={},
             error="",
+            **location_form_context({}),
         ),
     )
 
@@ -88,6 +92,7 @@ async def create_submit(request: Request):
                 company_statuses=COMPANY_STATUSES,
                 form=form_data,
                 error=" ".join(errors),
+                **location_form_context(form_data),
             ),
             status_code=400,
         )
@@ -145,9 +150,11 @@ async def edit_form(request: Request, company_id: str):
             active_nav="empresas",
             company=company,
             company_statuses=COMPANY_STATUSES,
+            form=company,
             users=list_users(runtime, company_id),
             portal=portal_info(company),
             error="",
+            **location_form_context(company),
         ),
     )
 
@@ -176,11 +183,12 @@ async def edit_submit(request: Request, company_id: str):
                 users=list_users(runtime, company_id),
                 portal=portal_info(company),
                 error=" ".join(errors),
+                **location_form_context(form_data),
             ),
             status_code=400,
         )
     try:
-        company, _admin_user, temp_password = update_company(runtime, company_id, form_data)
+        update_company(runtime, company_id, form_data)
     except ValueError as exc:
         return templates.TemplateResponse(
             request,
@@ -194,13 +202,78 @@ async def edit_submit(request: Request, company_id: str):
                 users=list_users(runtime, company_id),
                 portal=portal_info(company),
                 error=str(exc),
+                **location_form_context(form_data),
             ),
             status_code=400,
         )
-    url = f"/empresas/{company.get('id')}?success=Empresa+atualizada"
-    if temp_password:
-        url += f"&temp_password={temp_password}"
+    url = f"/empresas/{company_id}?success=Empresa+atualizada"
     return RedirectResponse(url, status_code=303)
+
+
+@router.get("/{company_id}/excluir")
+async def delete_form(request: Request, company_id: str):
+    admin, redirect = resolve_admin_or_redirect(request)
+    if redirect:
+        return redirect
+    runtime = get_runtime(request)
+    company = find_company_by_id(runtime, company_id)
+    if not company:
+        return RedirectResponse("/empresas", status_code=303)
+    name = company_display_name(company)
+    return delete_confirm_response(
+        request,
+        admin,
+        active_nav="empresas",
+        entity_title="Excluir empresa",
+        entity_name=name,
+        entity_id=str(company.get("id", "")),
+        cancel_url=f"/empresas/{company_id}",
+        post_url=f"/empresas/{company_id}/excluir",
+        warning_message=(
+            "Esta acao e irreversivel. Serao apagados: portal, usuarios, reservas, "
+            "solicitacoes e demais dados vinculados a esta empresa."
+        ),
+    )
+
+
+@router.post("/{company_id}/excluir")
+async def delete_submit(request: Request, company_id: str):
+    admin, redirect = resolve_admin_or_redirect(request)
+    if redirect:
+        return redirect
+    runtime = get_runtime(request)
+    company = find_company_by_id(runtime, company_id)
+    if not company:
+        return RedirectResponse("/empresas", status_code=303)
+
+    form_data = _form_dict(await request.form())
+    name = company_display_name(company)
+    entity_id = str(company.get("id", ""))
+
+    ok, err = verify_delete_confirmation(form_data, entity_id)
+    if not ok:
+        return delete_confirm_response(
+            request,
+            admin,
+            active_nav="empresas",
+            entity_title="Excluir empresa",
+            entity_name=name,
+            entity_id=entity_id,
+            cancel_url=f"/empresas/{company_id}",
+            post_url=f"/empresas/{company_id}/excluir",
+            warning_message=(
+                "Esta acao e irreversivel. Serao apagados: portal, usuarios, reservas, "
+                "solicitacoes e demais dados vinculados a esta empresa."
+            ),
+            error=err,
+            status_code=400,
+        )
+
+    try:
+        delete_company(runtime, company_id)
+    except ValueError:
+        pass
+    return RedirectResponse("/empresas?success=Empresa+excluida", status_code=303)
 
 
 @router.post("/{company_id}/bloquear")

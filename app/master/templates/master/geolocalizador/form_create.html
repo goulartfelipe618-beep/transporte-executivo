@@ -1,0 +1,72 @@
+{% extends "master/base.html" %}
+{% block title %}Novo link — Geolocalizador{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Criar link de rastreamento</h2>
+    <p>Reserva e tipo de rastreado sao obrigatorios.</p>
+  </div>
+  <a class="btn btn-secondary" href="/geolocalizador">Cancelar</a>
+</div>
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+<form method="post" action="/geolocalizador/novo" class="form-grid" style="max-width:640px">
+  <div class="form-section field-full">
+    <h3>Dados obrigatorios</h3>
+    <div class="field field-full">
+      <label>Reserva (Transfer ou Grupo) *</label>
+      <select name="reservation_id" required>
+        <option value="">Selecione uma reserva</option>
+        {% for r in reservations %}
+        <option value="{{ r.id }}" {% if form.reservation_id == r.id %}selected{% endif %}>
+          {{ r.numero }} · {{ r.cliente }} · {{ r.when_label }}{% if r.trajeto %} · {{ r.trajeto }}{% endif %}
+        </option>
+        {% endfor %}
+      </select>
+    <p class="hint">Somente viagens futuras ou de hoje com horario ainda por ocorrer. O link gerado usara <strong>{{ tracking_domain }}</strong>.</p>
+    </div>
+    <div class="field field-full">
+      <label>Quem e rastreado *</label>
+      <div class="geo-target-toggle">
+        <label class="geo-target-option{% if (form.target_type or target_cliente) == target_cliente %} active{% endif %}">
+          <input type="radio" name="target_type" value="{{ target_cliente }}" {% if (form.target_type or target_cliente) == target_cliente %}checked{% endif %} required/>
+          <strong>Cliente</strong>
+          <span class="muted">Celular do passageiro</span>
+        </label>
+        <label class="geo-target-option{% if form.target_type == target_motorista %} active{% endif %}">
+          <input type="radio" name="target_type" value="{{ target_motorista }}" {% if form.target_type == target_motorista %}checked{% endif %}/>
+          <strong>Motorista</strong>
+          <span class="muted">GPS com tela aberta</span>
+        </label>
+      </div>
+      <p class="hint">Motorista transmite GPS enquanto a pagina publica estiver aberta apos iniciar. Modo cliente usa o GPS do proprio aparelho.</p>
+    </div>
+  </div>
+  <div class="form-section field-full">
+    <h3>Opcional</h3>
+    <div class="field"><label>Nome do cliente</label><input name="cliente_nome" value="{{ form.cliente_nome or '' }}" placeholder="Ex: Joao Silva"/></div>
+    <div class="field"><label>Telefone</label><input name="telefone" value="{{ form.telefone or '' }}" placeholder="(11) 99999-9999"/></div>
+    <div class="field field-full"><label>Observacoes</label><textarea name="observacoes" rows="3" placeholder="Notas internas">{{ form.observacoes or '' }}</textarea></div>
+  </div>
+  <div class="form-actions field-full">
+    <button type="submit" class="btn btn-success">Criar link</button>
+  </div>
+</form>
+<p class="hint" style="max-width:640px;margin-top:10px">A URL publica sera <code>{{ tracking_domain }}/rastreio/…</code> (copiada apos criar).</p>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+document.querySelectorAll(".geo-target-option input").forEach(function (input) {
+  input.addEventListener("change", function () {
+    document.querySelectorAll(".geo-target-option").forEach(function (el) { el.classList.remove("active"); });
+    input.closest(".geo-target-option").classList.add("active");
+  });
+});
+</script>
+<style>
+.geo-target-toggle { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px; }
+.geo-target-option { border:1px solid var(--line); border-radius:10px; padding:14px; cursor:pointer; display:flex; flex-direction:column; gap:4px; }
+.geo-target-option input { position:absolute; opacity:0; pointer-events:none; }
+.geo-target-option.active { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+</style>
+{% endblock %}

@@ -9,9 +9,7 @@
   <div>
     <a class="btn btn-secondary" href="/clientes">Voltar</a>
     <a class="btn btn-primary" href="/clientes/{{ client.id }}/editar">Editar</a>
-    <form method="post" action="/clientes/{{ client.id }}/excluir" style="display:inline" onsubmit="return confirm('Excluir cliente?')">
-      <button type="submit" class="btn btn-danger">Excluir</button>
-    </form>
+    <a class="btn btn-danger" href="/clientes/{{ client.id }}/excluir">Excluir</a>
   </div>
 </div>
 <div class="card">

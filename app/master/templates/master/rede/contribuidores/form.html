@@ -35,9 +35,4 @@
     <button type="submit" class="btn btn-success">Salvar</button>
   </div>
 </form>
-{% if is_edit %}
-<form method="post" action="/rede/contribuidores/{{ contributor.id }}/excluir" style="margin-top:12px" onsubmit="return confirm('Remover contribuidor?')">
-  <button type="submit" class="btn btn-danger">Remover contribuidor</button>
-</form>
-{% endif %}
 {% endblock %}

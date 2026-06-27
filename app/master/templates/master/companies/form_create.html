@@ -14,16 +14,16 @@
       <div class="field"><label>Telefone principal</label><input name="telefone" value="{{ form.telefone or '' }}"/></div>
       <div class="field"><label>Telefone secundario</label><input name="telefone_2" value="{{ form.telefone_2 or '' }}"/></div>
       <div class="field"><label>Responsavel</label><input name="responsavel" value="{{ form.responsavel or '' }}"/></div>
-      <div class="field"><label>Estado (UF)</label><input name="estado" value="{{ form.estado or '' }}"/></div>
-      <div class="field"><label>Cidade</label><input name="cidade" value="{{ form.cidade or '' }}"/></div>
       <div class="field"><label>Status</label><select name="status_empresa">{% for s in company_statuses %}<option value="{{ s }}" {% if (form.status_empresa or 'Ativa') == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
       <div class="field"><label>Portal ativo?</label><select name="portal_ativo"><option value="1" selected>Sim</option><option value="0">Nao</option></select></div>
     </div>
   </div>
-  <div class="form-section"><h3>Endereco</h3>
+  <div class="form-section"><h3>Endereco obrigatorio</h3>
+    <p class="hint">Selecione Estado, Cidade e Bairro/Regiao pelo IBGE. Depois digite rua e numero manualmente.</p>
     <div class="form-grid">
-      <div class="field"><label>Tipo</label><input name="endereco_tipo" value="{{ form.endereco_tipo or 'casa' }}"/></div>
-      <div class="field field-full"><label>Endereco principal</label><input name="endereco" value="{{ form.endereco or '' }}"/></div>
+      <div class="field"><label>Tipo</label><input name="endereco_tipo" value="{{ form.endereco_tipo or 'comercial' }}"/></div>
+      {% set location_value = form %}
+      {% include "master/_location_fields.html" %}
     </div>
   </div>
   <div class="form-actions"><button type="submit" class="btn btn-success">Cadastrar empresa</button></div>

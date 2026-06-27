@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from app.geography import OPERATIONAL_POINT_STATUSES, OPERATIONAL_POINT_TYPES
 
@@ -24,6 +24,12 @@ from ...services.coverage_service import (
     point_stats,
     update_coverage_point,
 )
+from ...services.location_service import (
+    build_coverage_entity_markers,
+    city_options,
+    district_options,
+    map_summary,
+)
 from ...validators.coverage import map_service_error, validate_coverage_form
 
 router = APIRouter(prefix="/abrangencia", tags=["master-coverage"])
@@ -31,6 +37,32 @@ router = APIRouter(prefix="/abrangencia", tags=["master-coverage"])
 
 def _form_dict(form):
     return {key: form.get(key, "") for key in form.keys()}
+
+
+@router.get("/api/cidades")
+async def api_cities(request: Request, uf: str = ""):
+    admin, redirect = resolve_admin_or_redirect(request)
+    if redirect:
+        return redirect
+    return JSONResponse({"items": city_options(uf)})
+
+
+@router.get("/api/bairros")
+async def api_districts(request: Request, cidade_ibge_id: str = ""):
+    admin, redirect = resolve_admin_or_redirect(request)
+    if redirect:
+        return redirect
+    return JSONResponse({"items": district_options(cidade_ibge_id)})
+
+
+@router.get("/api/mapa")
+async def api_coverage_map(request: Request):
+    admin, redirect = resolve_admin_or_redirect(request)
+    if redirect:
+        return redirect
+    runtime = get_runtime(request)
+    markers = build_coverage_entity_markers(runtime)
+    return JSONResponse({"markers": markers, "summary": map_summary(markers)})
 
 
 def _form_context(runtime, form, *, uf="", error=""):

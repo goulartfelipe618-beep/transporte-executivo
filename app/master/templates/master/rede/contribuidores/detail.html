@@ -1,0 +1,27 @@
+{% extends "master/base.html" %}
+{% block title %}{{ contributor.nome }} — Contribuidor — Rede{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ contributor.nome }}</h2>
+    <p>Contribuidor · <code>{{ contributor.id }}</code></p>
+  </div>
+  <div style="display:flex;gap:8px">
+    <a class="btn btn-secondary" href="/rede/contribuidores">Voltar</a>
+    <a class="btn btn-primary" href="/rede/contribuidores/{{ contributor.id }}/editar">Editar</a>
+    <a class="btn btn-danger" href="/rede/contribuidores/{{ contributor.id }}/excluir">Excluir</a>
+  </div>
+</div>
+{% include "master/rede/_nav.html" %}
+<div class="card">
+  <div class="detail-grid" style="padding:16px 18px">
+    <div><span class="muted">Parceiro</span><p>{{ contributor.partner_nome or partner.nome_rede or '—' }}</p></div>
+    <div><span class="muted">Codigo ref</span><p><code>{{ contributor.codigo_ref }}</code></p></div>
+    <div><span class="muted">Comissao</span><p>{{ contributor.comissao_display or '—' }}</p></div>
+    <div><span class="muted">Status</span><p>{{ contributor.status_label or '—' }}</p></div>
+    {% if contributor.link %}
+    <div class="field-full"><span class="muted">Link de rastreamento</span><p><code>{{ contributor.link }}</code></p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

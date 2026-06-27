@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Rastreio — {{ reservation.cliente or link.cliente_nome or 'Viagem' }}</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin:0; font-family:"Segoe UI",system-ui,sans-serif; background:#0f172a; color:#e2e8f0; }
+    .wrap { max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
+    header { padding:18px 16px 8px; }
+    h1 { margin:0; font-size:1.15rem; }
+    .muted { color:#94a3b8; font-size:.85rem; margin-top:6px; }
+    .badge { display:inline-block; padding:4px 10px; border-radius:999px; font-size:.72rem; font-weight:700; margin-top:10px; }
+    .badge-wait { background:#422006; color:#fdba74; }
+    .badge-live { background:#14532d; color:#86efac; }
+    .badge-end { background:#1e293b; color:#cbd5e1; }
+    #map { height:280px; width:100%; }
+    .panel { padding:16px; flex:1; }
+    .actions { display:grid; gap:10px; margin-top:16px; }
+    button { border:0; border-radius:10px; padding:14px 16px; font-size:1rem; font-weight:700; cursor:pointer; }
+    .btn-start { background:#16a34a; color:#fff; }
+    .btn-end { background:#dc2626; color:#fff; }
+    .btn-start:disabled, .btn-end:disabled { opacity:.45; cursor:not-allowed; }
+    .hint { font-size:.78rem; color:#64748b; margin-top:12px; line-height:1.45; }
+    .error { background:#450a0a; color:#fecaca; padding:10px 12px; border-radius:8px; margin-top:10px; display:none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>{{ reservation.cliente or link.cliente_nome or 'Sua viagem' }}</h1>
+      <div class="muted">{{ reservation.trajeto or link.reservation_numero }} · {{ target_label }}</div>
+      <div id="status-badge" class="badge {% if is_active %}badge-live{% elif is_ended %}badge-end{% else %}badge-wait{% endif %}">
+        {% if is_active %}VIAGEM ATIVA{% elif is_ended %}VIAGEM ENCERRADA{% else %}AGUARDANDO INICIO{% endif %}
+      </div>
+    </header>
+    <div id="map"></div>
+    <div class="panel">
+      <div id="error-box" class="error"></div>
+      <div class="actions">
+        {% if can_start %}
+        <button type="button" class="btn-start" id="btn-start">INICIAR VIAGEM</button>
+        {% endif %}
+        {% if is_active %}
+        <button type="button" class="btn-end" id="btn-end">ENCERRAR VIAGEM</button>
+        {% elif not is_ended and not can_start %}
+        <button type="button" class="btn-end" id="btn-end">ENCERRAR VIAGEM</button>
+        {% endif %}
+      </div>
+      <p class="hint" id="geo-hint">
+        {% if can_start %}
+        Ao iniciar, este aparelho enviara a localizacao em tempo real para a central.
+        {% elif is_active %}
+        Rastreamento ativo. Mantenha esta pagina aberta.
+        {% elif is_ended %}
+        Esta viagem foi encerrada. Obrigado.
+        {% endif %}
+      </p>
+    </div>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+  (function () {
+    var token = {{ link.token|tojson }};
+    var active = {{ 'true' if is_active else 'false' }};
+    var ended = {{ 'true' if is_ended else 'false' }};
+    var watchId = null;
+    var map = L.map("map").setView([-23.5505, -46.6333], 13);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18 }).addTo(map);
+    var marker = L.circleMarker([-23.5505, -46.6333], { radius: 9, color: "#22c55e", fillColor: "#22c55e", fillOpacity: .9 }).addTo(map);
+    var errBox = document.getElementById("error-box");
+    function showErr(msg) { if (!errBox) return; errBox.textContent = msg; errBox.style.display = msg ? "block" : "none"; }
+    function setBadge(text, cls) {
+      var el = document.getElementById("status-badge");
+      if (!el) return;
+      el.textContent = text;
+      el.className = "badge " + cls;
+    }
+    function sendPosition(pos) {
+      fetch("/rastreio/" + encodeURIComponent(token) + "/posicao", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+          speed: pos.coords.speed,
+          heading: pos.coords.heading
+        })
+      }).then(function (r) { return r.json(); }).then(function (data) {
+        if (!data.ok) showErr(data.error || "Erro ao enviar posicao.");
+        else showErr("");
+      }).catch(function () { showErr("Sem conexao para enviar GPS."); });
+      marker.setLatLng([pos.coords.latitude, pos.coords.longitude]);
+      map.panTo([pos.coords.latitude, pos.coords.longitude]);
+    }
+    function startWatch() {
+      if (!navigator.geolocation) { showErr("Geolocalizacao nao disponivel neste dispositivo."); return; }
+      watchId = navigator.geolocation.watchPosition(sendPosition, function (e) {
+        showErr(e.message || "Permissao de localizacao negada.");
+      }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 });
+    }
+    function stopWatch() {
+      if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+    var btnStart = document.getElementById("btn-start");
+    if (btnStart) {
+      btnStart.addEventListener("click", function () {
+        btnStart.disabled = true;
+        fetch("/rastreio/" + encodeURIComponent(token) + "/iniciar", { method: "POST" })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (!data.ok) { showErr(data.error || "Nao foi possivel iniciar."); btnStart.disabled = false; return; }
+            active = true;
+            setBadge("VIAGEM ATIVA", "badge-live");
+            btnStart.remove();
+            var btnEnd = document.getElementById("btn-end");
+            if (!btnEnd) {
+              btnEnd = document.createElement("button");
+              btnEnd.type = "button";
+              btnEnd.className = "btn-end";
+              btnEnd.id = "btn-end";
+              btnEnd.textContent = "ENCERRAR VIAGEM";
+              document.querySelector(".actions").appendChild(btnEnd);
+              bindEnd(btnEnd);
+            }
+            startWatch();
+          });
+      });
+    }
+    function bindEnd(btn) {
+      btn.addEventListener("click", function () {
+        if (!confirm("Encerrar viagem?")) return;
+        stopWatch();
+        fetch("/rastreio/" + encodeURIComponent(token) + "/encerrar", { method: "POST" })
+          .then(function () {
+            setBadge("VIAGEM ENCERRADA", "badge-end");
+            btn.disabled = true;
+          });
+      });
+    }
+    var btnEnd = document.getElementById("btn-end");
+    if (btnEnd) bindEnd(btnEnd);
+    if (active && !ended) startWatch();
+    window.setTimeout(function () { map.invalidateSize(); }, 200);
+  })();
+  </script>
+</body>
+</html>

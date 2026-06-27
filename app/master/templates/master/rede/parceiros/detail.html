@@ -9,6 +9,7 @@
   <div style="display:flex;gap:8px">
     <a class="btn btn-secondary" href="/rede/parceiros">Voltar</a>
     <a class="btn btn-primary" href="/rede/parceiros/{{ partner.id }}/editar">Editar</a>
+    <a class="btn btn-danger" href="/rede/parceiros/{{ partner.id }}/excluir">Excluir</a>
     <form method="post" action="/rede/parceiros/{{ partner.id }}/toggle">
       <button type="submit" class="btn btn-secondary">{% if partner.status == 'Ativo' %}Desativar{% else %}Ativar{% endif %}</button>
     </form>
@@ -40,7 +41,10 @@
           <td><code>{{ row.codigo_ref }}</code></td>
           <td>{{ row.comissao_display }}</td>
           <td>{{ row.status_label }}</td>
-          <td><a class="btn btn-secondary btn-sm" href="/rede/contribuidores/{{ row.id }}/editar">Editar</a></td>
+          <td>
+            <a class="btn btn-secondary btn-sm" href="/rede/contribuidores/{{ row.id }}">Detalhes</a>
+            <a class="btn btn-secondary btn-sm" href="/rede/contribuidores/{{ row.id }}/editar">Editar</a>
+          </td>
         </tr>
         {% else %}
         <tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Nenhum contribuidor cadastrado.</td></tr>

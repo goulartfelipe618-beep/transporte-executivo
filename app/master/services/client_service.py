@@ -4,6 +4,8 @@ from __future__ import annotations
 from app.company_model import is_corporate_client
 from app.repository.ids import next_entity_id
 
+from .location_service import apply_location_payload
+
 
 def client_display_name(client):
     return str(client.get("nome") or client.get("nome_completo") or "").strip()
@@ -70,7 +72,6 @@ def _collect_addresses(form_data):
 
 def _build_payload(form_data, *, existing=None):
     existing = existing or {}
-    enderecos = _collect_addresses(form_data)
     payload = {
         "id": existing.get("id") or next_entity_id("cli", getattr(form_data, "_clients_ref", []) or []),
         "tipo_pessoa": "fisica",
@@ -82,15 +83,11 @@ def _build_payload(form_data, *, existing=None):
         "email": str(form_data.get("email", "")).strip().lower(),
         "telefone": str(form_data.get("telefone", "")).strip(),
         "telefone_2": str(form_data.get("telefone_2", "")).strip(),
-        "estado": str(form_data.get("estado", "")).strip().upper(),
         "endereco_tipo": str(form_data.get("endereco_tipo", "casa")).strip() or "casa",
-        "endereco": str(form_data.get("endereco", "")).strip(),
-        "enderecos": enderecos,
         "foto_perfil": str(form_data.get("foto_perfil", existing.get("foto_perfil", ""))).strip(),
     }
-    if enderecos:
-        payload["endereco"] = enderecos[0]["endereco"]
-        payload["endereco_tipo"] = enderecos[0]["tipo"]
+    apply_location_payload(payload, form_data, existing=existing)
+    payload["enderecos"] = _collect_addresses(payload)
     return payload
 
 

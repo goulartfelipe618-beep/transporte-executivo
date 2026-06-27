@@ -8,9 +8,10 @@
 | `sistema.transporteexecutivo.com` | Master Web FastAPI | **8772** | `Dockerfile.sistema` |
 | `driver.transporteexecutivo.com` | Portal Motorista | **8765** | `Dockerfile.sistema` |
 | `business.transporteexecutivo.com` | Portal Empresa | **8766** | `Dockerfile.sistema` |
+| `rastreio.transporteexecutivo.com` | Geolocalizador (links `/rastreio/*`) | **8772** | `Dockerfile.sistema` |
 | `engine.transporteexecutivo.com` | Motor de Reservas | **8000** | `Dockerfile` |
 
-**App 1 — Sistema:** um container, quatro domínios, quatro portas HTTP.  
+**App 1 — Sistema:** um container, cinco domínios, portas HTTP conforme tabela.  
 **App 2 — Motor:** container separado, porta 8000.
 
 ---
@@ -34,6 +35,7 @@ MASTER_SECRET_KEY=...minimo-32-caracteres...
 SISTEMA_WEB_BASE_URL=https://sistema.transporteexecutivo.com
 DRIVER_PORTAL_BASE_URL=https://driver.transporteexecutivo.com
 COMPANY_PORTAL_BASE_URL=https://business.transporteexecutivo.com
+TRACKING_PORTAL_BASE_URL=https://rastreio.transporteexecutivo.com
 INTEGRACAO_API_BASE_URL=https://api.transporteexecutivo.com
 ENGINE_BASE_URL=https://engine.transporteexecutivo.com
 ```

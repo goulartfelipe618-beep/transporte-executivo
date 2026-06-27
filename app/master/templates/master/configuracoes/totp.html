@@ -1,0 +1,68 @@
+{% extends "master/base.html" %}
+{% block title %}2FA — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Autenticacao em 2 fatores (2FA)</h2>
+    <p>TOTP compativel com Google Authenticator, Authy e similares.</p>
+  </div>
+  <a class="btn btn-secondary" href="/configuracoes">Voltar</a>
+</div>
+
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+{% if success_msg %}<div class="alert alert-success">{{ success_msg }}</div>{% endif %}
+{% if obrigatorio and not totp.enabled %}
+<div class="alert alert-warning">
+  <strong>2FA obrigatorio.</strong> Configure a autenticacao em dois fatores para acessar o sistema. Ate ativar, nenhuma outra area ficara disponivel.
+  <form method="post" action="/logout" style="margin-top:10px"><button type="submit" class="btn btn-secondary btn-sm">Sair</button></form>
+</div>
+{% endif %}
+
+{% if totp.enabled %}
+<div class="form-section">
+  <h3>2FA ativo</h3>
+  <p class="muted">Ativado em {{ totp.enabled_em or '—' }}. Acoes sensiveis exigem codigo do autenticador.</p>
+  <form method="post" action="/configuracoes/2fa/desativar" class="form-grid" style="max-width:360px;margin-top:12px">
+    <div class="field field-full">
+      <label>Codigo atual (6 digitos)</label>
+      <input name="totp_code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required autocomplete="one-time-code"/>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Desativar autenticacao em 2 fatores?')">Desativar 2FA</button>
+    </div>
+  </form>
+</div>
+{% else %}
+<div class="form-section">
+  <h3>Ativar 2FA</h3>
+  <p class="muted">Escaneie o QR Code ou copie o codigo manual no aplicativo autenticador. Depois informe o codigo de 6 digitos para confirmar.</p>
+
+  {% if setup_secret %}
+  <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;margin:16px 0">
+    <img src="{{ qr_data_url }}" alt="QR Code 2FA" width="220" height="220" style="border:1px solid var(--line);border-radius:8px"/>
+    <div style="flex:1;min-width:240px">
+      <label class="muted" style="font-size:.85rem">Codigo manual</label>
+      <div class="inline-copy" style="margin-top:6px">
+        <input id="totp-secret" readonly value="{{ setup_secret }}"/>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('totp-secret').value)">Copiar</button>
+      </div>
+      <p class="hint">Conta: {{ totp.account }}</p>
+    </div>
+  </div>
+  <form method="post" action="/configuracoes/2fa/ativar" style="max-width:360px">
+    <div class="field">
+      <label>Codigo de verificacao</label>
+      <input name="totp_code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required autocomplete="one-time-code"/>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-success">Confirmar e ativar 2FA</button>
+    </div>
+  </form>
+  {% else %}
+  <form method="post" action="/configuracoes/2fa/gerar">
+    <button type="submit" class="btn btn-primary">Gerar QR Code</button>
+  </form>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -243,6 +243,38 @@ a:hover { color: var(--primary-dark); }
 .btn-sm { padding: 5px 10px; font-size: .76rem; }
 
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+.card.coverage-map-card { overflow: visible; }
+.coverage-map-grid { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 14px; align-items: stretch; }
+.coverage-map {
+  height: 420px;
+  min-height: 420px;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-alt);
+  z-index: 0;
+}
+.coverage-map.leaflet-container { height: 420px !important; min-height: 420px !important; }
+.coverage-map-side {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px;
+  background: var(--panel-alt);
+  min-height: 420px;
+}
+.coverage-map-side .metric-mini {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+}
+.coverage-map-side .metric-mini:last-child { border-bottom: 0; }
+@media (max-width: 980px) {
+  .coverage-map-grid { grid-template-columns: 1fr; }
+  .coverage-map, .coverage-map.leaflet-container { height: 320px !important; min-height: 320px !important; }
+  .coverage-map-side { min-height: auto; }
+}
 .card-body { padding: 16px 18px; }
 .grid-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .metric, .metric-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 14px 16px; box-shadow: var(--shadow-sm); }

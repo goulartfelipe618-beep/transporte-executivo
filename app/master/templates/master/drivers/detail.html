@@ -6,6 +6,7 @@
   <div>
     <a class="btn btn-secondary" href="/motoristas">Voltar</a>
     <a class="btn btn-secondary" href="/motoristas/{{ driver.id }}/editar">Editar</a>
+    <a class="btn btn-danger" href="/motoristas/{{ driver.id }}/excluir">Excluir</a>
     {% if (driver.frota or '')|lower not in ['bloqueado','inativo'] %}
     <form method="post" action="/motoristas/{{ driver.id }}/bloquear" style="display:inline" onsubmit="return confirm('Bloquear?')"><button class="btn btn-danger">Bloquear</button></form>
     {% else %}

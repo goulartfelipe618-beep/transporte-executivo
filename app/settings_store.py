@@ -32,20 +32,52 @@ def _load_supabase_settings():
 
 
 def load_settings():
-    return _load_supabase_settings()
+    from .repository.supabase_client import is_configured
+
+    if is_configured():
+        try:
+            return _load_supabase_settings()
+        except RuntimeError:
+            pass
+    return _load_local_settings()
 
 
 def save_settings(data):
     from .repository.supabase_client import is_configured, upsert_row
+    from .totp_auth import merge_security_fields
+
+    existing = load_settings()
+    merged = merge_security_fields(dict(data), existing)
 
     if not is_configured():
-        raise RuntimeError("Supabase obrigatorio para salvar configuracoes.")
+        _write_local_settings(merged)
+        return
+
     upsert_row(
         "settings",
-        {"chave": SETTINGS_KEY, "valor": data, "descricao": "Configuracoes Sistema Master"},
+        {"chave": SETTINGS_KEY, "valor": merged, "descricao": "Configuracoes Sistema Master"},
         on_conflict="chave",
     )
 
+    _write_local_settings(merged)
+
+
+def _load_local_settings():
+    if not os.path.isfile(SETTINGS_FILE):
+        return _empty_settings()
+    try:
+        with open(SETTINGS_FILE, encoding="utf-8") as handle:
+            raw = json.load(handle)
+        if isinstance(raw, dict):
+            merged = _empty_settings()
+            merged.update(raw)
+            return merged
+    except (OSError, json.JSONDecodeError):
+        pass
+    return _empty_settings()
+
+
+def _write_local_settings(data):
     os.makedirs(os.path.dirname(SETTINGS_FILE), exist_ok=True)
     with open(SETTINGS_FILE, "w", encoding="utf-8") as handle:
         json.dump(data, handle, ensure_ascii=False, indent=2)

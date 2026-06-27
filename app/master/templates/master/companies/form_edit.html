@@ -13,13 +13,20 @@
       <div class="field"><label>Telefone</label><input name="telefone" value="{{ company.telefone or '' }}"/></div>
       <div class="field"><label>Responsavel</label><input name="responsavel" value="{{ company.responsavel or '' }}"/></div>
       <div class="field"><label>Status</label><select name="status_empresa">{% for s in company_statuses %}<option value="{{ s }}" {% if (company.status_empresa or 'Ativa') == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
-      <div class="field"><label>Portal ativo?</label><select name="portal_ativo"><option value="1" {% if company.portal_ativo %}selected{% endif %}>Sim</option><option value="0" {% if not company.portal_ativo %}selected{% endif %}>Nao</option></select></div>
-      <div class="field field-full"><label>Endereco</label><input name="endereco" value="{{ company.endereco or '' }}"/></div>
+    </div>
+  </div>
+  <div class="form-section"><h3>Endereco obrigatorio</h3>
+    <p class="hint">Selecione Estado, Cidade e Bairro/Regiao pelo IBGE. Depois digite rua e numero manualmente.</p>
+    <div class="form-grid">
+      <div class="field"><label>Tipo</label><input name="endereco_tipo" value="{{ form.endereco_tipo or 'comercial' }}"/></div>
+      {% set location_value = form %}
+      {% include "master/_location_fields.html" %}
     </div>
   </div>
   <div class="form-actions"><button type="submit" class="btn btn-success">Salvar</button></div>
 </form>
-<div class="form-section" id="portal"><h3>Portal</h3>
-  <div class="inline-copy"><input id="portal-link" readonly value="{{ portal.portal_link }}"/><button type="button" class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('portal-link').value)">Copiar</button></div>
+<div class="form-section" id="portal"><h3>Portal (somente leitura)</h3>
+  <p class="hint">Editar a empresa nao altera link, token nem login. So a exclusao remove o portal.</p>
+  <div class="inline-copy"><input id="portal-link" readonly value="{{ portal.portal_link }}"/><button type="button" class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('portal-link').value)">Copiar link</button></div>
 </div>
 {% endblock %}

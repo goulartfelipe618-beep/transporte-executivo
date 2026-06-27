@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-25T22:12:31.603608",
+  "saved_at": "2026-06-27T16:16:02.503682",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "b6cc6dba6f92c51fc8cbd9e642590aa107dd09d3974d783b1aa5deb5df48907e",
@@ -9,10 +9,10 @@
       "sha256": "d2490f9693e9b0843f56c56e385713e248bf63b386ffc0fabeda95834fb70fe8"
     },
     ".env.sistema.example": {
-      "sha256": "fa8bebad1d9b15741b0902ca8443238f51d3027d7cb187452e64c3967f224ace"
+      "sha256": "744c84e4cfbb673e9214dd990757832b1671e7451b3aabf91ab83d97342d43ab"
     },
     "DEPLOY_EASYPANEL.md": {
-      "sha256": "9f7c4b4bb9af3913203165c9b8889eb776fe6a56e3933238a1f8fb4c289026e2"
+      "sha256": "8901e31dae94cc10933ec0f5c5a14bde08b4a8657e4e657caf465366c6d6915b"
     },
     "Dockerfile": {
       "sha256": "c7bcd3babf67699275c8b5b23cd9628cb99ac57a766e9a3166e7a0109ef5d867"
@@ -28,7 +28,7 @@
       "marker": "authenticate_admin"
     },
     "app/admin_login.py": {
-      "sha256": "4ca35cac53f34a9c9eb3750b0e6a4fa6b89a46a1a2c2e4e7906d39e2340585f0",
+      "sha256": "7c19f2e1891f0f6183862d0d84f678ef89d599fd7f4794c094eade7f7781e965",
       "marker": "require_admin_login"
     },
     "app/automations.py": {
@@ -44,7 +44,7 @@
       "marker": "ensure_code_integrity"
     },
     "app/company_portal.py": {
-      "sha256": "53c2b7f7e09a4b4de0921a4454bd31a2e80c8187a63f939a9d55fd81db8e9ecd",
+      "sha256": "de495eaf00445d468978ecd3f24405e4e4e2a65a3ab9f22c3e91895f033652ed",
       "marker": "start_company_portal_server"
     },
     "app/components.py": {
@@ -60,7 +60,7 @@
       "marker": "INITIAL_RESERVATIONS = []"
     },
     "app/full_features.py": {
-      "sha256": "30e5bdc743f2f19ad396b0a0b60099c9b97e8514561d1f417d528372812e3f5f",
+      "sha256": "f6a55c8e7f0dae380bda1a27e0f30dfddaffe5e20888be704305d368a6052ff9",
       "marker": "render_settings"
     },
     "app/geography.py": {
@@ -68,7 +68,7 @@
       "marker": "operational_points"
     },
     "app/ibge.py": {
-      "sha256": "47f7e6e4ac7021ff0ee1cae7596997e324c9491133ca4bc1d766cbb94bc5b0d6",
+      "sha256": "7aa5aa35cbb95ba9129e5924fcd9bdd456ab73d913ead8f5ecc6ce18168f8e50",
       "marker": "get_states"
     },
     "app/main_window.py": {
@@ -106,7 +106,7 @@
       "marker": "start_driver_portal_server"
     },
     "app/portal_urls.py": {
-      "sha256": "915b21def4c03581df9845c8f1aa592876e361632e55bdb479d78e7341f76f51",
+      "sha256": "29a21e37767ffb20de9d2bcc15a72df0e351f10379a319807538dddf9e41ca49",
       "marker": "company_portal_link"
     },
     "app/pricing_engine.py": {
@@ -114,7 +114,7 @@
       "marker": "list_pricing_sources"
     },
     "app/production_runtime.py": {
-      "sha256": "4b582eab8509d4d75db151a3d465575127a3d54d08ea857ead6e1944ebc51fab",
+      "sha256": "6b4c333fda3aa4d818bfb851a4bd03b1946719a854cb1a8d179f713d1bd99329",
       "marker": "bootstrap_production_services"
     },
     "app/repository/app_repository.py": {
@@ -145,7 +145,7 @@
       "marker": "download_reservation"
     },
     "app/settings_store.py": {
-      "sha256": "e7e563d4361ecf7c9afe7d451ec1c5a54ef59bd7767217913ba2b3f591e4b15e",
+      "sha256": "5fa1dbfcfcd88b74c00fa92d0caa2baa3bc3ed03f1eb8d70342668971609489d",
       "marker": "DEFAULT_SETTINGS"
     },
     "app/sidebar.py": {
@@ -181,7 +181,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "38ca067072a2b1c3ce8227def44426c2d3defa43e6178d96d76fc4e5daaef8e0",
+      "sha256": "d72b02a174291dfc22c11409e862f552e8a13493bae6c665bf3c0dd03939b7d4",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {

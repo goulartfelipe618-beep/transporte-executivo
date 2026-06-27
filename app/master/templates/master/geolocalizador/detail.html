@@ -1,0 +1,66 @@
+{% extends "master/base.html" %}
+{% block title %}Detalhes — Geolocalizador{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ link.cliente_nome or link.reservation_numero }}</h2>
+    <p>{{ link.reservation_numero }} · {{ link.target_label }} · {{ link.status_label }}</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-secondary" href="/geolocalizador">Voltar</a>
+    <a class="btn btn-secondary" href="/geolocalizador/{{ link.id }}/acompanhar">Acompanhar</a>
+    <a class="btn btn-danger" href="/geolocalizador/{{ link.id }}/excluir">Excluir</a>
+  </div>
+</div>
+{% if created %}<div class="alert alert-success">Link criado. URL copiada abaixo — use <strong>Comunicar</strong> na lista para registrar envio.</div>{% endif %}
+{% if request.query_params.get('comunicado') %}<div class="alert alert-success">Envio registrado na central.</div>{% endif %}
+
+<div class="cards-grid">
+  <div class="metric-card"><span>Status</span><strong>{{ link.status_label }}</strong></div>
+  <div class="metric-card"><span>Rastreado</span><strong>{{ link.target_label }}</strong></div>
+  <div class="metric-card"><span>Pontos GPS</span><strong>{{ link.positions_count }}</strong></div>
+  <div class="metric-card"><span>Inicio</span><strong style="font-size:.85rem">{{ link.started_at or '—' }}</strong></div>
+</div>
+
+<div class="form-section">
+  <h3>Link publico ({{ tracking_domain }})</h3>
+  <div class="inline-copy">
+    <input id="public-url" readonly value="{{ link.public_url }}" style="flex:1"/>
+    <button type="button" class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('public-url').value)">Copiar</button>
+    <a class="btn btn-secondary btn-sm" href="{{ link.public_url }}" target="_blank" rel="noopener">Abrir</a>
+  </div>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <div class="card-body detail-grid">
+    <div class="detail-item"><div class="k">Reserva</div><div class="v">{{ link.reservation_numero }}</div></div>
+    <div class="detail-item"><div class="k">Cliente</div><div class="v">{{ reservation.cliente or link.cliente_nome or '—' }}</div></div>
+    <div class="detail-item"><div class="k">Trajeto</div><div class="v">{{ reservation.trajeto or '—' }}</div></div>
+    <div class="detail-item"><div class="k">Motorista</div><div class="v">{{ reservation.motorista or '—' }}</div></div>
+    <div class="detail-item"><div class="k">Telefone</div><div class="v">{{ link.telefone or '—' }}</div></div>
+    <div class="detail-item"><div class="k">Encerrada em</div><div class="v">{{ link.ended_at or '—' }}</div></div>
+  </div>
+</div>
+
+{% set summary = link.summary or {} %}
+<div class="form-section">
+  <h3>Resumo da viagem</h3>
+  <div class="detail-grid">
+    <div class="detail-item"><div class="k">Distancia</div><div class="v">{% if summary.distance_km %}{{ summary.distance_km }} km{% else %}—{% endif %}</div></div>
+    <div class="detail-item"><div class="k">Tempo</div><div class="v">{% if summary.duration_min %}{{ summary.duration_min }} min{% else %}—{% endif %}</div></div>
+    <div class="detail-item"><div class="k">Inicio GPS</div><div class="v">{{ summary.start_label or '—' }}</div></div>
+    <div class="detail-item"><div class="k">Fim GPS</div><div class="v">{{ summary.end_label or '—' }}</div></div>
+  </div>
+  {% if link.observacoes %}<p class="muted" style="margin-top:12px">{{ link.observacoes }}</p>{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+{% if created %}
+<script>
+(function () {
+  var input = document.getElementById("public-url");
+  if (input && input.value) navigator.clipboard.writeText(input.value).catch(function () {});
+})();
+</script>
+{% endif %}
+{% endblock %}

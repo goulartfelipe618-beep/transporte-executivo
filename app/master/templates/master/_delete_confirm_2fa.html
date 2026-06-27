@@ -1,0 +1,41 @@
+{% extends "master/base.html" %}
+{% block title %}{{ entity_title }} — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ entity_title }}</h2>
+    <p><strong>{{ entity_name }}</strong> · <code>{{ entity_id }}</code></p>
+  </div>
+  <a class="btn btn-secondary" href="{{ cancel_url }}">Cancelar</a>
+</div>
+
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+
+<div class="alert alert-warning">
+  {{ warning_message }}
+</div>
+
+{% if not totp_enabled %}
+<div class="alert alert-error">
+  O 2FA nao esta configurado. Ative em <a href="/configuracoes/2fa">Sistema &gt; Configuracoes &gt; 2FA</a> antes de excluir registros.
+</div>
+{% else %}
+<form method="post" action="{{ post_url }}" style="max-width:420px">
+  <div class="form-section">
+    <h3>Confirmacao com 2FA</h3>
+    <p class="muted">Digite o codigo de 6 digitos do seu autenticador para autorizar a exclusao.</p>
+    <div class="field" style="margin-top:12px">
+      <label>Codigo 2FA</label>
+      <input name="totp_code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required autocomplete="one-time-code"/>
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label>Digite o identificador para confirmar</label>
+      <input name="confirm_id" placeholder="{{ entity_id }}" required/>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Confirma a exclusao permanente?')">Excluir permanentemente</button>
+    </div>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

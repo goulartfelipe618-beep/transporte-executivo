@@ -5,6 +5,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 
 from ...dependencies import get_runtime, resolve_admin_or_redirect, template_context, templates
+from ...services.delete_guard import delete_confirm_response, verify_delete_confirmation
 from ...services.client_service import (
     client_display_name,
     client_document,
@@ -15,6 +16,7 @@ from ...services.client_service import (
     list_summary,
     update_client,
 )
+from ...services.location_service import location_form_context
 from ...validators.client import validate_client_form
 
 router = APIRouter(prefix="/clientes", tags=["master-clients"])
@@ -58,6 +60,7 @@ async def create_form(request: Request):
             active_nav="clientes",
             form={},
             error="",
+            **location_form_context({}),
         ),
     )
 
@@ -80,6 +83,7 @@ async def create_submit(request: Request):
                 active_nav="clientes",
                 form=form_data,
                 error=" ".join(errors),
+                **location_form_context(form_data),
             ),
             status_code=400,
         )
@@ -127,7 +131,9 @@ async def edit_form(request: Request, client_id: str):
             admin=admin,
             active_nav="clientes",
             client=client,
+            form=client,
             error="",
+            **location_form_context(client),
         ),
     )
 
@@ -150,7 +156,9 @@ async def edit_submit(request: Request, client_id: str):
                 admin=admin,
                 active_nav="clientes",
                 client=client or {"id": client_id},
+                form=form_data,
                 error=" ".join(errors),
+                **location_form_context(form_data),
             ),
             status_code=400,
         )
@@ -164,11 +172,37 @@ async def edit_submit(request: Request, client_id: str):
                 admin=admin,
                 active_nav="clientes",
                 client=updated or client or {"id": client_id},
+                form=form_data,
                 error=error,
+                **location_form_context(form_data),
             ),
             status_code=400,
         )
     return RedirectResponse(f"/clientes/{client_id}", status_code=303)
+
+
+@router.get("/{client_id}/excluir")
+async def delete_form(request: Request, client_id: str):
+    admin, redirect = resolve_admin_or_redirect(request)
+    if redirect:
+        return redirect
+    runtime = get_runtime(request)
+    client = find_physical_client(runtime, client_id)
+    if not client:
+        return RedirectResponse("/clientes", status_code=303)
+    name = client_display_name(client)
+    entity_id = str(client.get("id", ""))
+    return delete_confirm_response(
+        request,
+        admin,
+        active_nav="clientes",
+        entity_title="Excluir cliente",
+        entity_name=name,
+        entity_id=entity_id,
+        cancel_url=f"/clientes/{client_id}",
+        post_url=f"/clientes/{client_id}/excluir",
+        warning_message="Esta acao e irreversivel. O cadastro do cliente pessoa fisica sera removido permanentemente.",
+    )
 
 
 @router.post("/{client_id}/excluir")
@@ -177,5 +211,27 @@ async def delete_submit(request: Request, client_id: str):
     if redirect:
         return redirect
     runtime = get_runtime(request)
+    client = find_physical_client(runtime, client_id)
+    if not client:
+        return RedirectResponse("/clientes", status_code=303)
+
+    form_data = _form_dict(await request.form())
+    name = client_display_name(client)
+    entity_id = str(client.get("id", ""))
+    ok, err = verify_delete_confirmation(form_data, entity_id)
+    if not ok:
+        return delete_confirm_response(
+            request,
+            admin,
+            active_nav="clientes",
+            entity_title="Excluir cliente",
+            entity_name=name,
+            entity_id=entity_id,
+            cancel_url=f"/clientes/{client_id}",
+            post_url=f"/clientes/{client_id}/excluir",
+            warning_message="Esta acao e irreversivel. O cadastro do cliente pessoa fisica sera removido permanentemente.",
+            error=err,
+            status_code=400,
+        )
     delete_client(runtime, client_id)
-    return RedirectResponse("/clientes", status_code=303)
+    return RedirectResponse("/clientes?success=Cliente+excluido", status_code=303)

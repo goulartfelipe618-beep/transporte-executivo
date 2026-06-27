@@ -23,15 +23,15 @@
       <div class="field"><label>E-mail</label><input name="email" type="email" value="{{ form.email or '' }}"/></div>
       <div class="field"><label>Telefone 1</label><input name="telefone" value="{{ form.telefone or '' }}"/></div>
       <div class="field"><label>Telefone 2</label><input name="telefone_2" value="{{ form.telefone_2 or '' }}"/></div>
-      <div class="field"><label>Estado (UF)</label><input name="estado" value="{{ form.estado or '' }}"/></div>
     </div>
   </div>
   <div class="form-section">
-    <h3>Enderecos</h3>
-    <p class="hint">Primeiro o tipo (ex.: casa, trabalho, escola), depois o endereco.</p>
+    <h3>Endereco obrigatorio</h3>
+    <p class="hint">Selecione Estado, Cidade e Bairro/Regiao pelo IBGE. Depois digite rua e numero manualmente.</p>
     <div class="form-grid">
       <div class="field"><label>Tipo</label><input name="endereco_tipo" placeholder="casa..." value="{{ form.endereco_tipo or 'casa' }}"/></div>
-      <div class="field field-full"><label>Endereco</label><input name="endereco" placeholder="Rua, numero, cidade..." value="{{ form.endereco or '' }}"/></div>
+      {% set location_value = form %}
+      {% include "master/_location_fields.html" %}
       <div class="field field-full"><label>Endereco adicional</label><input name="endereco_extra" placeholder="Linha extra (opcional)" value="{{ form.endereco_extra or '' }}"/></div>
     </div>
   </div>

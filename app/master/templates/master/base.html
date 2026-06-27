@@ -9,6 +9,7 @@
   <link rel="apple-touch-icon" href="{{ static_url('master/images/favicon.png') }}"/>
   <script>(function(){var t=localStorage.getItem("nexus-master-theme")||"mixed";document.documentElement.setAttribute("data-theme",t);})();</script>
   <style>{{ master_css()|safe }}</style>
+  {% block head_extra %}{% endblock %}
 </head>
 <body>
   <div class="app-shell">
@@ -49,6 +50,7 @@
           <div class="nav-submenu">
             <a href="/solicitacoes" class="nav-link nav-sub{% if active_nav == 'solicitacoes' %} active{% endif %}">SOLICITACOES</a>
             <a href="/reservas" class="nav-link nav-sub{% if active_nav == 'reservas' %} active{% endif %}">RESERVAS</a>
+            <a href="/geolocalizador" class="nav-link nav-sub{% if active_nav == 'geolocalizador' %} active{% endif %}">GEOLOCALIZADOR</a>
           </div>
         </div>
 
@@ -129,6 +131,66 @@
         section.classList.toggle("open");
         btn.setAttribute("aria-expanded", section.classList.contains("open") ? "true" : "false");
       });
+    });
+
+    document.querySelectorAll("[data-geo-state]").forEach(function (stateSelect) {
+      var form = stateSelect.closest("form");
+      if (!form) return;
+      var citySelect = form.querySelector("[data-geo-city]");
+      var cityName = form.querySelector("[data-geo-city-name]");
+      var districtSelect = form.querySelector("[data-geo-district]");
+      if (!citySelect || !districtSelect) return;
+
+      function resetSelect(select, label) {
+        select.innerHTML = "";
+        var option = document.createElement("option");
+        option.value = "";
+        option.textContent = label;
+        select.appendChild(option);
+      }
+
+      function loadCities() {
+        var uf = stateSelect.value || "";
+        resetSelect(citySelect, "Selecione a Cidade");
+        resetSelect(districtSelect, "Selecione o Bairro/Regiao");
+        citySelect.disabled = !uf;
+        districtSelect.disabled = true;
+        if (cityName) cityName.value = "";
+        if (!uf) return;
+        fetch("/abrangencia/api/cidades?uf=" + encodeURIComponent(uf), { credentials: "same-origin" })
+          .then(function (response) { return response.json(); })
+          .then(function (data) {
+            (data.items || []).forEach(function (city) {
+              var option = document.createElement("option");
+              option.value = city.id;
+              option.textContent = city.nome;
+              option.dataset.name = city.nome;
+              citySelect.appendChild(option);
+            });
+          });
+      }
+
+      function loadDistricts() {
+        var selected = citySelect.options[citySelect.selectedIndex];
+        var cityId = citySelect.value || "";
+        if (cityName) cityName.value = selected ? (selected.dataset.name || selected.textContent || "") : "";
+        resetSelect(districtSelect, "Selecione o Bairro/Regiao");
+        districtSelect.disabled = !cityId;
+        if (!cityId) return;
+        fetch("/abrangencia/api/bairros?cidade_ibge_id=" + encodeURIComponent(cityId), { credentials: "same-origin" })
+          .then(function (response) { return response.json(); })
+          .then(function (data) {
+            (data.items || []).forEach(function (district) {
+              var option = document.createElement("option");
+              option.value = district.nome;
+              option.textContent = district.nome;
+              districtSelect.appendChild(option);
+            });
+          });
+      }
+
+      stateSelect.addEventListener("change", loadCities);
+      citySelect.addEventListener("change", loadDistricts);
     });
   })();
   </script>

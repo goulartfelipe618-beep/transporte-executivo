@@ -112,9 +112,18 @@
   <div class="form-section">
     <h3>Seguranca</h3>
     <p class="muted">Credenciais de acesso e autenticacao em dois fatores</p>
+    <div style="padding:12px 14px;background:var(--panel-alt);border:1px solid var(--line);border-radius:8px;margin-bottom:12px">
+      <strong>2FA (TOTP):</strong>
+      {% if totp_enabled %}
+      <span class="status-pill status-ativa">Ativo</span>
+      {% if totp.enabled_em %}<span class="muted"> desde {{ totp.enabled_em }}</span>{% endif %}
+      {% else %}
+      <span class="status-pill status-bloqueada">Desativado</span>
+      <span class="muted"> — obrigatorio para excluir empresas, clientes, motoristas, reservas, rede e webhooks</span>
+      {% endif %}
+    </div>
     <div class="form-actions">
-      <button type="button" class="btn btn-secondary" disabled title="Disponivel no painel desktop">Alterar senha de acesso</button>
-      <button type="button" class="btn btn-secondary" disabled title="Disponivel no painel desktop">Configurar 2FA (TOTP)</button>
+      <a class="btn btn-primary" href="/configuracoes/2fa">Configurar 2FA (TOTP)</a>
     </div>
   </div>
 

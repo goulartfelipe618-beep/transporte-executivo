@@ -9,10 +9,10 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from app.branding import brand_display_name, brand_initials
-from app.cdn.urls import cdn_base, static_url
+from app.cdn.urls import cdn_base, static_url, web_media_url
 
 from .config import get_settings
-from .services.auth_service import resolve_admin
+from .services.auth_service import is_totp_session_verified, resolve_admin
 from .web_assets import load_master_css
 
 MASTER_DIR = Path(__file__).resolve().parent
@@ -23,6 +23,7 @@ MASTER_STATIC_DIR = STATIC_DIR / "master"
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 templates.env.globals["master_css"] = load_master_css
 templates.env.globals["static_url"] = static_url
+templates.env.globals["web_media_url"] = web_media_url
 templates.env.globals["cdn_base"] = cdn_base
 
 NAV_TITLES = {
@@ -41,6 +42,7 @@ NAV_TITLES = {
     "financeiro": "Financeiro",
     "configuracoes": "Configuracoes",
     "automacoes": "Automacoes",
+    "geolocalizador": "Geolocalizador",
     "rede": "Rede Comercial",
 }
 
@@ -58,7 +60,7 @@ def template_context(request: Request, admin=None, **extra):
     active_nav = extra.get("active_nav", "")
     nav_open = {
         "financeiro": active_nav == "financeiro" or bool(extra.get("active_finance_tab")),
-        "transfer": active_nav in {"solicitacoes", "reservas"},
+        "transfer": active_nav in {"solicitacoes", "reservas", "geolocalizador"},
         "rede": active_nav == "rede" or bool(extra.get("rede_tab")),
         "sistema": active_nav in {"configuracoes", "automacoes", "leads_empresas", "leads_motoristas"},
     }
@@ -78,8 +80,37 @@ def template_context(request: Request, admin=None, **extra):
     return ctx
 
 
+def _is_totp_exempt_path(path: str) -> bool:
+    if path.startswith("/static/") or path in {"/favicon.ico", "/health", "/api/health", "/api/deploy-info"}:
+        return True
+    if path.startswith("/rastreio"):
+        return True
+    if path.startswith("/api/v1/master/health"):
+        return True
+    if path in {"/", "/login", "/login/captcha", "/logout"}:
+        return True
+    from app.totp_auth import is_totp_enabled
+
+    if not is_totp_enabled():
+        return path.startswith("/configuracoes/2fa")
+    if path == "/login/2fa":
+        return True
+    return False
+
+
 def resolve_admin_or_redirect(request: Request):
     admin = resolve_admin(request)
     if not admin:
         return None, RedirectResponse("/login", status_code=303)
+
+    path = request.url.path.rstrip("/") or "/"
+    if _is_totp_exempt_path(path):
+        return admin, None
+
+    from app.totp_auth import is_totp_enabled
+
+    if not is_totp_enabled():
+        return admin, RedirectResponse("/configuracoes/2fa?obrigatorio=1", status_code=303)
+    if not is_totp_session_verified(request):
+        return admin, RedirectResponse("/login/2fa", status_code=303)
     return admin, None

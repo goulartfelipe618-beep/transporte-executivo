@@ -15,6 +15,7 @@ from ...services.automation_service import (
     type_choices,
     update_domain,
 )
+from ...services.delete_guard import delete_confirm_response, verify_delete_confirmation
 
 router = APIRouter(prefix="/automacoes", tags=["master-automations"])
 
@@ -149,11 +150,57 @@ async def toggle_status(request: Request, token: str):
     return RedirectResponse(f"/automacoes/{token}", status_code=303)
 
 
+@router.get("/{token}/excluir")
+async def delete_form(request: Request, token: str):
+    admin, redirect = resolve_admin_or_redirect(request)
+    if redirect:
+        return redirect
+    runtime = get_runtime(request)
+    item = find_automation(runtime, token)
+    if not item:
+        return RedirectResponse("/automacoes", status_code=303)
+    name = str(item.get("nome") or "Webhook")
+    entity_id = str(item.get("token") or token)
+    return delete_confirm_response(
+        request,
+        admin,
+        active_nav="automacoes",
+        entity_title="Excluir webhook",
+        entity_name=name,
+        entity_id=entity_id,
+        cancel_url=f"/automacoes/{token}",
+        post_url=f"/automacoes/{token}/excluir",
+        warning_message="Esta acao e irreversivel. O webhook e historico de testes serao removidos permanentemente.",
+    )
+
+
 @router.post("/{token}/excluir")
 async def delete_item(request: Request, token: str):
     admin, redirect = resolve_admin_or_redirect(request)
     if redirect:
         return redirect
     runtime = get_runtime(request)
+    item = find_automation(runtime, token)
+    if not item:
+        return RedirectResponse("/automacoes", status_code=303)
+
+    form_data = _form_dict(await request.form())
+    name = str(item.get("nome") or "Webhook")
+    entity_id = str(item.get("token") or token)
+    ok, err = verify_delete_confirmation(form_data, entity_id)
+    if not ok:
+        return delete_confirm_response(
+            request,
+            admin,
+            active_nav="automacoes",
+            entity_title="Excluir webhook",
+            entity_name=name,
+            entity_id=entity_id,
+            cancel_url=f"/automacoes/{token}",
+            post_url=f"/automacoes/{token}/excluir",
+            warning_message="Esta acao e irreversivel. O webhook e historico de testes serao removidos permanentemente.",
+            error=err,
+            status_code=400,
+        )
     delete_automation(runtime, token)
-    return RedirectResponse("/automacoes", status_code=303)
+    return RedirectResponse("/automacoes?success=Webhook+excluido", status_code=303)

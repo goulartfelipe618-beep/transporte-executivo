@@ -224,6 +224,14 @@ def require_admin_login():
             refresh_captcha()
             password_entry.focus_set()
             return
+        from .totp_ui import require_totp_access_gate
+
+        if not require_totp_access_gate(root):
+            show_error("Autenticacao em 2 fatores obrigatoria para acessar o sistema.")
+            password_entry.delete(0, tk.END)
+            refresh_captcha()
+            password_entry.focus_set()
+            return
         result["admin"] = admin_user
         root.destroy()
 

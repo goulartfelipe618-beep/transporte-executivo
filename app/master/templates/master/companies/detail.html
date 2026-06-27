@@ -6,7 +6,8 @@
   <div>
     <a class="btn btn-secondary" href="/empresas">Voltar</a>
     <a class="btn btn-secondary" href="/empresas/{{ company.id }}/editar">Editar</a>
-    {% if company.status_empresa != 'Bloqueada' %}<form method="post" action="/empresas/{{ company.id }}/bloquear" style="display:inline" onsubmit="return confirm('Bloquear?')"><button class="btn btn-danger">Bloquear</button></form>{% endif %}
+    {% if company.status_empresa != 'Bloqueada' %}<form method="post" action="/empresas/{{ company.id }}/bloquear" style="display:inline" onsubmit="return confirm('Bloquear esta empresa?')"><button class="btn btn-danger">Bloquear</button></form>{% endif %}
+    <a class="btn btn-danger" href="/empresas/{{ company.id }}/excluir">Excluir empresa</a>
   </div>
 </div>
 {% if success_msg %}<div class="alert alert-success">{{ success_msg }}</div>{% endif %}
@@ -19,11 +20,37 @@
   <div class="metric-card"><span>Ultima atividade</span><strong style="font-size:.95rem">{{ stats.ultima_atividade }}</strong></div>
 </div>
 <div class="form-section" id="portal"><h3>Portal da Empresa</h3>
+  <p class="hint">Editar dados cadastrais nao altera link, token nem login. Apenas a exclusao remove o portal.</p>
   <div class="form-grid">
     <div class="field"><label>Portal ativo?</label><input readonly value="{% if portal.portal_ativo %}Sim{% else %}Nao{% endif %}"/></div>
     <div class="field"><label>Portal key</label><input readonly value="{{ portal.portal_key }}"/></div>
     <div class="field"><label>Portal codigo</label><input readonly value="{{ portal.portal_codigo }}"/></div>
-    <div class="field field-full"><label>URL</label><div class="inline-copy"><input id="portal-link" readonly value="{{ portal.portal_link }}"/><a class="btn btn-secondary btn-sm" href="{{ portal.portal_link }}" target="_blank" rel="noopener">Abrir</a><button type="button" class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('portal-link').value)">Copiar</button></div></div>
+    {% if portal.first_access_pending %}
+    <div class="field field-full">
+      <label>Token de primeiro acesso</label>
+      <div class="inline-copy">
+        <input readonly value="{{ portal.first_access_token_masked }}" aria-label="Token mascarado"/>
+        <button type="button" class="btn btn-primary btn-sm" id="copy-first-access-token" data-token="{{ portal.first_access_token }}">Copiar token</button>
+      </div>
+      <p class="hint">Caracteres ocultos por seguranca. O link abaixo so abre na primeira visita com este token na URL.</p>
+    </div>
+    {% elif portal.first_access_consumed %}
+    <div class="field field-full">
+      <label>Token de primeiro acesso</label>
+      <div style="padding:10px 12px;background:var(--panel-alt);border:1px solid var(--line);border-radius:8px;color:var(--muted)">Token consumido{% if portal.first_access_consumed_em %} · {{ portal.first_access_consumed_em }}{% endif %}</div>
+    </div>
+    {% endif %}
+    <div class="field field-full">
+      <label>{% if portal.first_access_pending %}Link de primeiro acesso{% else %}URL do portal{% endif %}</label>
+      <div class="inline-copy">
+        <input id="portal-link" readonly value="{{ portal.portal_link }}"/>
+        <a class="btn btn-secondary btn-sm" href="{{ portal.portal_link }}" target="_blank" rel="noopener">Abrir</a>
+        <button type="button" class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('portal-link').value)">Copiar link</button>
+      </div>
+      {% if portal.first_access_consumed and portal.portal_link_permanent %}
+      <p class="hint">Apos o primeiro acesso, use a URL permanente: <code>{{ portal.portal_link_permanent }}</code></p>
+      {% endif %}
+    </div>
   </div>
 </div>
 <div class="form-section"><div class="page-header" style="margin-bottom:8px"><h3>Usuarios</h3><a class="btn btn-success btn-sm" href="/empresas/{{ company.id }}/usuarios/nova">+ Usuario</a></div>
@@ -31,4 +58,18 @@
     <tbody>{% for user in users %}<tr><td>{{ user.nome }}</td><td>{{ user.email }}</td><td>{{ user.perfil }}</td><td>{{ user.status }}</td><td><a class="btn btn-secondary btn-sm" href="/empresas/{{ company.id }}/usuarios/{{ user.id }}/editar">Editar</a></td></tr>{% else %}<tr><td colspan="5" class="muted">Nenhum usuario.</td></tr>{% endfor %}</tbody>
   </table>
 </div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+(function () {
+  var btn = document.getElementById("copy-first-access-token");
+  if (!btn) return;
+  btn.addEventListener("click", function () {
+    var token = btn.getAttribute("data-token") || "";
+    if (!token) return;
+    navigator.clipboard.writeText(token);
+  });
+})();
+</script>
 {% endblock %}

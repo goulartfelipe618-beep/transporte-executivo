@@ -7,6 +7,7 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import RedirectResponse, Response
 
 from ...dependencies import get_runtime, resolve_admin_or_redirect, template_context, templates
+from ...services.delete_guard import delete_confirm_response, verify_delete_confirmation
 from ...services.address_po_service import operational_point_options
 from ...services.client_service import booking_customer_options
 from ...services.reservation_service import (
@@ -215,14 +216,62 @@ async def edit_submit(request: Request, numero: str):
     return RedirectResponse(f"/reservas/{quote(str(numero).lstrip('#'), safe='')}", status_code=303)
 
 
+@router.get("/{numero}/excluir")
+async def delete_form(request: Request, numero: str):
+    admin, redirect = resolve_admin_or_redirect(request)
+    if redirect:
+        return redirect
+    runtime = get_runtime(request)
+    reservation = find_reservation(runtime, numero)
+    if not reservation:
+        return RedirectResponse("/reservas", status_code=303)
+    numero_slug = quote(str(numero).lstrip("#"), safe="")
+    entity_id = str(reservation.get("numero", numero))
+    label = f"{reservation.get('cliente', 'Reserva')} · {entity_id}"
+    return delete_confirm_response(
+        request,
+        admin,
+        active_nav="reservas",
+        entity_title="Excluir reserva",
+        entity_name=label,
+        entity_id=entity_id,
+        cancel_url=f"/reservas/{numero_slug}",
+        post_url=f"/reservas/{numero_slug}/excluir",
+        warning_message="Esta acao e irreversivel. A reserva e registros financeiros vinculados serao removidos.",
+    )
+
+
 @router.post("/{numero}/excluir")
 async def delete_submit(request: Request, numero: str):
     admin, redirect = resolve_admin_or_redirect(request)
     if redirect:
         return redirect
     runtime = get_runtime(request)
+    reservation = find_reservation(runtime, numero)
+    if not reservation:
+        return RedirectResponse("/reservas", status_code=303)
+
+    form_data = {key: form.get(key, "") for key in (await request.form()).keys()}
+    numero_slug = quote(str(numero).lstrip("#"), safe="")
+    entity_id = str(reservation.get("numero", numero))
+    label = f"{reservation.get('cliente', 'Reserva')} · {entity_id}"
+    ok, err = verify_delete_confirmation(form_data, entity_id)
+    if not ok:
+        return delete_confirm_response(
+            request,
+            admin,
+            active_nav="reservas",
+            entity_title="Excluir reserva",
+            entity_name=label,
+            entity_id=entity_id,
+            cancel_url=f"/reservas/{numero_slug}",
+            post_url=f"/reservas/{numero_slug}/excluir",
+            warning_message="Esta acao e irreversivel. A reserva e registros financeiros vinculados serao removidos.",
+            error=err,
+            status_code=400,
+        )
     delete_reservation(runtime, numero)
-    return RedirectResponse("/reservas", status_code=303)
+    return RedirectResponse("/reservas?success=Reserva+excluida", status_code=303)
 
 
 @router.get("/{numero}/pdf/{via}")

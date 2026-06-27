@@ -1,1 +1,1 @@
-APP_BUILD = "2026.06.26-reservas-edit4"
+APP_BUILD = "2026.06.27-rastreio-domain"

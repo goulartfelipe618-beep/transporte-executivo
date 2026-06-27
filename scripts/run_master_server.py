@@ -14,8 +14,10 @@ if __name__ == "__main__":
     from app.master.config import get_settings
     from app.master.main import create_master_app
     from app.production_runtime import RuntimeApp
+    from app.tracking_links import ensure_tracking_links_loaded
 
     runtime = RuntimeApp()
+    ensure_tracking_links_loaded(runtime)
     settings = get_settings()
     app = create_master_app(runtime)
     host = bind_host()

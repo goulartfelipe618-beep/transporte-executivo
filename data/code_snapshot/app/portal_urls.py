@@ -8,6 +8,7 @@ DEFAULT_SISTEMA_BASE = "https://sistema.transporteexecutivo.com"
 DEFAULT_DRIVER_BASE = "https://driver.transporteexecutivo.com"
 DEFAULT_BUSINESS_BASE = "https://business.transporteexecutivo.com"
 DEFAULT_ENGINE_BASE = "https://engine.transporteexecutivo.com"
+DEFAULT_TRACKING_BASE = "https://rastreio.transporteexecutivo.com"
 
 
 def _env(name, default):
@@ -34,6 +35,22 @@ def engine_base():
     return _env("ENGINE_BASE_URL", DEFAULT_ENGINE_BASE).rstrip("/")
 
 
+def tracking_portal_base():
+    """Dominio canonico do Geolocalizador (links publicos /rastreio/{token})."""
+    return _env("TRACKING_PORTAL_BASE_URL", DEFAULT_TRACKING_BASE).rstrip("/")
+
+
+def tracking_portal_host():
+    from urllib.parse import urlparse
+
+    return urlparse(tracking_portal_base()).netloc.split(":")[0].lower()
+
+
+def tracking_link(token: str) -> str:
+    token = str(token or "").strip()
+    return f"{tracking_portal_base()}/rastreio/{token}" if token else ""
+
+
 def company_portal_link(company):
     company_id = str((company or {}).get("id", "")).strip()
     codigo = str((company or {}).get("portal_codigo", "")).strip().upper()
@@ -43,6 +60,16 @@ def company_portal_link(company):
     if legacy:
         return f"{company_portal_base()}/empresa/{legacy}"
     return ""
+
+
+def company_portal_first_access_link(company, token: str = "") -> str:
+    base = company_portal_link(company)
+    if not base:
+        return ""
+    raw_token = str(token or (company or {}).get("portal_first_access_token", "")).strip()
+    if not raw_token:
+        return base
+    return f"{base}?token={raw_token}"
 
 
 def driver_portal_link(driver, slug=None):

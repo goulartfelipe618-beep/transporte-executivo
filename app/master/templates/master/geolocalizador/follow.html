@@ -1,0 +1,71 @@
+{% extends "master/base.html" %}
+{% block head_extra %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+{% endblock %}
+{% block title %}Acompanhar — {{ link.cliente_nome or link.reservation_numero }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Acompanhar rastreio</h2>
+    <p>{{ link.cliente_nome or link.reservation_numero }} · {{ link.target_label }} · <span id="geo-status">{{ link.status_label }}</span></p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-secondary" href="/geolocalizador/{{ link.id }}">Detalhes</a>
+    <a class="btn btn-secondary" href="/geolocalizador">Lista</a>
+  </div>
+</div>
+<div id="geo-waiting" class="alert alert-info" {% if link.status != 'aguardando' %}style="display:none"{% endif %}>
+  Aguardando o usuario clicar em <strong>Iniciar viagem</strong> no link publico. A posicao aparecera aqui em tempo real.
+</div>
+<div class="card coverage-map-card">
+  <div id="geo-follow-map" class="coverage-map" style="height:480px;min-height:480px"></div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+  var linkId = {{ link.id|tojson }};
+  var map, marker, pathLayer;
+  var host = document.getElementById("geo-follow-map");
+  if (!host || !window.L) return;
+
+  map = L.map(host).setView([-23.5505, -46.6333], 12);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18,
+    attribution: "&copy; OpenStreetMap"
+  }).addTo(map);
+  pathLayer = L.polyline([], { color: "#2563eb", weight: 4 }).addTo(map);
+  marker = L.circleMarker([-23.5505, -46.6333], { radius: 10, color: "#16a34a", fillColor: "#16a34a", fillOpacity: 0.9 }).addTo(map);
+
+  function refreshMapSize() { map.invalidateSize({ animate: false }); }
+  window.addEventListener("load", function () { window.requestAnimationFrame(refreshMapSize); });
+
+  function poll() {
+    fetch("/geolocalizador/api/" + encodeURIComponent(linkId) + "/live", { credentials: "same-origin" })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.ok) return;
+        var statusEl = document.getElementById("geo-status");
+        var waitingEl = document.getElementById("geo-waiting");
+        if (statusEl) statusEl.textContent = data.status_label || data.status;
+        if (waitingEl) waitingEl.style.display = data.status === "aguardando" ? "" : "none";
+        var pos = data.last_position || {};
+        if (pos.lat && pos.lng) {
+          var latlng = [pos.lat, pos.lng];
+          marker.setLatLng(latlng);
+          var pts = pathLayer.getLatLngs();
+          pts.push(latlng);
+          if (pts.length > 200) pts = pts.slice(-200);
+          pathLayer.setLatLngs(pts);
+          map.panTo(latlng);
+        }
+      })
+      .catch(function () {});
+  }
+  poll();
+  window.setInterval(poll, 4000);
+})();
+</script>
+{% endblock %}

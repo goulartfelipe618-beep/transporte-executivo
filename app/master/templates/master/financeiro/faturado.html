@@ -31,7 +31,7 @@
             <td>{{ money_display(row.value) }}</td>
             <td>{{ row.status }}</td>
             <td><span class="status-pill status-pendente">{{ row.billing_status }}</span></td>
-            <td>{% if numero_slug %}<a class="btn btn-secondary btn-sm" href="/reservas/{{ numero_slug }}">Reserva</a>{% endif %}</td>
+            <td>{% if numero_slug %}<a class="btn btn-secondary btn-sm" href="/reservas/{{ numero_slug }}/editar">Editar</a> <a class="btn btn-secondary btn-sm" href="/reservas/{{ numero_slug }}">Ver</a>{% endif %}</td>
           </tr>
           {% else %}
           <tr><td colspan="8" class="muted" style="text-align:center;padding:28px">Nenhuma reserva faturada pendente de cobranca.</td></tr>

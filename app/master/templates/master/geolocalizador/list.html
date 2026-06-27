@@ -1,0 +1,91 @@
+{% extends "master/base.html" %}
+{% block title %}Geolocalizador — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Geolocalizador</h2>
+    <p>Crie links de rastreio por reserva. Links publicos sempre em <strong>{{ tracking_domain }}</strong>.</p>
+  </div>
+  <div>
+    <a class="btn btn-secondary" href="/geolocalizador">Atualizar</a>
+    <a class="btn btn-success" href="/geolocalizador/novo">+ Novo link</a>
+  </div>
+</div>
+
+<div class="alert" style="margin-bottom:16px;background:var(--panel-alt);border:1px solid var(--line)">
+  O trajeto comeca quando o usuario clica em <strong>Iniciar viagem</strong> em
+  <code>{{ tracking_domain }}/rastreio/…</code>. Configure este dominio no EasyPanel (porta 8772).
+</div>
+<div class="cards-grid">
+  <div class="metric-card"><span>Links</span><strong>{{ summary.total }}</strong></div>
+  <div class="metric-card"><span>Ao vivo</span><strong>{{ summary.ativos }}</strong></div>
+  <div class="metric-card"><span>Aguardando</span><strong>{{ summary.aguardando }}</strong></div>
+  <div class="metric-card"><span>Encerrados</span><strong>{{ summary.encerrados }}</strong></div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <h3 style="margin:0 0 12px">Links ativos</h3>
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>Reserva / Cliente</th>
+            <th>Rastreado</th>
+            <th>Status</th>
+            <th>Link</th>
+            <th>Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in links %}
+          <tr>
+            <td>
+              <strong>{{ row.cliente_nome or row.reservation_numero }}</strong><br/>
+              <span class="muted">{{ row.reservation_numero }}{% if row.telefone %} · {{ row.telefone }}{% endif %}</span>
+            </td>
+            <td><span class="status-pill {% if row.target_type == 'motorista' %}status-confirmada{% else %}status-ativo{% endif %}">{{ row.target_label }}</span></td>
+            <td>
+              {% if row.is_live %}<span class="status-pill status-ativo">Ao vivo</span>{% endif %}
+              <span class="muted">{{ row.status_label }}</span>
+              {% if row.communicated_at %}<br/><span class="muted" style="font-size:.75rem">Enviado {{ row.communicated_at }}</span>{% endif %}
+            </td>
+            <td><code style="font-size:.72rem;word-break:break-all">{{ row.public_url }}</code></td>
+            <td>
+              <div class="actions" style="flex-wrap:wrap">
+                <button type="button" class="btn btn-secondary btn-sm geo-copy" data-url="{{ row.public_url }}">Copiar</button>
+                <a class="btn btn-secondary btn-sm" href="{{ row.public_url }}" target="_blank" rel="noopener">Abrir</a>
+                {% if row.status != 'encerrada' %}
+                <form method="post" action="/geolocalizador/{{ row.id }}/comunicar"><button type="submit" class="btn btn-primary btn-sm">Comunicar</button></form>
+                {% endif %}
+                <a class="btn btn-secondary btn-sm" href="/geolocalizador/{{ row.id }}/acompanhar">Acompanhar</a>
+                <a class="btn btn-secondary btn-sm" href="/geolocalizador/{{ row.id }}">Detalhes</a>
+                {% if row.status != 'encerrada' %}
+                <form method="post" action="/geolocalizador/{{ row.id }}/encerrar" onsubmit="return confirm('Encerrar rastreio?')"><button type="submit" class="btn btn-danger btn-sm">Encerrar</button></form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="muted" style="text-align:center;padding:28px">Nenhum link criado. Clique em + Novo link.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+document.querySelectorAll(".geo-copy").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    var url = btn.getAttribute("data-url") || "";
+    if (!url) return;
+    navigator.clipboard.writeText(url).catch(function () {});
+    btn.textContent = "Copiado";
+    window.setTimeout(function () { btn.textContent = "Copiar"; }, 1500);
+  });
+});
+</script>
+{% endblock %}

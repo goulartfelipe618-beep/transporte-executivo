@@ -4,9 +4,15 @@ import json
 import threading
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from .catalog import published_items
+from .company_portal_access import (
+    consume_first_access_token,
+    first_access_denied_html,
+    first_access_pending,
+    first_access_token_valid,
+)
 from .company_model import (
     append_portal_activity,
     company_key,
@@ -264,11 +270,44 @@ def _build_handler(app):
         def _require_permission(self, user, action):
             return company_can(user.get("perfil"), action)
 
+        def _client_ip(self):
+            forwarded = str(self.headers.get("X-Forwarded-For", "")).strip()
+            if forwarded:
+                return forwarded.split(",")[0].strip()
+            return str(self.client_address[0] if self.client_address else "")
+
+        def _query_token(self):
+            query = parse_qs(urlparse(self.path).query)
+            values = query.get("token") or []
+            return str(values[0] if values else "").strip()
+
+        def _ensure_first_access(self, company):
+            if not company:
+                return False
+            if not first_access_pending(company):
+                return True
+            token = self._query_token()
+            if not first_access_token_valid(company, token):
+                return False
+            consume_first_access_token(app, company, ip=self._client_ip())
+            return True
+
+        def _serve_first_access_denied(self, company):
+            name = (company or {}).get("razao_social") or (company or {}).get("nome_fantasia") or "Empresa"
+            body = first_access_denied_html(name).encode("utf-8")
+            self.send_response(403)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
         def _serve_portal(self, company):
             if not company:
                 self.send_response(404)
                 self.end_headers()
                 return
+            if not self._ensure_first_access(company):
+                return self._serve_first_access_denied(company)
             slug = company_key(company)
             name = company.get("razao_social") or company.get("nome_fantasia") or "Empresa"
             body = render_company_portal_page(slug, name).encode("utf-8")
@@ -306,13 +345,18 @@ def _build_handler(app):
                 return
             if path.startswith("/empresa/"):
                 slug = unquote(path.split("/empresa/", 1)[1]).strip("/").split("/")[0]
-                self.send_response(200 if find_company(app, slug) else 404)
+                company = find_company(app, slug)
+                if company and not self._ensure_first_access(company):
+                    return self._serve_first_access_denied(company)
+                self.send_response(200 if company else 404)
                 self.end_headers()
                 return
             clean = unquote(path).strip("/")
             parts = [part for part in clean.split("/") if part]
             if len(parts) == 2 and parts[0].lower().startswith("emp-"):
                 company = find_company_by_path(app, parts[0], parts[1])
+                if company and not self._ensure_first_access(company):
+                    return self._serve_first_access_denied(company)
                 self.send_response(200 if company else 404)
                 self.end_headers()
                 return
@@ -328,6 +372,8 @@ def _build_handler(app):
                 company = find_company(app, slug)
                 if not company or not company.get("portal_ativo", True):
                     return self._json(404, {"ok": False, "error": "Portal indisponivel"})
+                if first_access_pending(company):
+                    return self._json(403, {"ok": False, "error": "Primeiro acesso pendente. Abra o link com token."})
                 user = find_company_user(company, data.get("email", ""))
                 if not user or user.get("status") != "Ativo":
                     return self._json(401, {"ok": False, "error": "Credenciais invalidas"})

@@ -4,6 +4,7 @@ from __future__ import annotations
 import re
 
 from .input import validate_email_value
+from ..services.location_service import validate_location_fields
 
 
 def validate_client_form(form_data, *, is_create=True):
@@ -19,4 +20,5 @@ def validate_client_form(form_data, *, is_create=True):
     documento = re.sub(r"\D", "", str(form_data.get("documento", "")))
     if documento and len(documento) not in {11, 14}:
         errors.append("CPF deve ter 11 digitos.")
+    errors.extend(validate_location_fields(form_data))
     return errors

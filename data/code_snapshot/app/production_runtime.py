@@ -9,6 +9,7 @@ import time
 
 from .api_gateway import start_api_gateway_server
 from .automations import ensure_automations_loaded, start_automation_webhook_server
+from .tracking_links import ensure_tracking_links_loaded
 from .company_portal import start_company_portal_server
 from .operational_network import ensure_operational_network
 from .partner_network import ensure_partner_networks
@@ -32,6 +33,7 @@ class RuntimeApp:
 
 def bootstrap_production_services(app):
     ensure_automations_loaded(app)
+    ensure_tracking_links_loaded(app)
     _, network_changed = ensure_operational_network(app)
     portal_changed = ensure_portal_security(app)
     rede_changed = ensure_partner_networks(app)

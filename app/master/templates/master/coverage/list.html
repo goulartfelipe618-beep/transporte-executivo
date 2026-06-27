@@ -1,5 +1,8 @@
 {% extends "master/base.html" %}
 {% block title %}Abrangencia — {{ app_title }}{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+{% endblock %}
 {% block content %}
 <div class="page-header">
   <div>
@@ -16,6 +19,30 @@
   <div class="metric-card"><span>Pontos operacionais</span><strong>{{ summary.total }}</strong></div>
   <div class="metric-card"><span>Ativos</span><strong>{{ summary.ativos }}</strong></div>
   <div class="metric-card"><span>Estados com pontos</span><strong>{{ summary.estados_com_pontos }}</strong></div>
+</div>
+<div class="card coverage-map-card" style="margin-bottom:16px">
+  <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:10px;padding:16px 18px 0">
+    <div>
+      <h3 style="margin:0">Mapa de clientes e rede</h3>
+      <p class="muted" style="margin:4px 0 0">Pins por cadastro estruturado: CPF, Empresas e Rede.</p>
+    </div>
+    <div class="actions" style="gap:8px;flex-wrap:wrap">
+      <span class="status-pill" style="background:#dbeafe;color:#1d4ed8">CPF</span>
+      <span class="status-pill" style="background:#dcfce7;color:#15803d">Empresas</span>
+      <span class="status-pill" style="background:#fef3c7;color:#b45309">Rede</span>
+    </div>
+  </div>
+  <div class="coverage-map-grid" style="padding:0 18px 18px">
+    <div id="coverage-entity-map" class="coverage-map" style="height:420px;min-height:420px"></div>
+    <aside class="coverage-map-side">
+      <strong>Resumo do mapa</strong>
+      <div id="coverage-map-status" class="muted" style="margin:8px 0 14px">Carregando pins...</div>
+      <div class="metric-mini"><span>Clientes CPF</span><strong id="map-pf">0</strong></div>
+      <div class="metric-mini"><span>Empresas</span><strong id="map-empresas">0</strong></div>
+      <div class="metric-mini"><span>Rede</span><strong id="map-redes">0</strong></div>
+      <div class="metric-mini"><span>Cidades</span><strong id="map-cidades">0</strong></div>
+    </aside>
+  </div>
 </div>
 <form class="filters" method="get" action="/abrangencia">
   <div style="flex:1"><label>Buscar</label><input name="q" placeholder="Nome, endereco, cidade..." value="{{ search }}"/></div>
@@ -62,4 +89,86 @@
     </table>
   </div>
 </div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+  function refreshMapSize(map) {
+    if (!map) return;
+    map.invalidateSize({ animate: false, pan: false });
+  }
+
+  function scheduleMapRefresh(map) {
+    refreshMapSize(map);
+    window.requestAnimationFrame(function () { refreshMapSize(map); });
+    window.setTimeout(function () { refreshMapSize(map); }, 120);
+    window.setTimeout(function () { refreshMapSize(map); }, 400);
+  }
+
+  function initCoverageMap() {
+    var host = document.getElementById("coverage-entity-map");
+    if (!host || !window.L || host.dataset.mapReady === "1") return;
+    if (host.offsetHeight < 120) {
+      window.requestAnimationFrame(initCoverageMap);
+      return;
+    }
+    host.dataset.mapReady = "1";
+    var status = document.getElementById("coverage-map-status");
+    var map = L.map(host, { preferCanvas: false }).setView([-14.235, -51.925], 4);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(map);
+
+    scheduleMapRefresh(map);
+    window.addEventListener("resize", function () { refreshMapSize(map); });
+    if (window.ResizeObserver) {
+      new ResizeObserver(function () { refreshMapSize(map); }).observe(host);
+    }
+
+    var colors = { cliente_pf: "#2563eb", empresa: "#16a34a", rede: "#d97706" };
+    var labels = { cliente_pf: "Cliente CPF", empresa: "Empresa", rede: "Rede" };
+    fetch("/abrangencia/api/mapa", { credentials: "same-origin" })
+      .then(function (response) { return response.json(); })
+      .then(function (data) {
+        var bounds = [];
+        (data.markers || []).forEach(function (item) {
+          var color = colors[item.kind] || "#64748b";
+          var marker = L.circleMarker([item.lat, item.lng], {
+            radius: 9,
+            color: color,
+            fillColor: color,
+            fillOpacity: 0.85,
+            weight: 2
+          }).addTo(map);
+          marker.bindPopup("<strong>" + item.name + "</strong><br>" + (labels[item.kind] || item.kind) + "<br>" + item.address);
+          bounds.push([item.lat, item.lng]);
+        });
+        if (bounds.length) {
+          map.fitBounds(bounds, { padding: [30, 30] });
+        }
+        map.whenReady(function () { scheduleMapRefresh(map); });
+        var summary = data.summary || {};
+        document.getElementById("map-pf").textContent = summary.clientes_pf || 0;
+        document.getElementById("map-empresas").textContent = summary.empresas || 0;
+        document.getElementById("map-redes").textContent = summary.redes || 0;
+        document.getElementById("map-cidades").textContent = summary.cidades || 0;
+        if (status) status.textContent = (summary.pins || 0) + " pins carregados.";
+      })
+      .catch(function () {
+        if (status) status.textContent = "Nao foi possivel carregar o mapa.";
+      });
+  }
+
+  if (document.readyState === "complete") {
+    window.requestAnimationFrame(initCoverageMap);
+  } else {
+    window.addEventListener("load", function () {
+      window.requestAnimationFrame(initCoverageMap);
+    });
+  }
+})();
+</script>
 {% endblock %}
