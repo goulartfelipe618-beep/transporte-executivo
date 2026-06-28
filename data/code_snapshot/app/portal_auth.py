@@ -122,6 +122,7 @@ PORTAL_EVENT_TYPES = {
     "portal.driver.login": "Login portal motorista",
     "portal.driver.logout": "Logout portal motorista",
     "portal.driver.password_set": "Senha portal motorista definida",
+    "portal.driver.activation_consumed": "Token de ativacao consumido (portal motorista)",
     "portal.driver.reservation_status": "Status de reserva alterado (motorista)",
     "portal.company.login": "Login portal empresa",
     "portal.company.logout": "Logout portal empresa",
@@ -366,14 +367,20 @@ def clear_activation_token(driver):
     driver.pop("activation_expires_at", None)
 
 
-def driver_has_password(driver):
-    return bool(driver.get("password_hash")) and bool(driver.get("portal_ativo"))
-
-
 def set_driver_password(driver, password):
     driver["password_hash"] = hash_password(password)
     driver["portal_ativo"] = True
+    driver["portal_activated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
     clear_activation_token(driver)
+
+
+def driver_portal_activated(driver):
+    """Portal ativo com senha definida."""
+    return bool(driver.get("password_hash")) and bool(driver.get("portal_ativo"))
+
+
+def driver_has_password(driver):
+    return driver_portal_activated(driver)
 
 
 def verify_driver_password(driver, password):

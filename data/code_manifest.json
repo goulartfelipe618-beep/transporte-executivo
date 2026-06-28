@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-27T19:53:09.024095",
+  "saved_at": "2026-06-28T18:27:46.161357",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "b6cc6dba6f92c51fc8cbd9e642590aa107dd09d3974d783b1aa5deb5df48907e",
@@ -18,7 +18,7 @@
       "sha256": "c7bcd3babf67699275c8b5b23cd9628cb99ac57a766e9a3166e7a0109ef5d867"
     },
     "Dockerfile.sistema": {
-      "sha256": "e0e856777fd8d81f4dcb786ce891ab750f2a3bd82f1b7ddf094b503fccbb74ac"
+      "sha256": "2270342e87fda0848eccfca94afdd726ce4948ff829f75aaaf782a1b4920fb28"
     },
     "INICIAR_VPS.bat": {
       "sha256": "8ee4622b90f2ebb28b52e824a951a25c7688456548711be377cc41f7ce041a1a"
@@ -48,7 +48,7 @@
       "marker": "start_company_portal_server"
     },
     "app/components.py": {
-      "sha256": "2770f3f07c69862f8c34ed3fab00612b23a48af3c0efa9c899f132cecadeab2d",
+      "sha256": "5ccf7d2bc71e7d39be96cdd42cce26bbc8842663140c7daa93147451a7c88eb6",
       "marker": "setup_placeholder"
     },
     "app/coverage_ui.py": {
@@ -109,7 +109,7 @@
       "marker": "network_vehicles_for_partner"
     },
     "app/portal_auth.py": {
-      "sha256": "71d514f7a35c8c30a4ada58986b7dea8329a49ec5c17351cbd12ed28ea1d7239",
+      "sha256": "db90738b65e1d33be169ac75ff92b8bd5d33b6c04112b0f780b79aa479db8102",
       "marker": "ensure_portal_security"
     },
     "app/portal_landing.py": {
@@ -117,7 +117,7 @@
       "marker": "driver_portal_landing"
     },
     "app/portal_server.py": {
-      "sha256": "bb1465c019825c4935ae6b5c6438cca8112e7e7e8499b5b67fc0e7b165a9f209",
+      "sha256": "622374ac752fb051ec00dd274365dc386bd859dd1f7f783e09f893645fe8330b",
       "marker": "start_driver_portal_server"
     },
     "app/portal_urls.py": {
@@ -142,7 +142,7 @@
       "sha256": "094e2e8149e91b605a7ffc352e0c2f1226b9c476ca5b1c3bfe6c0eec29ac8188"
     },
     "app/repository/supabase_mappers.py": {
-      "sha256": "ceb7349a4e01522f1b676dee10945a90bbe41e20629a0250a938479f36a1f47d",
+      "sha256": "b34f007b5286dc994734ef6976c332a102ca79d9d13c87afbd37a1d130ff2083",
       "marker": "TO_ROW"
     },
     "app/repository/supabase_repository.py": {
@@ -196,7 +196,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "0b5e66b9200b8836bdeb0a77ba8396d00a5ccf60721a7add7ae6c184fb7ddc1a",
+      "sha256": "31d613345b4668b75b7a6d03bd5eda39a2cef7323081b518d5380b037fd07656",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {

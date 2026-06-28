@@ -106,6 +106,9 @@ async def driver_detail(request: Request, driver_id: str):
         return RedirectResponse("/motoristas", status_code=303)
     stats = driver_stats(runtime, driver)
     reservations = driver_reservations(runtime, driver)
+    portal = portal_info(driver)
+    token_qs = request.query_params.get("token", "").strip()
+    activation_token = token_qs or (portal.get("activation_token") if portal.get("activation_pending") else "")
     return templates.TemplateResponse(
         request,
         "master/drivers/detail.html",
@@ -116,10 +119,10 @@ async def driver_detail(request: Request, driver_id: str):
             driver=driver,
             driver_name=driver_display_name(driver),
             stats=stats,
-            portal=portal_info(driver),
+            portal=portal,
             reservations=reservations[:30],
             success_msg=request.query_params.get("success", ""),
-            activation_token=request.query_params.get("token", ""),
+            activation_token=activation_token,
         ),
     )
 
@@ -304,6 +307,8 @@ async def portal_page(request: Request, driver_id: str):
     if not driver:
         return RedirectResponse("/motoristas", status_code=303)
     portal = portal_info(driver)
+    token_qs = request.query_params.get("token", "").strip()
+    activation_token = token_qs or (portal.get("activation_token") if portal.get("activation_pending") else "")
     return templates.TemplateResponse(
         request,
         "master/drivers/detail.html",
@@ -317,7 +322,7 @@ async def portal_page(request: Request, driver_id: str):
             portal=portal,
             reservations=[],
             success_msg="",
-            activation_token=portal.get("activation_token", ""),
+            activation_token=activation_token,
             portal_focus=True,
         ),
     )

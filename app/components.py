@@ -82,6 +82,9 @@ LOWERCASE_FIELD_KEYS = frozenset(
         "website",
         "url",
         "activation_token",
+        "activation_expires_at",
+        "activation_token_consumed_at",
+        "portal_activated_at",
     }
 )
 

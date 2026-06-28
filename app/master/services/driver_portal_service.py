@@ -1,6 +1,7 @@
 """Portal motorista — links, ativacao e sessoes (sem alterar portal_server.py)."""
 from __future__ import annotations
 
+from app.driver_portal_access import activation_token_pending, reset_activation_state
 from app.portal_auth import (
     USER_TYPE_DRIVER,
     activation_token_valid,
@@ -25,6 +26,18 @@ def portal_info(driver):
     activated = driver_has_password(driver)
     token = str(driver.get("activation_token", ""))
     expires = str(driver.get("activation_expires_at", ""))
+    consumed_at = str(driver.get("activation_token_consumed_at", ""))
+    activated_at = str(driver.get("portal_activated_at", ""))
+    if activated:
+        status_label = "Ativado"
+        if activated_at:
+            status_label = f"Ativado em {activated_at}"
+    elif consumed_at:
+        status_label = f"Token consumido em {consumed_at} — aguardando senha"
+    elif token:
+        status_label = "Pendente ativacao"
+    else:
+        status_label = "Sem token"
     return {
         "portal_ativo": bool(driver.get("portal_ativo")),
         "portal_activated": activated,
@@ -32,14 +45,19 @@ def portal_info(driver):
         "portal_link": get_portal_link(driver),
         "activation_token": token,
         "activation_expires_at": expires,
-        "activation_pending": bool(token) and not activated,
-        "portal_status_label": "Ativado" if activated else ("Pendente ativacao" if token else "Sem token"),
+        "activation_token_consumed_at": consumed_at,
+        "portal_activated_at": activated_at,
+        "activation_pending": activation_token_pending(driver),
+        "token_consumed": bool(consumed_at) and not activated,
+        "portal_status_label": status_label,
     }
 
 
 def refresh_activation_token(driver):
+    reset_activation_state(driver)
     token = generate_activation_token(driver)
     driver["portal_ativo"] = False
+    driver.pop("portal_activated_at", None)
     return token
 
 

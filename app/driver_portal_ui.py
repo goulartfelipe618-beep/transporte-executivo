@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 
 from .driver_portal_dtos import portal_branding
+from .driver_portal_access import activation_token_pending
 from .portal_auth import driver_has_password
 
 
@@ -13,6 +14,16 @@ def render_driver_portal_page(app, driver, slug):
     logo_url = branding.get("logo_url") or ""
     logo_inner = f'<img src="{logo_url}" alt="logo"/>' if logo_url else empresa[:1]
     activated = driver_has_password(driver)
+    pending_token = activation_token_pending(driver)
+    if activated:
+        activation_msg = ""
+    elif pending_token:
+        activation_msg = (
+            "Primeiro acesso: informe seu CPF e cole o token de ativacao no campo Senha. "
+            "Depois voce definira uma senha permanente."
+        )
+    else:
+        activation_msg = "Token ja utilizado ou expirado. Solicite um novo token ao administrador."
     html = _HTML.replace("__SLUG__", json.dumps(slug))
     html = html.replace("__ACTIVATED__", "true" if activated else "false")
     html = html.replace("__LOGO_URL__", json.dumps(logo_url))
@@ -21,7 +32,7 @@ def render_driver_portal_page(app, driver, slug):
     html = html.replace("__DRIVER_NOME__", driver.get("nome", "Motorista"))
     html = html.replace("__CPF_HINT__", driver.get("cpf", ""))
     html = html.replace("__LOGO_INNER__", logo_inner)
-    html = html.replace("__ACTIVATION_MSG__", "" if activated else "Portal ainda nao ativado. Solicite o token de ativacao ao administrador.")
+    html = html.replace("__ACTIVATION_MSG__", activation_msg)
     return html
 
 
@@ -67,9 +78,16 @@ button{cursor:pointer;border:none;border-radius:10px;padding:12px 16px;font-weig
 <h2>Entrar no portal</h2><p class="muted">Motorista: <strong>__DRIVER_NOME__</strong></p>
 <div id="loginAlert" class="alert err hidden"></div>
 <label for="cpf">CPF ou identificação</label><input id="cpf" inputmode="numeric" placeholder="000.000.000-00" value="__CPF_HINT__"/>
-<label for="password" style="margin-top:12px">Senha</label><input id="password" type="password" placeholder="Sua senha do portal"/>
+<label for="password" style="margin-top:12px">Senha</label><input id="password" type="password" placeholder="Senha do portal ou token de ativacao"/>
 <button class="btn btn-block" id="loginBtn" type="button" style="margin-top:16px">Entrar</button>
 <p class="muted" style="margin-top:14px">__ACTIVATION_MSG__</p>
+</div></section>
+<section id="view-set-password" class="login-wrap hidden"><div class="card">
+<h2>Defina sua senha</h2><p class="muted">Token validado. Crie uma senha permanente para acessar o portal.</p>
+<div id="setPasswordAlert" class="alert err hidden"></div>
+<label for="newPassword">Nova senha (min. 6 caracteres)</label><input id="newPassword" type="password" placeholder="Nova senha"/>
+<label for="newPassword2" style="margin-top:12px">Repita a senha</label><input id="newPassword2" type="password" placeholder="Repita a senha"/>
+<button class="btn btn-block" id="setPasswordBtn" type="button" style="margin-top:16px">Salvar senha e continuar</button>
 </div></section>
 <section id="view-dashboard" class="hidden">
 <div class="grid grid-4">
@@ -105,10 +123,12 @@ const SLUG=__SLUG__;const ACTIVATED=__ACTIVATED__;const LOGO_URL=__LOGO_URL__;
 let token=sessionStorage.getItem('driver_token')||'';let reservations=[];let agendaFilter='all';
 function $(id){return document.getElementById(id)}function show(el){el.classList.remove('hidden')}function hide(el){el.classList.add('hidden')}
 async function api(path,body){const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug:SLUG,token,...body})});return r.json()}
-function setView(name){['login','dashboard','agenda','detail','profile','documents','notifications'].forEach(v=>{const el=$('view-'+v);if(el)hide(el)});show($('view-'+name));document.querySelectorAll('#bottomNav button').forEach(b=>b.classList.toggle('active',b.dataset.view===name))}
+function setView(name){['login','set-password','dashboard','agenda','detail','profile','documents','notifications'].forEach(v=>{const el=$('view-'+v);if(el)hide(el)});show($('view-'+name));document.querySelectorAll('#bottomNav button').forEach(b=>b.classList.toggle('active',b.dataset.view===name))}
 function statusBadge(s){const v=(s||'').toLowerCase();let c='badge';if(v.includes('conclu'))c+=' ok';else if(v.includes('cancel'))c+=' err';else if(v.includes('pend')||v.includes('aceitar'))c+=' warn';return `<span class="${c}">${s||'—'}</span>`}
-async function doLogin(){hide($('loginAlert'));const payload={slug:SLUG,cpf:$('cpf').value,identificacao:$('cpf').value,password:$('password').value};const res=await fetch('/api/driver/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json());if(!res.ok){show($('loginAlert'));$('loginAlert').textContent='CPF ou senha invalidos.';return}token=res.token;sessionStorage.setItem('driver_token',token);await bootApp()}
-async function bootApp(){if(!token){setView('login');return}const dash=await api('/api/driver/dashboard');if(!dash.ok){token='';sessionStorage.removeItem('driver_token');setView('login');return}show($('bottomNav'));show($('logoutBtn'));renderDashboard(dash);await loadReservations();await loadNotifications();await loadProfile();setView('dashboard')}
+function loginError(msg){show($('loginAlert'));$('loginAlert').textContent=msg||'CPF ou senha invalidos.'}
+async function doLogin(){hide($('loginAlert'));const payload={slug:SLUG,cpf:$('cpf').value,identificacao:$('cpf').value,password:$('password').value};const res=await fetch('/api/driver/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json());if(!res.ok){if(res.error==='token_ja_consumido'||res.requires_password_setup){loginError('Token ja utilizado. Defina sua senha ou solicite novo token ao administrador.');if(res.token){token=res.token;sessionStorage.setItem('driver_token',token);sessionStorage.setItem('driver_pending_password','1');setView('set-password')}return}loginError('CPF ou token/senha invalidos.');return}token=res.token;sessionStorage.setItem('driver_token',token);if(res.requires_password_setup){sessionStorage.setItem('driver_pending_password','1');setView('set-password');return}sessionStorage.removeItem('driver_pending_password');await bootApp()}
+async function doSetPassword(){hide($('setPasswordAlert'));const p1=$('newPassword').value;const p2=$('newPassword2').value;if(p1.length<6){show($('setPasswordAlert'));$('setPasswordAlert').textContent='Senha deve ter pelo menos 6 caracteres.';return}if(p1!==p2){show($('setPasswordAlert'));$('setPasswordAlert').textContent='As senhas nao conferem.';return}const res=await fetch('/api/driver/set-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug:SLUG,token,password:p1,password_confirm:p2})}).then(r=>r.json());if(!res.ok){show($('setPasswordAlert'));$('setPasswordAlert').textContent=res.error==='senhas_nao_conferem'?'As senhas nao conferem.':'Nao foi possivel salvar a senha.';return}sessionStorage.removeItem('driver_pending_password');await bootApp()}
+async function bootApp(){if(!token){setView('login');return}if(sessionStorage.getItem('driver_pending_password')==='1'){setView('set-password');return}const dash=await api('/api/driver/dashboard');if(!dash.ok){if(dash.requires_password_setup){sessionStorage.setItem('driver_pending_password','1');setView('set-password');return}token='';sessionStorage.removeItem('driver_token');sessionStorage.removeItem('driver_pending_password');setView('login');return}show($('bottomNav'));show($('logoutBtn'));renderDashboard(dash);await loadReservations();await loadNotifications();await loadProfile();setView('dashboard')}
 function renderDashboard(d){$('cardHoje').textContent=d.cards.hoje;$('cardProximas').textContent=d.cards.proximas;$('cardConcluidas').textContent=d.cards.concluidas;$('cardPendentes').textContent=d.cards.pendentes;$('indPortal').textContent=d.indicators.portal_status;$('indAcesso').textContent=d.indicators.ultimo_acesso||'—';$('indCidade').textContent=[d.indicators.cidade_principal,d.indicators.estado].filter(Boolean).join(' / ')||'—';$('dashList').innerHTML=(d.proximas_reservas||[]).map(r=>`<div class="notice" style="cursor:pointer" data-num="${r.numero}"><strong>${r.numero}</strong> · ${r.data} · ${r.origem} → ${r.destino} ${statusBadge(r.status)}</div>`).join('')||'<p class="muted">Nenhuma reserva proxima.</p>';$('dashList').querySelectorAll('[data-num]').forEach(el=>el.onclick=()=>openDetail(el.dataset.num))}
 async function loadReservations(){const res=await api('/api/driver/reservations');if(res.ok)reservations=res.items||[];renderAgenda()}
 function parseBrDate(s){if(!s)return null;const p=String(s).trim().slice(0,10).split('/');if(p.length===3)return new Date(+p[2],+p[1]-1,+p[0]);return new Date(s)}
@@ -118,9 +138,9 @@ async function openDetail(numero){const res=await api('/api/driver/reservation',
 async function updateStatus(numero,status){const res=await api('/api/driver/status',{numero,status});if(!res.ok)return alert('Sem permissao.');await loadReservations();openDetail(numero)}
 async function loadProfile(){const res=await api('/api/driver/profile');if(!res.ok)return;const p=res.profile;$('profileCard').innerHTML=`<h3>${p.nome}</h3><div class="detail-row"><span class="muted">CPF</span><span>${p.cpf_masked||p.cpf||'—'}</span></div><div class="detail-row"><span class="muted">Telefone</span><span>${p.telefone||'—'}</span></div><div class="detail-row"><span class="muted">E-mail</span><span>${p.email||'—'}</span></div><div class="detail-row"><span class="muted">Cidade/UF</span><span>${p.cidade||'—'} / ${p.estado||'—'}</span></div><div class="detail-row"><span class="muted">Validade CNH</span><span>${p.validade_cnh||'—'}</span></div><div class="actions"><button class="btn-outline" type="button" onclick="setView('documents')">Documentos</button></div>`;const docs=p.documents||{};$('docsList').innerHTML=Object.values(docs).map(d=>`<div class="detail-row"><span class="muted">${d.label||'Doc'}</span><span>${d.status} · upload ${d.upload_enabled?'ativo':'futuro'}</span></div>`).join('')}
 async function loadNotifications(){const res=await api('/api/driver/notifications');if(!res.ok)return;$('notifList').innerHTML=(res.items||[]).map(n=>`<div class="notice ${n.lida?'':'unread'}"><strong>${n.titulo}</strong><br><span class="muted">${n.criado_em}</span><br>${n.mensagem}</div>`).join('')||'<p class="muted">Nenhum aviso.</p>'}
-async function doLogout(){await api('/api/driver/logout');token='';sessionStorage.removeItem('driver_token');hide($('bottomNav'));hide($('logoutBtn'));setView('login')}
-$('loginBtn').onclick=doLogin;$('logoutBtn').onclick=doLogout;document.querySelectorAll('#bottomNav button').forEach(b=>b.onclick=()=>{if(b.dataset.view==='agenda')loadReservations().then(()=>setView('agenda'));else if(b.dataset.view==='notifications')loadNotifications().then(()=>setView('notifications'));else if(b.dataset.view==='profile')loadProfile().then(()=>setView('profile'));else setView(b.dataset.view)});document.querySelectorAll('.filters button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.filters button').forEach(x=>x.classList.remove('active'));b.classList.add('active');agendaFilter=b.dataset.filter;renderAgenda()});
-if(token)bootApp();else setView('login');
+async function doLogout(){await api('/api/driver/logout');token='';sessionStorage.removeItem('driver_token');sessionStorage.removeItem('driver_pending_password');hide($('bottomNav'));hide($('logoutBtn'));setView('login')}
+$('loginBtn').onclick=doLogin;$('setPasswordBtn').onclick=doSetPassword;$('logoutBtn').onclick=doLogout;document.querySelectorAll('#bottomNav button').forEach(b=>b.onclick=()=>{if(b.dataset.view==='agenda')loadReservations().then(()=>setView('agenda'));else if(b.dataset.view==='notifications')loadNotifications().then(()=>setView('notifications'));else if(b.dataset.view==='profile')loadProfile().then(()=>setView('profile'));else setView(b.dataset.view)});document.querySelectorAll('.filters button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.filters button').forEach(x=>x.classList.remove('active'));b.classList.add('active');agendaFilter=b.dataset.filter;renderAgenda()});
+if(token&&sessionStorage.getItem('driver_pending_password')==='1')setView('set-password');else if(token)bootApp();else setView('login');
 </script>
 </body>
 </html>"""

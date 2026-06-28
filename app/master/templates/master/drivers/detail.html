@@ -17,9 +17,15 @@
 {% if success_msg %}<div class="alert alert-success">{{ success_msg }}</div>{% endif %}
 {% if activation_token %}
 <div class="alert alert-warning" id="portal">
-  <strong>Token de ativacao:</strong> <code id="act-token">{{ activation_token }}</code>
+  <strong>Token de ativacao (uso unico):</strong> <code id="act-token">{{ activation_token }}</code>
   <button type="button" class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('act-token').textContent)">Copiar</button>
-  <div class="muted" style="margin-top:6px">Valido por 72h. Motorista define senha via POST /api/driver/set-password no portal driver.</div>
+  <div class="muted" style="margin-top:6px">Valido por 72h. No primeiro acesso o motorista usa CPF + token no portal e em seguida define a senha permanente.</div>
+</div>
+{% elif portal.token_consumed %}
+<div class="alert alert-info" id="portal">
+  <strong>Token consumido</strong> em {{ portal.activation_token_consumed_at }}.
+  {% if not portal.portal_activated %}Aguardando o motorista definir a senha no portal.{% else %}Portal ativado.{% endif %}
+  <form method="post" action="/motoristas/{{ driver.id }}/token" style="margin-top:10px"><button type="submit" class="btn btn-secondary btn-sm">Gerar novo token</button></form>
 </div>
 {% endif %}
 <div class="cards-grid">
@@ -33,6 +39,7 @@
   <h3>Portal motorista (driver.transporteexecutivo.com)</h3>
   <div class="form-grid">
     <div class="field"><label>Status portal</label><input readonly value="{{ portal.portal_status_label }}"/></div>
+    <div class="field"><label>Token consumido</label><input readonly value="{% if portal.token_consumed %}Sim — {{ portal.activation_token_consumed_at }}{% elif portal.activation_pending %}Nao — pendente{% else %}—{% endif %}"/></div>
     <div class="field"><label>Portal ativo</label><input readonly value="{% if portal.portal_ativo %}Sim{% else %}Nao{% endif %}"/></div>
     <div class="field"><label>Slug</label><input readonly value="{{ portal.portal_slug }}"/></div>
     <div class="field field-full">

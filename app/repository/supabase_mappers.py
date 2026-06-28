@@ -31,7 +31,8 @@ KNOWN_COLUMNS = {
     },
     "drivers": {
         "legacy_admin_id", "portal_slug", "nome", "cpf", "rg", "email", "telefone", "estado", "cidade", "frota",
-        "validade_cnh", "portal_ativo", "password_hash", "activation_token", "portal_link", "dados_extra",
+        "validade_cnh", "portal_ativo", "password_hash", "activation_token", "activation_expires_at",
+        "activation_token_consumed_at", "portal_activated_at", "portal_link", "dados_extra",
     },
     "vehicles": {
         "legacy_admin_id", "placa", "tipo_veiculo", "marca", "modelo", "ano", "cor", "capacidade", "bagagens",
@@ -230,6 +231,9 @@ def to_driver_row(item):
         "portal_ativo": bool(item.get("portal_ativo", "portal" in str(item.get("portal", "")).lower())),
         "password_hash": item.get("password_hash"),
         "activation_token": item.get("activation_token"),
+        "activation_expires_at": item.get("activation_expires_at"),
+        "activation_token_consumed_at": item.get("activation_token_consumed_at"),
+        "portal_activated_at": item.get("portal_activated_at"),
         "portal_link": item.get("link") or item.get("portal_link"),
         "dados_extra": _extra(item, known),
     }

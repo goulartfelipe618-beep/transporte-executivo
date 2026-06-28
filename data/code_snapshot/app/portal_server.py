@@ -7,6 +7,12 @@ from .driver_portal_dtos import STATUS_ACTIONS, dashboard_dto, profile_dto, rese
 from .driver_portal_notifications import notifications_dto, sync_reservation_notifications
 from .driver_portal_ui import render_driver_portal_page
 from .portal_landing import driver_portal_landing
+from .driver_portal_access import (
+    activation_consumed_pending_password,
+    activation_token_pending,
+    driver_cpf_matches,
+    try_consume_activation_token,
+)
 from .portal_auth import (
     USER_TYPE_DRIVER,
     activation_token_valid,
@@ -150,6 +156,34 @@ def _build_handler(app):
             slug = str(data.get("slug", "")).strip()
 
             if path == "/api/driver/set-password":
+                password = str(data.get("password", "")).strip()
+                confirm = str(data.get("password_confirm", data.get("confirm_password", ""))).strip()
+                if len(password) < 6:
+                    return self._json(400, {"ok": False, "error": "senha_muito_curta"})
+                if password != confirm:
+                    return self._json(400, {"ok": False, "error": "senhas_nao_conferem"})
+
+                session = get_valid_session(app, data.get("token", ""))
+                if session and session.get("must_set_password"):
+                    driver = find_driver_by_id(app, session.get("user_id"))
+                    if not driver:
+                        return self._json(404, {"ok": False, "error": "motorista_nao_encontrado"})
+                    if driver_has_password(driver):
+                        session.pop("must_set_password", None)
+                        return self._json(403, {"ok": False, "error": "senha_ja_definida"})
+                    set_driver_password(driver, password)
+                    session.pop("must_set_password", None)
+                    log_portal_event(
+                        app,
+                        "portal.driver.password_set",
+                        f"Senha definida para {driver.get('id', '')}",
+                        user_type=USER_TYPE_DRIVER,
+                        user_id=driver.get("id", ""),
+                    )
+                    if hasattr(app, "save_state"):
+                        app.save_state()
+                    return self._json(200, {"ok": True})
+
                 driver = _find_driver(app, slug)
                 if not driver:
                     return self._json(404, {"ok": False, "error": "motorista_nao_encontrado"})
@@ -157,9 +191,6 @@ def _build_handler(app):
                     return self._json(403, {"ok": False, "error": "senha_ja_definida_solicite_admin"})
                 if not activation_token_valid(driver, data.get("activation_token", "")):
                     return self._json(403, {"ok": False, "error": "token_ativacao_invalido"})
-                password = str(data.get("password", "")).strip()
-                if len(password) < 6:
-                    return self._json(400, {"ok": False, "error": "senha_muito_curta"})
                 set_driver_password(driver, password)
                 log_portal_event(
                     app,
@@ -174,15 +205,72 @@ def _build_handler(app):
 
             if path == "/api/driver/login":
                 driver = _find_driver(app, slug)
-                if not driver or not driver_has_password(driver):
+                if not driver:
                     return self._json(401, {"ok": False, "error": "credenciais_invalidas"})
-                if not verify_driver_password(driver, data.get("password", "")):
+                cpf_input = data.get("cpf") or data.get("identificacao") or slug
+                if not driver_cpf_matches(driver, cpf_input):
                     return self._json(401, {"ok": False, "error": "credenciais_invalidas"})
+                password = str(data.get("password", "")).strip()
+                if not password:
+                    return self._json(401, {"ok": False, "error": "credenciais_invalidas"})
+
+                if driver_has_password(driver):
+                    if not verify_driver_password(driver, password):
+                        return self._json(401, {"ok": False, "error": "credenciais_invalidas"})
+                    session_id, session = create_session(app, USER_TYPE_DRIVER, driver.get("id"), slug=slug)
+                    log_portal_event(
+                        app,
+                        "portal.driver.login",
+                        f"Login motorista {driver.get('id', '')}",
+                        user_type=USER_TYPE_DRIVER,
+                        user_id=driver.get("id", ""),
+                    )
+                    if hasattr(app, "save_state"):
+                        app.save_state()
+                    return self._json(
+                        200,
+                        {
+                            "ok": True,
+                            "token": session_id,
+                            "expires_at": session.get("expires_at"),
+                            "driver_id": driver.get("id"),
+                            "requires_password_setup": False,
+                        },
+                    )
+
+                if activation_consumed_pending_password(driver):
+                    session = get_valid_session(app, data.get("token", ""))
+                    if session and session.get("must_set_password"):
+                        return self._json(
+                            403,
+                            {
+                                "ok": False,
+                                "error": "defina_sua_senha",
+                                "requires_password_setup": True,
+                                "token": session.get("session_id"),
+                            },
+                        )
+                    return self._json(
+                        403,
+                        {
+                            "ok": False,
+                            "error": "token_ja_consumido",
+                            "requires_password_setup": True,
+                        },
+                    )
+
+                if not activation_token_pending(driver):
+                    return self._json(401, {"ok": False, "error": "credenciais_invalidas"})
+
+                if not try_consume_activation_token(driver, password):
+                    return self._json(401, {"ok": False, "error": "credenciais_invalidas"})
+
                 session_id, session = create_session(app, USER_TYPE_DRIVER, driver.get("id"), slug=slug)
+                session["must_set_password"] = True
                 log_portal_event(
                     app,
-                    "portal.driver.login",
-                    f"Login motorista {driver.get('id', '')}",
+                    "portal.driver.activation_consumed",
+                    f"Token consumido por {driver.get('id', '')}",
                     user_type=USER_TYPE_DRIVER,
                     user_id=driver.get("id", ""),
                 )
@@ -195,6 +283,7 @@ def _build_handler(app):
                         "token": session_id,
                         "expires_at": session.get("expires_at"),
                         "driver_id": driver.get("id"),
+                        "requires_password_setup": True,
                     },
                 )
 
@@ -217,6 +306,11 @@ def _build_handler(app):
             session, driver = _resolve_driver_session(app, data)
             if not driver:
                 return self._json(401, {"ok": False, "error": "sessao_invalida"})
+            if session.get("must_set_password") and path not in {"/api/driver/set-password", "/api/driver/logout"}:
+                return self._json(
+                    403,
+                    {"ok": False, "error": "defina_sua_senha", "requires_password_setup": True},
+                )
 
             if path == "/api/driver/dashboard":
                 payload = dashboard_dto(app, driver, session)
