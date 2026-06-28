@@ -15,7 +15,6 @@ from reportlab.lib.units import mm
 from reportlab.platypus import Image, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from .settings_store import load_settings
-from .contracts_model import load_contract_sections_for_via
 
 TEAL = colors.HexColor("#0D5C5C")
 TEAL_DARK = colors.HexColor("#094747")
@@ -29,6 +28,33 @@ VIA_LABELS = {
     "motorista": "Via do Motorista",
     "loja": "Via da Loja",
 }
+
+CANCEL_POLICY = [
+    "Cancelamentos com mais de 72 horas de antecedencia: reembolso integral.",
+    "Cancelamentos entre 48 e 72 horas: reembolso de 50%.",
+    "Cancelamentos com menos de 48 horas: sem reembolso.",
+    "No-show (nao comparecimento): sem reembolso.",
+    "A empresa reserva-se o direito de cancelar o servico em casos de forca maior, "
+    "oferecendo reagendamento ou reembolso integral.",
+]
+
+CONTRACT_CLAUSES = [
+    "1. DAS PARTES",
+    "1.1. O presente contrato e celebrado entre as partes abaixo qualificadas.",
+    "1.2. O CONTRATANTE declara ter conhecimento de todas as condicoes do servico contratado.",
+    "2. DO SERVICO",
+    "2.1. O servico de transfer sera realizado conforme trajeto, data e horario especificados neste instrumento.",
+    "2.2. O veiculo sera disponibilizado com motorista profissional habilitado.",
+    "2.3. O servico inclui busca e transporte do grupo ate o destino indicado.",
+    "3. DO VALOR",
+    "3.1. O valor do servico sera aquele especificado neste contrato.",
+    "3.2. O pagamento devera ser efetuado na forma acordada entre as partes.",
+    "8.1. Este contrato e regido pelas leis da Republica Federativa do Brasil.",
+    "8.2. Fica eleito o foro da comarca local para dirimir quaisquer duvidas oriundas deste contrato.",
+    "8.3. As partes declaram ter lido e concordado com todos os termos deste contrato.",
+    "8.4. Alteracoes de trajeto durante o servico poderao acarretar cobranca adicional.",
+    "8.5. E proibido o consumo de bebidas alcoolicas e alimentos que possam danificar o veiculo.",
+]
 
 
 def generate_reservation_pdf(reservation, app, via, output_path):
@@ -108,7 +134,7 @@ def _build_context(reservation, app, via):
         parts = data_raw.split(" ", 1)
         data_raw, hora = parts[0], parts[1]
 
-    company = settings.get("razao_social") or settings.get("nome_projeto") or settings.get("empresa") or "Empresa"
+    company = reservation.get("pdf_company_name") or settings.get("razao_social") or settings.get("nome_projeto") or settings.get("empresa") or "Empresa"
     return {
         "via": via,
         "via_label": VIA_LABELS[via],
@@ -119,7 +145,7 @@ def _build_context(reservation, app, via):
         "whatsapp_empresa": settings.get("whatsapp_contrato") or settings.get("telefone") or "-",
         "email_oficial": settings.get("email_oficial") or settings.get("email") or "-",
         "representante": settings.get("representante_legal") or settings.get("nome_completo") or "-",
-        "logo_path": _valid_logo(settings.get("logo_global")),
+        "logo_path": _valid_logo(reservation.get("pdf_logo_path") or settings.get("logo_global")),
         "numero_display": str(reservation.get("numero", "")).replace("#", "") or "-",
         "short_id": _short_id(reservation),
         "generated_at": datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
@@ -141,7 +167,9 @@ def _build_context(reservation, app, via):
         "desconto": reservation.get("desconto", "0"),
         "repasse": reservation.get("repasse", ""),
         "conta_pagar": reservation.get("conta_pagar", ""),
+        "esconder_valores": _truthy(reservation.get("esconder_valores")),
         "observacoes": reservation.get("observacoes", "") or "Sem observacoes adicionais.",
+        "driver_contract_text": reservation.get("driver_contract_text", ""),
         "criada_em": reservation.get("criado_em") or datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
     }
 
@@ -172,7 +200,7 @@ def _page_confirmation(ctx, styles, via):
     blocks.append(Spacer(1, 3 * mm))
     blocks.append(Paragraph(f'Horario Ida: {ctx["hora_ida"]}', styles["body"]))
 
-    if _show_price(via):
+    if _show_price(ctx, via):
         blocks.append(Spacer(1, 5 * mm))
         blocks.append(Paragraph("PRECO", styles["section"]))
         blocks.append(_price_table(ctx, via, styles))
@@ -180,7 +208,7 @@ def _page_confirmation(ctx, styles, via):
         blocks.append(Paragraph("INFORMACOES SOBRE PAGAMENTO", styles["section"]))
         blocks.append(Paragraph(f'Forma de pagamento: {str(ctx["pagamento"]).lower()}.', styles["body"]))
         blocks.append(Paragraph("O valor sera cobrado conforme acordo entre as partes.", styles["muted"]))
-    elif via == "motorista" and ctx["repasse"]:
+    elif via == "motorista" and ctx["repasse"] and not ctx["esconder_valores"]:
         blocks.append(Spacer(1, 5 * mm))
         blocks.append(Paragraph("REPASSE AO MOTORISTA", styles["section"]))
         blocks.append(Paragraph(f'<b>Valor de repasse:</b> {ctx["repasse"]}', styles["body"]))
@@ -205,14 +233,14 @@ def _page_details(ctx, styles, via):
         right.insert(0, ("Motorista", ctx["motorista"]))
     if via != "motorista":
         left.append(("Email", ctx["email"]))
-    if via == "loja":
+    if via == "loja" and not ctx["esconder_valores"]:
         left.extend([
             ("Valor base", ctx["valor_base"] or "—"),
             ("Desconto", f'{ctx["desconto"]}%' if ctx["desconto"] else "—"),
             ("Repasse", ctx["repasse"] or "—"),
             ("Conta a pagar", ctx["conta_pagar"] or "—"),
         ])
-    if via == "motorista" and ctx["repasse"]:
+    if via == "motorista" and ctx["repasse"] and not ctx["esconder_valores"]:
         right.append(("Repasse", ctx["repasse"]))
 
     rows = []
@@ -240,22 +268,24 @@ def _page_details(ctx, styles, via):
 
 
 def _page_contract(ctx, styles, via, part=1):
-    sections = load_contract_sections_for_via(via)
     blocks = []
+    custom_clauses = _custom_contract_lines(ctx.get("driver_contract_text", ""))
     if part == 1:
         blocks.append(_header_table(ctx, styles, "Contrato de Prestacao de Servico"))
         blocks.append(Spacer(1, 6 * mm))
         blocks.append(Paragraph("CONTRATO", styles["section"]))
-        for line in sections["clausulas"]:
+        first_part = custom_clauses[:7] if custom_clauses else CONTRACT_CLAUSES[:7]
+        for line in first_part:
             blocks.append(Paragraph(line, styles["contract"]))
         blocks.append(Spacer(1, 4 * mm))
         blocks.append(Paragraph("POLITICA DE CANCELAMENTO", styles["section"]))
-        for line in sections["cancelamento"]:
+        for line in CANCEL_POLICY:
             blocks.append(Paragraph(f"- {line}", styles["contract"]))
         return blocks
 
     blocks.append(Paragraph("CLAUSULAS ADICIONAIS", styles["section"]))
-    for line in sections["adicionais"]:
+    second_part = custom_clauses[7:] if custom_clauses else CONTRACT_CLAUSES[7:]
+    for line in second_part:
         blocks.append(Paragraph(line, styles["contract"]))
     blocks.append(Spacer(1, 10 * mm))
     sign = Table(
@@ -268,6 +298,17 @@ def _page_contract(ctx, styles, via, part=1):
     sign.setStyle(TableStyle([("LINEABOVE", (0, 1), (-1, 1), 0.5, colors.HexColor("#CBD5E1")), ("TOPPADDING", (0, 0), (-1, -1), 8)]))
     blocks.append(sign)
     return blocks
+
+
+def _custom_contract_lines(text):
+    raw = str(text or "").strip()
+    if not raw:
+        return []
+    lines = [line.strip() for line in raw.splitlines() if line.strip()]
+    if len(lines) == 1 and len(lines[0]) > 160:
+        sentences = re.split(r"(?<=[.!?])\s+", lines[0])
+        lines = [item.strip() for item in sentences if item.strip()]
+    return lines[:24]
 
 
 def _header_table(ctx, styles, title):
@@ -364,8 +405,12 @@ def _price_table(ctx, via, styles):
     return table
 
 
-def _show_price(via):
-    return via in {"cliente", "loja"}
+def _show_price(ctx, via):
+    return not ctx.get("esconder_valores") and via in {"cliente", "loja"}
+
+
+def _truthy(value):
+    return str(value or "").strip().lower() in {"1", "true", "yes", "sim", "on", "faturado"}
 
 
 def _reservation_number(reservation):
@@ -420,9 +465,16 @@ def _mask_driver_name(name):
 
 
 def _valid_logo(path):
-    if not path:
+    from .cdn.urls import materialize_media_file, resolve_media_url
+
+    resolved = resolve_media_url(str(path or "").strip())
+    if not resolved:
         return ""
-    candidate = Path(str(path))
+    candidate = Path(resolved)
     if candidate.is_file() and candidate.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"}:
         return str(candidate)
+    if resolved.startswith(("http://", "https://", "r2private:")):
+        temp_path = materialize_media_file(resolved, suffix=candidate.suffix or ".png")
+        if temp_path:
+            return temp_path
     return ""

@@ -62,8 +62,12 @@ def find_company_name(app, reservation):
     return reservation.get("empresa") or reservation.get("cliente", "")
 
 
-def reservation_dto(app, reservation):
+def reservation_dto(app, reservation, driver=None):
+    if driver is not None:
+        from .driver_portal_panel import is_driver_owned_reservation
+    owned = bool(driver is not None and is_driver_owned_reservation(reservation, driver))
     origem, destino = parse_trajeto(reservation.get("trajeto"))
+    esconder_valores = str(reservation.get("esconder_valores") or "").strip().lower() in {"1", "true", "yes", "sim", "on"}
     return {
         "numero": reservation.get("numero"),
         "cliente": reservation.get("cliente"),
@@ -77,6 +81,11 @@ def reservation_dto(app, reservation):
         "observacoes": reservation.get("observacoes", ""),
         "tipo": reservation.get("tipo", ""),
         "driver_id": reservation.get("driver_id"),
+        "owner_type": reservation.get("owner_type") or ("motorista" if owned else "operacao"),
+        "owned_by_driver": owned,
+        "source_label": "Minha" if owned else "Atribuida",
+        "can_edit": owned and str(reservation.get("status", "")).lower() not in {"concluida", "concluído", "concluido", "cancelada", "cancelado"},
+        "valores_ocultos": esconder_valores,
         "maps_url": maps_route_url(origem, destino if destino else None),
     }
 
@@ -137,7 +146,9 @@ def dashboard_dto(app, driver, session):
     today = datetime.now().date()
     week_end = today + timedelta(days=7)
     month_end = today + timedelta(days=30)
-    reservations = [reservation_dto(app, r) for r in driver_reservations_for(app, driver)]
+    reservations = [reservation_dto(app, r, driver) for r in driver_reservations_for(app, driver)]
+    own = [r for r in reservations if r.get("owned_by_driver")]
+    assigned = [r for r in reservations if not r.get("owned_by_driver")]
 
     def bucket(item):
         dt = _parse_reservation_date(item.get("data"))
@@ -162,6 +173,8 @@ def dashboard_dto(app, driver, session):
             "proximas": len(upcoming),
             "concluidas": len(done),
             "pendentes": len(pending),
+            "minhas": len(own),
+            "atribuidas": len(assigned),
         },
         "indicators": {
             "portal_status": "Ativo" if driver.get("portal_ativo") else "Inativo",
@@ -173,31 +186,14 @@ def dashboard_dto(app, driver, session):
     }
 
 
-def reservation_status_actions(status):
-    current = str(status or "").strip().lower()
-    if current in {"cancelada", "cancelado", "concluida", "concluido", "concluído", "finalizada"}:
-        return []
-    allowed_keys = {
-        "pendente": {"Aceitar", "Cancelado"},
-        "aceitar": {"Aceitar", "Cancelado"},
-        "confirmada": {"Em deslocamento", "Cancelado"},
-        "em deslocamento": {"Em atendimento", "Cancelado"},
-        "em atendimento": {"Concluido", "Cancelado"},
-    }.get(current, {"Aceitar", "Cancelado"})
-    return [
-        {"key": item["key"], "label": item["label"], "status": item["status"]}
-        for item in STATUS_ACTIONS
-        if item["key"] in allowed_keys
-    ]
-
-
 def portal_branding(app):
     from .settings_store import load_settings
+    from .cdn.urls import resolve_media_url
     from .version import APP_BUILD
 
     settings = load_settings()
     return {
         "empresa": settings.get("nome_projeto") or settings.get("empresa") or "Nexus Transfer",
-        "logo_url": settings.get("logo_global") or "",
+        "logo_url": resolve_media_url(settings.get("logo_global") or ""),
         "build": APP_BUILD,
     }

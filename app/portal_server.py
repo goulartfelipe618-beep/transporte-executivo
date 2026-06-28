@@ -13,6 +13,20 @@ from .driver_portal_access import (
     driver_cpf_matches,
     try_consume_activation_token,
 )
+from .driver_portal_panel import (
+    begin_totp_setup,
+    cancel_driver_reservation,
+    create_driver_client,
+    create_driver_reservation,
+    disable_driver_totp,
+    enable_driver_totp,
+    list_driver_clients,
+    pdf_payload,
+    public_panel_config,
+    save_panel_config,
+    update_driver_reservation,
+    verify_driver_totp,
+)
 from .portal_auth import (
     USER_TYPE_DRIVER,
     activation_token_valid,
@@ -320,7 +334,7 @@ def _build_handler(app):
                 return self._json(200, {"ok": True, "profile": profile_dto(driver)})
 
             if path == "/api/driver/reservations":
-                items = [reservation_dto(app, r) for r in driver_reservations_for(app, driver)]
+                items = [reservation_dto(app, r, driver) for r in driver_reservations_for(app, driver)]
                 return self._json(200, {"ok": True, "items": items})
 
             if path == "/api/driver/reservation":
@@ -331,10 +345,78 @@ def _build_handler(app):
                     200,
                     {
                         "ok": True,
-                        "item": reservation_dto(app, reservation),
+                        "item": reservation_dto(app, reservation, driver),
                         "actions": _reservation_actions(reservation),
                     },
                 )
+
+            if path == "/api/driver/clients":
+                return self._json(200, {"ok": True, "items": list_driver_clients(app, driver)})
+
+            if path == "/api/driver/client-create":
+                try:
+                    client = create_driver_client(app, driver, data)
+                except Exception as exc:
+                    return self._json(400, {"ok": False, "error": str(exc)})
+                return self._json(200, {"ok": True, "item": client})
+
+            if path == "/api/driver/reservation-create":
+                try:
+                    reservation = create_driver_reservation(app, driver, data)
+                except ValueError as exc:
+                    return self._json(400, {"ok": False, "error": str(exc)})
+                return self._json(200, {"ok": True, "item": reservation_dto(app, reservation, driver)})
+
+            if path == "/api/driver/reservation-update":
+                ok, message = verify_driver_totp(driver, data.get("totp_code", ""))
+                if not ok:
+                    return self._json(403, {"ok": False, "error": message})
+                ok, message = update_driver_reservation(app, driver, data.get("numero"), data)
+                return self._json(200 if ok else 403, {"ok": ok, "error": message})
+
+            if path == "/api/driver/reservation-cancel":
+                ok, message = verify_driver_totp(driver, data.get("totp_code", ""))
+                if not ok:
+                    return self._json(403, {"ok": False, "error": message})
+                ok, message = cancel_driver_reservation(app, driver, data.get("numero"))
+                return self._json(200 if ok else 403, {"ok": ok, "error": message})
+
+            if path == "/api/driver/reservation-pdf":
+                try:
+                    payload = pdf_payload(app, driver, data.get("numero"), data.get("via", "cliente"))
+                except Exception as exc:
+                    return self._json(400, {"ok": False, "error": str(exc)})
+                return self._json(200, {"ok": True, **payload})
+
+            if path == "/api/driver/settings":
+                return self._json(200, {"ok": True, "settings": public_panel_config(driver)})
+
+            if path == "/api/driver/settings-save":
+                ok, message = verify_driver_totp(driver, data.get("totp_code", ""))
+                if not ok:
+                    return self._json(403, {"ok": False, "error": message})
+                settings = save_panel_config(driver, data)
+                if hasattr(app, "save_state"):
+                    app.save_state()
+                return self._json(200, {"ok": True, "settings": settings})
+
+            if path == "/api/driver/totp-setup":
+                payload = begin_totp_setup(driver)
+                if hasattr(app, "save_state"):
+                    app.save_state()
+                return self._json(200, {"ok": True, **payload})
+
+            if path == "/api/driver/totp-enable":
+                ok, message = enable_driver_totp(driver, data.get("totp_code", ""))
+                if hasattr(app, "save_state"):
+                    app.save_state()
+                return self._json(200 if ok else 400, {"ok": ok, "error": message})
+
+            if path == "/api/driver/totp-disable":
+                ok, message = disable_driver_totp(driver, data.get("totp_code", ""))
+                if hasattr(app, "save_state"):
+                    app.save_state()
+                return self._json(200 if ok else 403, {"ok": ok, "error": message})
 
             if path == "/api/driver/notifications":
                 changed = sync_reservation_notifications(app, driver)

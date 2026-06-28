@@ -134,7 +134,7 @@ def _build_context(reservation, app, via):
         parts = data_raw.split(" ", 1)
         data_raw, hora = parts[0], parts[1]
 
-    company = settings.get("razao_social") or settings.get("nome_projeto") or settings.get("empresa") or "Empresa"
+    company = reservation.get("pdf_company_name") or settings.get("razao_social") or settings.get("nome_projeto") or settings.get("empresa") or "Empresa"
     return {
         "via": via,
         "via_label": VIA_LABELS[via],
@@ -145,7 +145,7 @@ def _build_context(reservation, app, via):
         "whatsapp_empresa": settings.get("whatsapp_contrato") or settings.get("telefone") or "-",
         "email_oficial": settings.get("email_oficial") or settings.get("email") or "-",
         "representante": settings.get("representante_legal") or settings.get("nome_completo") or "-",
-        "logo_path": _valid_logo(settings.get("logo_global")),
+        "logo_path": _valid_logo(reservation.get("pdf_logo_path") or settings.get("logo_global")),
         "numero_display": str(reservation.get("numero", "")).replace("#", "") or "-",
         "short_id": _short_id(reservation),
         "generated_at": datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
@@ -169,6 +169,7 @@ def _build_context(reservation, app, via):
         "conta_pagar": reservation.get("conta_pagar", ""),
         "esconder_valores": _truthy(reservation.get("esconder_valores")),
         "observacoes": reservation.get("observacoes", "") or "Sem observacoes adicionais.",
+        "driver_contract_text": reservation.get("driver_contract_text", ""),
         "criada_em": reservation.get("criado_em") or datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
     }
 
@@ -268,11 +269,13 @@ def _page_details(ctx, styles, via):
 
 def _page_contract(ctx, styles, via, part=1):
     blocks = []
+    custom_clauses = _custom_contract_lines(ctx.get("driver_contract_text", ""))
     if part == 1:
         blocks.append(_header_table(ctx, styles, "Contrato de Prestacao de Servico"))
         blocks.append(Spacer(1, 6 * mm))
         blocks.append(Paragraph("CONTRATO", styles["section"]))
-        for line in CONTRACT_CLAUSES[:7]:
+        first_part = custom_clauses[:7] if custom_clauses else CONTRACT_CLAUSES[:7]
+        for line in first_part:
             blocks.append(Paragraph(line, styles["contract"]))
         blocks.append(Spacer(1, 4 * mm))
         blocks.append(Paragraph("POLITICA DE CANCELAMENTO", styles["section"]))
@@ -281,7 +284,8 @@ def _page_contract(ctx, styles, via, part=1):
         return blocks
 
     blocks.append(Paragraph("CLAUSULAS ADICIONAIS", styles["section"]))
-    for line in CONTRACT_CLAUSES[7:]:
+    second_part = custom_clauses[7:] if custom_clauses else CONTRACT_CLAUSES[7:]
+    for line in second_part:
         blocks.append(Paragraph(line, styles["contract"]))
     blocks.append(Spacer(1, 10 * mm))
     sign = Table(
@@ -294,6 +298,17 @@ def _page_contract(ctx, styles, via, part=1):
     sign.setStyle(TableStyle([("LINEABOVE", (0, 1), (-1, 1), 0.5, colors.HexColor("#CBD5E1")), ("TOPPADDING", (0, 0), (-1, -1), 8)]))
     blocks.append(sign)
     return blocks
+
+
+def _custom_contract_lines(text):
+    raw = str(text or "").strip()
+    if not raw:
+        return []
+    lines = [line.strip() for line in raw.splitlines() if line.strip()]
+    if len(lines) == 1 and len(lines[0]) > 160:
+        sentences = re.split(r"(?<=[.!?])\s+", lines[0])
+        lines = [item.strip() for item in sentences if item.strip()]
+    return lines[:24]
 
 
 def _header_table(ctx, styles, title):

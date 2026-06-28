@@ -123,6 +123,7 @@ PORTAL_EVENT_TYPES = {
     "portal.driver.logout": "Logout portal motorista",
     "portal.driver.password_set": "Senha portal motorista definida",
     "portal.driver.activation_consumed": "Token de ativacao consumido (portal motorista)",
+    "portal.driver.reservation_created": "Reserva criada no portal motorista",
     "portal.driver.reservation_status": "Status de reserva alterado (motorista)",
     "portal.company.login": "Login portal empresa",
     "portal.company.logout": "Logout portal empresa",
@@ -480,10 +481,9 @@ def ensure_portal_security(app):
 
 
 def driver_reservations_for(app, driver):
-    driver_ids = _driver_identity_ids(driver)
     items = []
     for reservation in getattr(app, "reservations", []):
-        if _reservation_driver_ids(reservation) & driver_ids:
+        if reservation_belongs_to_driver(reservation, driver):
             items.append(reservation)
     return items
 
@@ -507,7 +507,11 @@ def _reservation_driver_ids(reservation):
 
 
 def reservation_belongs_to_driver(reservation, driver):
-    return bool(_reservation_driver_ids(reservation) & _driver_identity_ids(driver))
+    driver_ids = _driver_identity_ids(driver)
+    if _reservation_driver_ids(reservation) & driver_ids:
+        return True
+    owner = str((reservation or {}).get("created_by_driver_id", "")).strip()
+    return str((reservation or {}).get("owner_type", "")).strip() == "motorista" and owner in driver_ids
 
 
 def active_portal_drivers(app):

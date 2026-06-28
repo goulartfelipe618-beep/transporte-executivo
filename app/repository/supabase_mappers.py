@@ -27,12 +27,13 @@ KNOWN_COLUMNS = {
         "legacy_admin_id", "numero", "cliente", "empresa", "trajeto", "origem", "destino", "data", "hora",
         "status", "valor", "tipo", "observacoes", "motorista", "partner_slug", "partner_code", "contributor_code",
         "source", "flow", "canal_origem", "via_qr", "transport_request_legacy_id", "partner_id", "contributor_id",
-        "company_id", "driver_id", "cost_center_id", "dados_extra",
+        "company_id", "driver_id", "cost_center_id", "owner_type", "created_by_driver_id",
+        "created_by_driver_name", "client_kind", "dados_extra",
     },
     "drivers": {
         "legacy_admin_id", "portal_slug", "nome", "cpf", "rg", "email", "telefone", "estado", "cidade", "frota",
         "validade_cnh", "portal_ativo", "password_hash", "activation_token", "activation_expires_at",
-        "activation_token_consumed_at", "portal_activated_at", "portal_link", "dados_extra",
+        "activation_token_consumed_at", "portal_activated_at", "portal_link", "portal_panel", "dados_extra",
     },
     "vehicles": {
         "legacy_admin_id", "placa", "tipo_veiculo", "marca", "modelo", "ano", "cor", "capacidade", "bagagens",
@@ -235,6 +236,7 @@ def to_driver_row(item):
         "activation_token_consumed_at": item.get("activation_token_consumed_at"),
         "portal_activated_at": item.get("portal_activated_at"),
         "portal_link": item.get("link") or item.get("portal_link"),
+        "portal_panel": item.get("portal_panel") or {},
         "dados_extra": _extra(item, known),
     }
     if item.get("uuid"):
@@ -361,6 +363,10 @@ def to_reservation_row(item, resolver: RefResolver):
         "contributor_id": resolver.uuid(item.get("contributor_id")),
         "driver_id": resolver.uuid(item.get("driver_id")),
         "company_id": resolver.uuid(item.get("company_id")),
+        "owner_type": item.get("owner_type"),
+        "created_by_driver_id": item.get("created_by_driver_id"),
+        "created_by_driver_name": item.get("created_by_driver_name"),
+        "client_kind": item.get("client_kind"),
         "dados_extra": _extra(item, known),
     }
     if item.get("uuid"):

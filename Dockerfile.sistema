@@ -1,8 +1,8 @@
 FROM python:3.12-slim
 
-# deploy-bump: 2026-06-28-driver-portal-activation1 — token motorista uso unico
+# deploy-bump: 2026-06-28-driver-portal-panel1 — mini painel motorista
 ARG NEXUS_GIT_COMMIT=dev
-ARG NEXUS_CACHE_BUST=2026.06.28-driver-portal-activation1
+ARG NEXUS_CACHE_BUST=2026.06.28-driver-portal-panel1
 
 WORKDIR /app
 

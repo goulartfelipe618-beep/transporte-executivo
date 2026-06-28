@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-28T18:27:46.161357",
+  "saved_at": "2026-06-28T18:50:17.793206",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "b6cc6dba6f92c51fc8cbd9e642590aa107dd09d3974d783b1aa5deb5df48907e",
@@ -18,7 +18,7 @@
       "sha256": "c7bcd3babf67699275c8b5b23cd9628cb99ac57a766e9a3166e7a0109ef5d867"
     },
     "Dockerfile.sistema": {
-      "sha256": "2270342e87fda0848eccfca94afdd726ce4948ff829f75aaaf782a1b4920fb28"
+      "sha256": "19099d3c3b873af363e19a7ff46343c78ffb357204a32f3a8f17cadf5a23d6be"
     },
     "INICIAR_VPS.bat": {
       "sha256": "8ee4622b90f2ebb28b52e824a951a25c7688456548711be377cc41f7ce041a1a"
@@ -40,7 +40,7 @@
       "marker": "bind_host"
     },
     "app/code_guard.py": {
-      "sha256": "05e0a2f4617ab4c0ab8bba21d7c91d882b04163e5e8498a56c6b9f0474b6ec42",
+      "sha256": "97e3ba18242e0444310b172d2ecbee02ebdff489305031a0e7b046e5b82fe248",
       "marker": "ensure_code_integrity"
     },
     "app/company_portal.py": {
@@ -58,6 +58,18 @@
     "app/data.py": {
       "sha256": "b43b09dccdb204b6f298e769bf6d2a8919f74cf8b10eeecb2c7583b395c6018b",
       "marker": "INITIAL_RESERVATIONS = []"
+    },
+    "app/driver_portal_dtos.py": {
+      "sha256": "3db2e0fdd86af9069cad56ecd83a12a979437341537129244b9290b36359fa2f",
+      "marker": "dashboard_dto"
+    },
+    "app/driver_portal_panel.py": {
+      "sha256": "24b4d2ce38bad163f188739ac625a38ff0cf03ba4ba08add275d5cbbb19a096a",
+      "marker": "create_driver_reservation"
+    },
+    "app/driver_portal_ui.py": {
+      "sha256": "032b71539af401a082f0490cf6df2ae0097b73e94be604f079512835bd5bf85d",
+      "marker": "render_driver_portal_page"
     },
     "app/full_features.py": {
       "sha256": "f6a55c8e7f0dae380bda1a27e0f30dfddaffe5e20888be704305d368a6052ff9",
@@ -109,7 +121,7 @@
       "marker": "network_vehicles_for_partner"
     },
     "app/portal_auth.py": {
-      "sha256": "db90738b65e1d33be169ac75ff92b8bd5d33b6c04112b0f780b79aa479db8102",
+      "sha256": "719efb27a34b5bfd500cb4d41f5f846db0e957178599aefb3ee43df5a631130a",
       "marker": "ensure_portal_security"
     },
     "app/portal_landing.py": {
@@ -117,7 +129,7 @@
       "marker": "driver_portal_landing"
     },
     "app/portal_server.py": {
-      "sha256": "622374ac752fb051ec00dd274365dc386bd859dd1f7f783e09f893645fe8330b",
+      "sha256": "88ddc929e19ab72e3876b92e79b6daade6e4ecde790abb6b16d614893b1e03b3",
       "marker": "start_driver_portal_server"
     },
     "app/portal_urls.py": {
@@ -142,7 +154,7 @@
       "sha256": "094e2e8149e91b605a7ffc352e0c2f1226b9c476ca5b1c3bfe6c0eec29ac8188"
     },
     "app/repository/supabase_mappers.py": {
-      "sha256": "b34f007b5286dc994734ef6976c332a102ca79d9d13c87afbd37a1d130ff2083",
+      "sha256": "3b61a94f3a15650fa60d14db1ad70701e49e0f6c1838aa494539ed50a6a94e0c",
       "marker": "TO_ROW"
     },
     "app/repository/supabase_repository.py": {
@@ -154,6 +166,10 @@
     },
     "app/reservation_numbers.py": {
       "sha256": "b5962d50ffa4fc87d8a27aac4fb5c3d0183550bd16de510857b74b2d1bef6ded"
+    },
+    "app/reservation_pdf.py": {
+      "sha256": "cc673442106313d4b7d493f2601262fe2535002858b700281665288430b4f455",
+      "marker": "generate_reservation_pdf"
     },
     "app/reservations.py": {
       "sha256": "1f246449984d884e3d23e1b2baf3c862ff6b1b3d6b93c8dcf96386f5383ed707",
@@ -196,7 +212,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "31d613345b4668b75b7a6d03bd5eda39a2cef7323081b518d5380b037fd07656",
+      "sha256": "e8a20e15f927958ff10b4c1b2bfa7fa4dfb4d49b2029356a20ee9a437e9d3d67",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {
