@@ -53,7 +53,7 @@ def _deploy_payload():
         "fix_if_stale": (
             "EasyPanel: app sistema → Source branch main → Dockerfile.sistema → "
             "Rebuild SEM cache (nao basta Restart). Build log deve mostrar "
-            "'OK: modulo Receptivos' e APP_BUILD driver-ibge-form1."
+            "'OK: modulo Receptivos' e APP_BUILD driver-ibge-form2."
         ),
     }
 
