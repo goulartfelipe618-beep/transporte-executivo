@@ -26,7 +26,7 @@ def driver_portal_landing():
     return _page(
         "Portal do Motorista",
         "Acesse com o link personalizado enviado pelo administrador.",
-        f"<p class='muted'>Formato do link:<br><code>{base}/driver/{{seu-slug}}</code></p>",
+        f"<p class='muted'>Formato do link seguro:<br><code>{base}/driver/drv-{{codigo-longo}}</code></p>",
     )
 
 

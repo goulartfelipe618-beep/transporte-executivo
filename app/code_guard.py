@@ -51,6 +51,7 @@ PROTECTED_FILES = {
     "app/repository/supabase_mappers.py": "TO_ROW",
     "app/master/routers/web/drivers.py": "router = APIRouter",
     "app/master/services/driver_service.py": "create_driver",
+    "app/master/services/driver_portal_service.py": "portal_slug",
     "app/master/validators/driver.py": "validate_driver_form",
     "app/bind_host.py": "bind_host",
     "app/production_runtime.py": "bootstrap_production_services",

@@ -74,9 +74,9 @@ Copiar base: `.env.motor.example`
 
 ## Implantar Sistema (EasyPanel)
 
-1. Repositório branch `main`, commit ≥ `c45b7da`, build ≥ `2026.06.29-driver-portal-layout2`
+1. Repositório branch `main`, commit atual do GitHub, build ≥ `2026.06.29-driver-portal-secure1`
 2. **Dockerfile:** `Dockerfile.sistema` (não usar `Dockerfile` padrão)
-3. **Build args (obrigatório se build travado):** `NEXUS_GIT_COMMIT=c45b7da`, `NEXUS_CACHE_BUST=2026.06.29-driver-portal-layout2`
+3. **Build args (obrigatório se build travado):** `NEXUS_GIT_COMMIT=<hash do commit enviado>`, `NEXUS_CACHE_BUST=2026.06.29-driver-portal-secure1`
 4. Mapear domínios → portas conforme tabela acima
 5. **Implantar / Rebuild** com **Rebuild without cache** (não basta Restart)
 6. Apague **Comando** e **Argumentos** customizados no serviço (deve usar ENTRYPOINT do Dockerfile)
@@ -89,7 +89,7 @@ Se `https://sistema.transporteexecutivo.com/api/deploy-info` mostrar build antig
 - O container **não rebuildou** com o código novo (cache Docker ou só restart)
 - Logs do **WordPress** (`wp-admin`, `elementor`) **não são** do Sistema Master — use os logs do app **sistema** no EasyPanel
 - Confirme repositório `goulartfelipe618-beep/transporte-executivo`, branch `main`
-- Force rebuild; após subir, `deploy-info` deve ter `receptivos_module: true`, build `2026.06.29-driver-portal-layout2` e `git_commit` ≥ `c45b7da`
+- Force rebuild; após subir, `deploy-info` deve ter `receptivos_module: true`, build `2026.06.29-driver-portal-secure1` e `git_commit` igual ao commit enviado
 
 ---
 
@@ -98,7 +98,7 @@ Se `https://sistema.transporteexecutivo.com/api/deploy-info` mostrar build antig
 ```bash
 # Build e health Sistema
 curl -s https://sistema.transporteexecutivo.com/api/deploy-info
-# build >= 2026.06.29-driver-portal-layout2, git_commit >= c45b7da, mode: web
+# build >= 2026.06.29-driver-portal-secure1, git_commit = commit enviado, mode: web
 
 curl -s https://api.transporteexecutivo.com/api/v1/public/statistics
 curl -s https://engine.transporteexecutivo.com/health

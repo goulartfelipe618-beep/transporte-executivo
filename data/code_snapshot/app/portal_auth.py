@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import secrets
+import string
 from datetime import datetime, timedelta, timezone
 
 try:
@@ -20,6 +21,9 @@ SESSION_TTL_DRIVER = timedelta(hours=8)
 SESSION_TTL_COMPANY = timedelta(hours=12)
 SESSION_TTL_PARTNER = timedelta(hours=8)
 ACTIVATION_TTL = timedelta(hours=72)
+DRIVER_PORTAL_SLUG_PREFIX = "drv-"
+DRIVER_PORTAL_SLUG_LENGTH = 64
+DRIVER_PORTAL_SLUG_ALPHABET = string.ascii_letters + string.digits
 
 MAX_EVENT_LOG = 500
 
@@ -313,6 +317,40 @@ def next_driver_id(drivers):
     return f"drv-{max(numbers, default=0) + 1:04d}"
 
 
+def generate_driver_portal_slug(existing_slugs=None):
+    existing = {str(item or "").strip() for item in (existing_slugs or set())}
+    while True:
+        token = "".join(secrets.choice(DRIVER_PORTAL_SLUG_ALPHABET) for _ in range(DRIVER_PORTAL_SLUG_LENGTH))
+        slug = f"{DRIVER_PORTAL_SLUG_PREFIX}{token}"
+        if slug not in existing:
+            return slug
+
+
+def is_secure_driver_portal_slug(value):
+    raw = str(value or "").strip()
+    if not raw.startswith(DRIVER_PORTAL_SLUG_PREFIX):
+        return False
+    token = raw[len(DRIVER_PORTAL_SLUG_PREFIX):]
+    return len(token) == DRIVER_PORTAL_SLUG_LENGTH and all(char in DRIVER_PORTAL_SLUG_ALPHABET for char in token)
+
+
+def ensure_driver_portal_slug(driver, drivers=None):
+    """Garante URL publica opaca; nunca usa CPF, nome ou ID previsivel."""
+    current = str((driver or {}).get("portal_slug", "") or "").strip()
+    reserved = set()
+    for item in drivers or []:
+        if item is driver:
+            continue
+        slug = str((item or {}).get("portal_slug", "") or "").strip()
+        if slug:
+            reserved.add(slug)
+    if is_secure_driver_portal_slug(current) and current not in reserved:
+        return current
+    slug = generate_driver_portal_slug(reserved)
+    driver["portal_slug"] = slug
+    return slug
+
+
 def next_event_id(app):
     numbers = []
     for item in getattr(app, "event_log", []):
@@ -413,6 +451,7 @@ def normalize_driver_record(driver, drivers=None):
     driver = dict(driver or {})
     if not str(driver.get("id", "")).startswith("drv-"):
         driver["id"] = next_driver_id(drivers or [])
+    ensure_driver_portal_slug(driver, drivers or [])
     driver.setdefault("portal_ativo", bool(driver.get("password_hash")))
     if driver.get("portal_ativo") and not driver.get("password_hash"):
         driver["portal_ativo"] = False
@@ -428,6 +467,10 @@ def ensure_driver_ids(app):
         item = dict(driver)
         if not str(item.get("id", "")).startswith("drv-"):
             item["id"] = next_driver_id(drivers)
+            changed = True
+        before_slug = str(item.get("portal_slug", "") or "")
+        ensure_driver_portal_slug(item, drivers)
+        if item.get("portal_slug") != before_slug:
             changed = True
         if not item.get("password_hash") and not item.get("activation_token"):
             generate_activation_token(item)

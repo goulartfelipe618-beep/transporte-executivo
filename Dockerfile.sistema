@@ -1,8 +1,8 @@
 FROM python:3.12-slim
 
-# deploy-bump: 2026-06-29-driver-portal-layout2 — forca pull commit c45b7da+ no EasyPanel
-ARG NEXUS_GIT_COMMIT=c45b7da
-ARG NEXUS_CACHE_BUST=2026.06.29-driver-portal-layout2
+# deploy-bump: 2026-06-29-driver-portal-secure1 — portal motorista com slug seguro
+ARG NEXUS_GIT_COMMIT=dev
+ARG NEXUS_CACHE_BUST=2026.06.29-driver-portal-secure1
 
 WORKDIR /app
 
@@ -37,7 +37,7 @@ RUN python -c "\
 import re; p=open('app/version.py', encoding='utf-8').read(); \
 m=re.search(r'APP_BUILD\\s*=\\s*[\"\\']([^\"\\']+)[\"\\']', p); \
 build=m.group(1) if m else 'unknown'; \
-assert 'driver-portal-layout' in build, f'APP_BUILD desatualizado na imagem: {build}'; \
+assert 'driver-portal-secure' in build, f'APP_BUILD desatualizado na imagem: {build}'; \
 print(f'OK: APP_BUILD={build}')\
 "
 

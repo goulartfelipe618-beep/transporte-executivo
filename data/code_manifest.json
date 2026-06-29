@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-28T22:28:20.507942",
+  "saved_at": "2026-06-28T22:54:15.967631",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "b6cc6dba6f92c51fc8cbd9e642590aa107dd09d3974d783b1aa5deb5df48907e",
@@ -12,13 +12,13 @@
       "sha256": "c54b01207cc8ae5bdd8f1ebdaa141cd6ceda84c599b35be965b5a388f25bcba1"
     },
     "DEPLOY_EASYPANEL.md": {
-      "sha256": "f91f1b33a063a5218b15b9991de3baa1f9db5d9bc8ddeccf766b86049f676ba0"
+      "sha256": "578c6808c577c8b411a250ee7337256c08d00c6902664fc9ac3deca450b76fd9"
     },
     "Dockerfile": {
       "sha256": "c7bcd3babf67699275c8b5b23cd9628cb99ac57a766e9a3166e7a0109ef5d867"
     },
     "Dockerfile.sistema": {
-      "sha256": "e4058c23125e2281fdad624b3c8f091cf7739da1f97b8ecba9c47d2ff6f82a2c"
+      "sha256": "632db619170ac187081b87023d4be64536952e111e0b71db546ecc5be94c5cc5"
     },
     "INICIAR_VPS.bat": {
       "sha256": "8ee4622b90f2ebb28b52e824a951a25c7688456548711be377cc41f7ce041a1a"
@@ -40,7 +40,7 @@
       "marker": "bind_host"
     },
     "app/code_guard.py": {
-      "sha256": "4bbf929c3d8007298ab2498808c8a9d31cc2d9f0a930b1ef718b1250285fd959",
+      "sha256": "e989a0c81116ebc3f7195e9a4b5c7ec8480ef40119d98b408afc6babf622fc4b",
       "marker": "ensure_code_integrity"
     },
     "app/company_portal.py": {
@@ -68,7 +68,7 @@
       "marker": "create_driver_reservation"
     },
     "app/driver_portal_ui.py": {
-      "sha256": "b10235c1c49f1a6a1e540ec5d41dd1cefd30bf759bd821848c09ca728ec06e88",
+      "sha256": "ced5fe227c7d030dae5a80d94a1bf83b438f679bbe3d8d25b70faf18d53ce638",
       "marker": "render_driver_portal_page"
     },
     "app/full_features.py": {
@@ -96,6 +96,10 @@
     },
     "app/master/routers/web/receptions.py": {
       "sha256": "86fe58248f372990a11dcfb39356abf3fadfd32e2fdbf691861e4f1b78480215"
+    },
+    "app/master/services/driver_portal_service.py": {
+      "sha256": "346065a018468e015374da8ad3c7ade6f641acc52c5a0c60aaebbc754b512a90",
+      "marker": "portal_slug"
     },
     "app/master/services/driver_service.py": {
       "sha256": "bb1a8f4e26d21b898100a4570c243be5e34851be4109e4d1e190f2170246a1ab",
@@ -145,19 +149,19 @@
       "marker": "network_vehicles_for_partner"
     },
     "app/portal_auth.py": {
-      "sha256": "719efb27a34b5bfd500cb4d41f5f846db0e957178599aefb3ee43df5a631130a",
+      "sha256": "b93b74908296b2472e47d440a2d1d9b0a41f79d09419d1943b602d540fc495de",
       "marker": "ensure_portal_security"
     },
     "app/portal_landing.py": {
-      "sha256": "973d674ce81deedd209f8856a2b12c2d429900003075372aa4c4690ce4708dbb",
+      "sha256": "e47b41478e2be609f803cb79c511601bad676f3b32ee4328e06fc52edb25ca36",
       "marker": "driver_portal_landing"
     },
     "app/portal_server.py": {
-      "sha256": "4f2a62c96df6117014edd51e86fbf2656bca8d74f83df96bc52b24917c56fdbf",
+      "sha256": "77a89964173440d2c4186eac9387e1b22867a9e6e39ae3d1ded50231f2392fa3",
       "marker": "start_driver_portal_server"
     },
     "app/portal_urls.py": {
-      "sha256": "881c8194b84ae2c74b9f2d955fa2caf36e83f9e1fe50d0481b981de056f5a8e5",
+      "sha256": "dd174f039ee85d9bd2562a6ae5e878f82679fefd4737851997773f9e3f1a182e",
       "marker": "company_portal_link"
     },
     "app/pricing_engine.py": {
@@ -236,7 +240,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "c9f6a51a1176e7bb53d97359a646d0d6d8abe8fecce83eecbbb8fab4a790bf4f",
+      "sha256": "b0d2a414fc445a1bfa42f6e5668e42bd30474e4c599ee6e14e62ba2025322ec6",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {

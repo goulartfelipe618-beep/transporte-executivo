@@ -33,8 +33,10 @@ from .portal_auth import (
     create_session,
     driver_has_password,
     driver_reservations_for,
+    ensure_driver_portal_slug,
     find_driver_by_id,
     get_valid_session,
+    is_secure_driver_portal_slug,
     log_portal_event,
     reservation_belongs_to_driver,
     revoke_session,
@@ -47,12 +49,24 @@ PORTAL_PORT = 8765
 
 
 def driver_key(driver):
-    raw = driver.get("cpf") or driver.get("nome") or "motorista"
-    return "".join(char.lower() if char.isalnum() else "-" for char in raw).strip("-")
+    return ensure_driver_portal_slug(driver or {})
 
 
 def _find_driver(app, slug):
-    return next((d for d in getattr(app, "drivers", []) if driver_key(d) == slug), None)
+    public_slug = str(slug or "").strip()
+    changed = False
+    found = None
+    drivers = getattr(app, "drivers", []) or []
+    for driver in drivers:
+        before = str(driver.get("portal_slug", "") or "")
+        current = ensure_driver_portal_slug(driver, drivers)
+        if current != before:
+            changed = True
+        if is_secure_driver_portal_slug(public_slug) and current == public_slug:
+            found = driver
+    if changed and hasattr(app, "save_state"):
+        app.save_state()
+    return found
 
 
 def update_reservation_status(app, numero, status, driver):

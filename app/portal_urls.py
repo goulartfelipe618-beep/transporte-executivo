@@ -81,9 +81,9 @@ def company_portal_first_access_link(company, token: str = "") -> str:
 
 
 def driver_portal_link(driver, slug=None):
-    from .portal_server import driver_key
+    from .portal_auth import ensure_driver_portal_slug
 
-    key = slug or driver_key(driver or {})
+    key = slug or ensure_driver_portal_slug(driver or {})
     return f"{driver_portal_base()}/driver/{key}"
 
 
