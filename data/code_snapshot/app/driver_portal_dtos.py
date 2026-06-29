@@ -53,6 +53,23 @@ def maps_route_url(origem, destino=None):
     return f"https://maps.google.com/?q={quote(query)}"
 
 
+def parse_money_value(value):
+    raw = str(value or "").strip()
+    if not raw:
+        return 0.0
+    cleaned = re.sub(r"[^\d,.-]", "", raw)
+    if "," in cleaned:
+        cleaned = cleaned.replace(".", "").replace(",", ".")
+    try:
+        return float(cleaned)
+    except ValueError:
+        return 0.0
+
+
+def money_display(value):
+    return f"R$ {float(value or 0):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
 def find_company_name(app, reservation):
     company_id = reservation.get("company_id")
     if company_id:
@@ -183,6 +200,62 @@ def dashboard_dto(app, driver, session):
             "estado": driver.get("estado", ""),
         },
         "proximas_reservas": upcoming[:5],
+    }
+
+
+def driver_finance_dto(app, driver):
+    from .portal_auth import driver_reservations_for
+
+    reservations = [reservation_dto(app, r, driver) | dict(raw=r) for r in driver_reservations_for(app, driver)]
+    items = []
+    own_total = 0.0
+    assigned_total = 0.0
+    open_total = 0.0
+    done_total = 0.0
+
+    for item in reservations:
+        raw = item.pop("raw")
+        status = str(item.get("status") or "").lower()
+        canceled = status in {"cancelada", "cancelado"}
+        done = status in {"concluida", "concluído", "concluido"}
+        owned = bool(item.get("owned_by_driver"))
+        hidden = bool(item.get("valores_ocultos")) and not owned
+        value_source = raw.get("valor") if owned else (raw.get("repasse") or raw.get("valor"))
+        amount = 0.0 if hidden else parse_money_value(value_source)
+        if not canceled:
+            if owned:
+                own_total += amount
+            else:
+                assigned_total += amount
+            if done:
+                done_total += amount
+            else:
+                open_total += amount
+        items.append(
+            {
+                "numero": item.get("numero"),
+                "data": item.get("data"),
+                "cliente": item.get("cliente"),
+                "trajeto": item.get("trajeto"),
+                "status": item.get("status"),
+                "origem": item.get("origem"),
+                "destino": item.get("destino"),
+                "tipo": "Propria" if owned else "Atribuida",
+                "valor": "Sob consulta" if hidden else money_display(amount),
+                "valor_num": amount,
+                "owned_by_driver": owned,
+                "valores_ocultos": hidden,
+            }
+        )
+
+    return {
+        "cards": {
+            "receita_propria": money_display(own_total),
+            "repasse_atribuido": money_display(assigned_total),
+            "em_aberto": money_display(open_total),
+            "concluido": money_display(done_total),
+        },
+        "items": items,
     }
 
 

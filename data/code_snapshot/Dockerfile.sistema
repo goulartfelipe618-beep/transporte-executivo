@@ -1,8 +1,8 @@
 FROM python:3.12-slim
 
-# deploy-bump: 2026-06-29-driver-ibge-form2 — invalida cache COPY no EasyPanel
+# deploy-bump: 2026-06-29-driver-portal-layout1 — portal motorista sidebar e financeiro
 ARG NEXUS_GIT_COMMIT=cd703d4
-ARG NEXUS_CACHE_BUST=2026.06.29-driver-ibge-form2
+ARG NEXUS_CACHE_BUST=2026.06.29-driver-portal-layout1
 
 WORKDIR /app
 
@@ -37,7 +37,7 @@ RUN python -c "\
 import re; p=open('app/version.py', encoding='utf-8').read(); \
 m=re.search(r'APP_BUILD\\s*=\\s*[\"\\']([^\"\\']+)[\"\\']', p); \
 build=m.group(1) if m else 'unknown'; \
-assert 'driver-ibge-form' in build, f'APP_BUILD desatualizado na imagem: {build}'; \
+assert 'driver-portal-layout1' in build, f'APP_BUILD desatualizado na imagem: {build}'; \
 print(f'OK: APP_BUILD={build}')\
 "
 

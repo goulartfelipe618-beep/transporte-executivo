@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-28T21:58:07.558028",
+  "saved_at": "2026-06-28T22:23:20.855987",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "b6cc6dba6f92c51fc8cbd9e642590aa107dd09d3974d783b1aa5deb5df48907e",
@@ -12,13 +12,13 @@
       "sha256": "c54b01207cc8ae5bdd8f1ebdaa141cd6ceda84c599b35be965b5a388f25bcba1"
     },
     "DEPLOY_EASYPANEL.md": {
-      "sha256": "1bc8158917a012d00e97a8eda234c494de3bb42324025528fbda28c517182bd9"
+      "sha256": "ff0037ffb5b769bb77dff933eefadf4a5d7c0e7cb4ec7fd50a9ce1d6d0b0681d"
     },
     "Dockerfile": {
       "sha256": "c7bcd3babf67699275c8b5b23cd9628cb99ac57a766e9a3166e7a0109ef5d867"
     },
     "Dockerfile.sistema": {
-      "sha256": "e0d69dedd14db6145d7066d62eb83bf406ba29899d86d31761f820730f682ad8"
+      "sha256": "cc96a0ea9a3b2f1cff6cfd25503db67c0b5e482987eb115f60b7d452ea568346"
     },
     "INICIAR_VPS.bat": {
       "sha256": "8ee4622b90f2ebb28b52e824a951a25c7688456548711be377cc41f7ce041a1a"
@@ -60,7 +60,7 @@
       "marker": "INITIAL_RESERVATIONS = []"
     },
     "app/driver_portal_dtos.py": {
-      "sha256": "3db2e0fdd86af9069cad56ecd83a12a979437341537129244b9290b36359fa2f",
+      "sha256": "c876e8aae915957573edc1dcb7d3527ed808fdd64f71fcc34b6a55b3169f7ead",
       "marker": "dashboard_dto"
     },
     "app/driver_portal_panel.py": {
@@ -68,7 +68,7 @@
       "marker": "create_driver_reservation"
     },
     "app/driver_portal_ui.py": {
-      "sha256": "032b71539af401a082f0490cf6df2ae0097b73e94be604f079512835bd5bf85d",
+      "sha256": "b10235c1c49f1a6a1e540ec5d41dd1cefd30bf759bd821848c09ca728ec06e88",
       "marker": "render_driver_portal_page"
     },
     "app/full_features.py": {
@@ -153,7 +153,7 @@
       "marker": "driver_portal_landing"
     },
     "app/portal_server.py": {
-      "sha256": "88ddc929e19ab72e3876b92e79b6daade6e4ecde790abb6b16d614893b1e03b3",
+      "sha256": "4f2a62c96df6117014edd51e86fbf2656bca8d74f83df96bc52b24917c56fdbf",
       "marker": "start_driver_portal_server"
     },
     "app/portal_urls.py": {
@@ -236,7 +236,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "84543074e20c86f08b1cfb9f348eda16b3c58cfddf5ec899f1c8b48f3dba48fd",
+      "sha256": "075b8c3c04a79a7398458d04b37d25941f9258da79f16e0c4d270655996a3e22",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {

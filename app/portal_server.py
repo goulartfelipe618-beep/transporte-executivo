@@ -3,7 +3,7 @@ import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import unquote, urlparse
 
-from .driver_portal_dtos import STATUS_ACTIONS, dashboard_dto, profile_dto, reservation_dto
+from .driver_portal_dtos import STATUS_ACTIONS, dashboard_dto, driver_finance_dto, profile_dto, reservation_dto
 from .driver_portal_notifications import notifications_dto, sync_reservation_notifications
 from .driver_portal_ui import render_driver_portal_page
 from .portal_landing import driver_portal_landing
@@ -336,6 +336,9 @@ def _build_handler(app):
             if path == "/api/driver/reservations":
                 items = [reservation_dto(app, r, driver) for r in driver_reservations_for(app, driver)]
                 return self._json(200, {"ok": True, "items": items})
+
+            if path == "/api/driver/finance":
+                return self._json(200, {"ok": True, **driver_finance_dto(app, driver)})
 
             if path == "/api/driver/reservation":
                 reservation = _find_driver_reservation(app, driver, data.get("numero"))
