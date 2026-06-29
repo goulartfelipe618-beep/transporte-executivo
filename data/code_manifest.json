@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-06-28T18:50:17.793206",
+  "saved_at": "2026-06-28T20:40:42.693142",
   "files": {
     ".cursor/rules/version-integrity.mdc": {
       "sha256": "b6cc6dba6f92c51fc8cbd9e642590aa107dd09d3974d783b1aa5deb5df48907e",
@@ -18,7 +18,7 @@
       "sha256": "c7bcd3babf67699275c8b5b23cd9628cb99ac57a766e9a3166e7a0109ef5d867"
     },
     "Dockerfile.sistema": {
-      "sha256": "19099d3c3b873af363e19a7ff46343c78ffb357204a32f3a8f17cadf5a23d6be"
+      "sha256": "3f4d9303c509fce9ae3037afdca88f14c5f77f6ebd8b7e5a763f284e152ed899"
     },
     "INICIAR_VPS.bat": {
       "sha256": "8ee4622b90f2ebb28b52e824a951a25c7688456548711be377cc41f7ce041a1a"
@@ -40,7 +40,7 @@
       "marker": "bind_host"
     },
     "app/code_guard.py": {
-      "sha256": "97e3ba18242e0444310b172d2ecbee02ebdff489305031a0e7b046e5b82fe248",
+      "sha256": "4bbf929c3d8007298ab2498808c8a9d31cc2d9f0a930b1ef718b1250285fd959",
       "marker": "ensure_code_integrity"
     },
     "app/company_portal.py": {
@@ -90,17 +90,41 @@
       "sha256": "56b3b04836a3c83a89b3040c002e4c4c8bc9f7be5b30cfac3007197d89ea2691",
       "marker": "APP_BUILD"
     },
+    "app/master/routers/web/drivers.py": {
+      "sha256": "615edf6c7e16e972698dfa0cd17a1ed12545d6f6486408fda898c7a95cf825c3",
+      "marker": "router = APIRouter"
+    },
     "app/master/routers/web/receptions.py": {
       "sha256": "86fe58248f372990a11dcfb39356abf3fadfd32e2fdbf691861e4f1b78480215"
     },
+    "app/master/services/driver_service.py": {
+      "sha256": "bb1a8f4e26d21b898100a4570c243be5e34851be4109e4d1e190f2170246a1ab",
+      "marker": "create_driver"
+    },
     "app/master/services/reception_service.py": {
       "sha256": "4312832821394bb020d5f7e11412013aff9439ee310fe3ed57a31017818e0d18"
+    },
+    "app/master/templates/master/base.html": {
+      "sha256": "d5582710535827ae529af4e61205fcf23916acf4ca2f0c4f40d6fb4272e6c37a"
+    },
+    "app/master/templates/master/drivers/_form_scripts.html": {
+      "sha256": "7193c07f4feec0cd482f1eb9fb406600a082e9893795235db081e30119dc4bb4"
+    },
+    "app/master/templates/master/drivers/form_create.html": {
+      "sha256": "b0cf7b359558ea24e3b9973963727a9cdc94dfe13a1b6bf2d3b931781d2aa129"
+    },
+    "app/master/templates/master/drivers/form_edit.html": {
+      "sha256": "b1b5be653d4468b9b69dfa5ab6ca5ccc31e5078e36bae9af29242221f140c2fb"
     },
     "app/master/templates/master/receptivos/form.html": {
       "sha256": "eda80231b47dfc80bfd68fd19ad998abd437a688b61bd86fde33007c7da42544"
     },
     "app/master/templates/master/receptivos/list.html": {
       "sha256": "70eb03e1ada78c32a0d11909960f7fc1415ab71ca346c4a29c7615349eb455f5"
+    },
+    "app/master/validators/driver.py": {
+      "sha256": "6f489f5d187b3b7ae12cb999d18e38b494b19d599c8b8ccf9642d5d30822350b",
+      "marker": "validate_driver_form"
     },
     "app/middleware/trusted_host.py": {
       "sha256": "9e86cb67d2bc60ffd8596c5c68d04dda3b35bbe892dd2e1c52c2b571cb349d79"
@@ -212,7 +236,7 @@
       "marker": "VEHICLE_TYPES"
     },
     "app/version.py": {
-      "sha256": "e8a20e15f927958ff10b4c1b2bfa7fa4dfb4d49b2029356a20ee9a437e9d3d67",
+      "sha256": "f305ed6ce4fe1cb1628bcc6250a6629f5046165aa8d6a14d8b27ea4065c2cb98",
       "marker": "APP_BUILD"
     },
     "docker-compose.sistema.yml": {

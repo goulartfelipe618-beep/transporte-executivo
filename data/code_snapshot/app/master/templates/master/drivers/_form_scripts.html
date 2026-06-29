@@ -1,0 +1,77 @@
+<script>
+(function () {
+  function digits(value) {
+    return String(value || "").replace(/\D/g, "");
+  }
+
+  function maskCpf(value) {
+    var d = digits(value).slice(0, 11);
+    return d
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+  }
+
+  function maskPhone(value) {
+    var d = digits(value).slice(0, 11);
+    if (d.length <= 2) return d ? "(" + d : "";
+    if (d.length <= 3) return "(" + d.slice(0, 2) + ") " + d.slice(2);
+    if (d.length <= 7) return "(" + d.slice(0, 2) + ") " + d.slice(2, 3) + " " + d.slice(3);
+    return "(" + d.slice(0, 2) + ") " + d.slice(2, 3) + " " + d.slice(3, 7) + "-" + d.slice(7);
+  }
+
+  function maskDate(value) {
+    var d = digits(value).slice(0, 8);
+    if (d.length <= 2) return d;
+    if (d.length <= 4) return d.slice(0, 2) + "/" + d.slice(2);
+    return d.slice(0, 2) + "/" + d.slice(2, 4) + "/" + d.slice(4);
+  }
+
+  function maskMonthYear(value) {
+    var d = digits(value).slice(0, 6);
+    if (d.length <= 2) return d;
+    return d.slice(0, 2) + "/" + d.slice(2);
+  }
+
+  document.querySelectorAll("[data-driver-form]").forEach(function (form) {
+    var city = form.querySelector("[data-geo-city]");
+    var addressFields = Array.prototype.slice.call(form.querySelectorAll("[data-address-after-city]"));
+
+    function updateAddressLock() {
+      var enabled = !!(city && city.value);
+      addressFields.forEach(function (field) {
+        field.disabled = !enabled;
+        if (!enabled) field.value = "";
+      });
+    }
+
+    if (city) {
+      city.addEventListener("change", updateAddressLock);
+      updateAddressLock();
+    }
+
+    form.querySelectorAll("[data-upper]").forEach(function (input) {
+      input.style.textTransform = "uppercase";
+      input.addEventListener("input", function () {
+        var start = input.selectionStart;
+        var end = input.selectionEnd;
+        input.value = input.value.toUpperCase();
+        try { input.setSelectionRange(start, end); } catch (_err) {}
+      });
+      input.value = String(input.value || "").toUpperCase();
+    });
+
+    form.querySelectorAll("[data-mask]").forEach(function (input) {
+      input.addEventListener("input", function () {
+        var kind = input.dataset.mask;
+        if (kind === "cpf") input.value = maskCpf(input.value);
+        if (kind === "phone") input.value = maskPhone(input.value);
+        if (kind === "date") input.value = maskDate(input.value);
+        if (kind === "monthYear") input.value = maskMonthYear(input.value);
+        if (kind === "digits") input.value = digits(input.value);
+      });
+      input.dispatchEvent(new Event("input"));
+    });
+  });
+})();
+</script>
